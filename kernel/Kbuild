@@ -1,14 +1,5 @@
 kernelsu-objs := core/init.o
-kernelsu-objs += policy/allowlist.o
-kernelsu-objs += policy/app_profile.o
-kernelsu-objs += feature/sucompat.o
-
-ifneq ($(CONFIG_KSU_DISABLE_MANAGER),y)
-kernelsu-objs += manager/apk_sign.o
-kernelsu-objs += manager/dynamic_manager.o
-kernelsu-objs += manager/throne_tracker.o
-kernelsu-objs += manager/pkg_observer.o
-endif
+kernelsu-objs += policy/feature.o
 
 # TSR (Tracepoint Syscall Redirect) hook infrastructure
 kernelsu-objs += hook/syscall_event_bridge.o
@@ -22,13 +13,9 @@ else ifeq ($(CONFIG_X86_64),y)
   kernelsu-objs += hook/x86_64/patch_memory.o hook/x86_64/syscall_hook.o
 endif
 kernelsu-objs += hook/setuid_hook.o
-kernelsu-objs += feature/kernel_umount.o
 kernelsu-objs += supercall/dispatch.o
 kernelsu-objs += supercall/perm.o
 kernelsu-objs += supercall/supercall.o
-kernelsu-objs += policy/feature.o
-kernelsu-objs += feature/adb_root.o
-kernelsu-objs += feature/selinux_hide.o
 kernelsu-objs += feature/zygote_probe.o
 kernelsu-objs += feature/zygote_orch.o
 kernelsu-objs += feature/zygote_nl.o
@@ -40,35 +27,14 @@ kernelsu-objs += infra/seccomp_cache.o
 kernelsu-objs += infra/su_mount_ns.o
 kernelsu-objs += infra/file_wrapper.o
 kernelsu-objs += infra/event_queue.o
-kernelsu-objs += feature/sulog.o
-kernelsu-objs += sulog/event.o
-kernelsu-objs += sulog/fd.o
 
 kernelsu-objs += selinux/selinux.o
 kernelsu-objs += selinux/sepolicy.o
 kernelsu-objs += selinux/rules.o
 
 ifdef KBUILD_EXTMOD
-ifeq ($(CONFIG_KSU_DISABLE_MANAGER),y)
-ccflags-y += -DCONFIG_KSU_DISABLE_MANAGER=1
-endif
-ifeq ($(CONFIG_KSU_DISABLE_POLICY),y)
-ccflags-y += -DCONFIG_KSU_DISABLE_POLICY=1
-endif
 ifeq ($(CONFIG_KSU_DEBUG),y)
 ccflags-y += -DCONFIG_KSU_DEBUG=1
-endif
-endif
-
-# SuperKey Support - enabled by default unless explicitly disabled
-# To disable: make ... CONFIG_KSU_SUPERKEY=n
-ifneq ($(CONFIG_KSU_DISABLE_MANAGER),y)
-ifeq ($(CONFIG_KSU_SUPERKEY), y)
-kernelsu-objs += manager/superkey.o
-ccflags-y += -DCONFIG_KSU_SUPERKEY
-ifneq ($(KSU_SUPERKEY),)
-ccflags-y += -DKSU_SUPERKEY=\"$(KSU_SUPERKEY)\"
-endif
 endif
 endif
 
@@ -155,8 +121,6 @@ endif
 
 ccflags-y += -DKSU_VERSION=$(KSU_VERSION)
 ccflags-y += -DKSU_VERSION_FULL=\"$(KSU_VERSION_FULL)\"
-
-$(info -- YukiSU: SuperKey allows the manager app to authenticate using a password instead of APK signature verification. Use Superkey instead of custom signature verification.)
 
 KERNEL_VERSION := $(VERSION).$(PATCHLEVEL)
 KERNEL_TYPE := Non-GKI

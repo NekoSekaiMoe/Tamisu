@@ -199,31 +199,11 @@ done
 
 cp "$KSUINIT_DIR/build/ksuinit" "$KSUD_ASSETS/"
 
-# Build the standalone magisk-compat su (its own project, like ksuinit) and stage
-# it into ksud assets BEFORE ksud configures, so embed_assets picks it up as a
-# prebuilt asset -- ksud no longer compiles su itself.
-echo ">>> 构建 su (magisk-compat) ..."
-SU_DIR="$REPO_ROOT/userspace/su"
-rm -rf "$SU_DIR/build"
-mkdir -p "$SU_DIR/build"
-cd "$SU_DIR/build"
-cmake .. \
-	-G Ninja \
-	-DCMAKE_SYSTEM_NAME=Android \
-	-DCMAKE_ANDROID_ARCH_ABI="$ABI" \
-	-DCMAKE_ANDROID_NDK="$ANDROID_NDK_HOME" \
-	-DCMAKE_C_COMPILER="$CC" \
-	-DCMAKE_CXX_COMPILER="$CXX" \
-	-DCMAKE_BUILD_TYPE=Release
-ninja
-cp "$SU_DIR/build/su" "$KSUD_ASSETS/su"
-echo "    su 已构建并嵌入 assets"
-
-# YukiZygisk payload (libzloader + libzygisk): standalone NDK libs like su,
-# staged into ksud assets so embed_assets embeds them; ksud then安放到
-# /data/adb/ksu/lib/yukizygisk/ at post-fs-data. Experimental -- a build failure
-# (e.g. missing lsplt submodule) only warns, and ensure_yukizygisk() degrades
-# gracefully when a lib isn't embedded.
+# YukiZygisk payload (libzloader + libzygisk): standalone NDK libs,
+# staged into ksud assets so embed_assets embeds them; ksud then places them
+# under /data/adb/ksu/lib/yukizygisk/ at post-fs-data. Experimental -- a build
+# failure (e.g. missing lsplt submodule) only warns, and ensure_yukizygisk()
+# degrades gracefully when a lib isn't embedded.
 echo ">>> 构建 YukiZygisk payload (libzloader + libzygisk) ..."
 ZLOADER_DIR="$REPO_ROOT/userspace/zygisk/loader"
 rm -rf "$ZLOADER_DIR/build"; mkdir -p "$ZLOADER_DIR/build"; cd "$ZLOADER_DIR/build"

@@ -4,6 +4,7 @@
 #include "log.hpp"
 #include "utils.hpp"
 
+#include <sys/utsname.h>
 #include <sys/stat.h>
 #include <cerrno>
 #include <cstdio>
@@ -13,80 +14,24 @@
 
 namespace ksud {
 
-static constexpr const char* KERNEL_PARAM_PATH = "/sys/module/kernelsu/parameters";
-
 namespace {
 
-bool read_u32(const std::string& path, uint32_t& value) {
-    std::ifstream ifs(path);
-    if (!ifs) {
-        return false;
+int get_version_impl() {
+    struct utsname buf{};
+    if (uname(&buf) != 0) {
+        return -1;
     }
-    ifs >> value;
-    return true;
-}
-
-bool write_u32(const std::string& path, uint32_t value) {
-    std::ofstream ofs(path);
-    if (!ofs) {
-        return false;
+    int a = 0, b = 0;
+    if (sscanf(buf.release, "%d.%d", &a, &b) >= 2) {
+        return a * 100 + b;
     }
-    ofs << value;
-    return ofs.good();
-}
-
-bool get_pkg_uid(const std::string& pkg, uint32_t& uid) {
-    const std::string data_path = "/data/data/" + pkg;
-    struct stat st{};
-    if (stat(data_path.c_str(), &st) != 0) {
-        printf("Failed to stat %s: %s\n", data_path.c_str(), strerror(errno));
-        return false;
-    }
-    uid = st.st_uid;
-    return true;
+    return -1;
 }
 
 }  // namespace
 
-int debug_set_manager(const std::string& pkg) {
-    // Check if CONFIG_KSU_DEBUG is enabled
-    if (!std::filesystem::exists(KERNEL_PARAM_PATH)) {
-        printf("CONFIG_KSU_DEBUG is not enabled in kernel\n");
-        return 1;
-    }
-
-    // Get package UID
-    uint32_t uid;
-    if (!get_pkg_uid(pkg, uid)) {
-        printf("Failed to get UID for package: %s\n", pkg.c_str());
-        return 1;
-    }
-
-    printf("Package %s has UID: %u\n", pkg.c_str(), uid);
-
-    // Set manager UID via kernel parameter
-    const std::string param_path = std::string(KERNEL_PARAM_PATH) + "/ksu_debug_manager_uid";
-
-    uint32_t before_uid = 0;
-    read_u32(param_path, before_uid);
-
-    if (!write_u32(param_path, uid)) {
-        printf("Failed to write manager UID to kernel parameter\n");
-        return 1;
-    }
-
-    uint32_t after_uid = 0;
-    read_u32(param_path, after_uid);
-
-    printf("Set manager UID: %u -> %u\n", before_uid, after_uid);
-
-    // Force-stop the package to apply changes
-    printf("Force-stopping package...\n");
-    const std::string cmd = "am force-stop " + pkg;
-    system(cmd.c_str());
-
-    printf("Manager set successfully!\n");
-    return 0;
+int get_version() {
+    return get_version_impl();
 }
 
 int debug_insmod(const std::string& module, const std::vector<std::string>& params) {

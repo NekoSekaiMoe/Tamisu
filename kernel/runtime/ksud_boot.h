@@ -9,8 +9,6 @@ void on_boot_completed(void);
 
 bool ksu_is_safe_mode(void);
 
-int nuke_ext4_sysfs(const char *mnt);
-
 extern bool ksu_module_mounted;
 extern bool ksu_boot_completed;
 

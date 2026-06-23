@@ -19,7 +19,6 @@
 #include "hook/syscall_hook.h"
 #include "klog.h" // IWYU pragma: keep
 #include "hook/setuid_hook.h"
-#include "feature/sucompat.h"
 #include "hook/syscall_hook_manager.h"
 #include "hook/tp_marker.h"
 
@@ -74,8 +73,6 @@ void ksu_syscall_hook_manager_init(void)
 	/* Register individual syscall hooks via dispatcher */
 	ksu_register_syscall_hook(__NR_setresuid, ksu_hook_setresuid);
 	ksu_register_syscall_hook(__NR_execve, ksu_hook_execve);
-	ksu_register_syscall_hook(__NR_newfstatat, ksu_hook_newfstatat);
-	ksu_register_syscall_hook(__NR_faccessat, ksu_hook_faccessat);
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
 	ret = register_trace_sys_enter(ksu_sys_enter_handler, NULL);
 	if (ret) {
@@ -87,7 +84,6 @@ void ksu_syscall_hook_manager_init(void)
 	}
 #endif // #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
 	ksu_setuid_hook_init();
-	ksu_sucompat_init();
 }
 
 void ksu_syscall_hook_manager_exit(void)
@@ -104,13 +100,10 @@ void ksu_syscall_hook_manager_exit(void)
 	/* Unregister dispatcher routes before restoring the syscall table. */
 	ksu_unregister_syscall_hook(__NR_setresuid);
 	ksu_unregister_syscall_hook(__NR_execve);
-	ksu_unregister_syscall_hook(__NR_newfstatat);
-	ksu_unregister_syscall_hook(__NR_faccessat);
 	/*
 	 * Restore the syscall table while feature handlers are still alive, so
 	 * any in-flight syscall hook finishes against valid state.
 	 */
 	ksu_syscall_hook_exit();
-	ksu_sucompat_exit();
 	ksu_setuid_hook_exit();
 }

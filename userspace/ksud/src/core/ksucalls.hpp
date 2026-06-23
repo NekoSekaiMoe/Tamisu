@@ -7,7 +7,7 @@
 #include <vector>
 
 // Kernel uapi headers — single source of truth for ioctl numbers,
-// struct layouts, and feature IDs.  Guarded for userspace by
+// struct layouts, and feature IDs. Guarded for userspace by
 // #ifndef __KERNEL__ blocks in each uapi header.
 extern "C" {
 #include "uapi/supercall.h"
@@ -23,19 +23,7 @@ using CheckSafemodeCmd = ksu_check_safemode_cmd;
 using GetFeatureCmd = ksu_get_feature_cmd;
 using SetFeatureCmd = ksu_set_feature_cmd;
 using GetWrapperFdCmd = ksu_get_wrapper_fd_cmd;
-using GetSulogFdCmd = ksu_get_sulog_fd_cmd;
 using ManageMarkCmd = ksu_manage_mark_cmd;
-using NukeExt4SysfsCmd = ksu_nuke_ext4_sysfs_cmd;
-using AddTryUmountCmd = ksu_add_try_umount_cmd;
-using DynamicManagerSign = ksu_dynamic_manager_sign;
-using DynamicManagerCmd = ksu_dynamic_manager_cmd;
-
-// YukiSU-only: list umount ioctl (not in upstream uapi)
-struct ListTryUmountCmd {
-    uint64_t arg;
-    uint32_t buf_size;
-};
-#define KSU_IOCTL_LIST_TRY_UMOUNT _IOC(_IOC_READ | _IOC_WRITE, 'K', 200, 0)
 
 // API functions
 int ksuctl(int request, void* arg);
@@ -44,8 +32,6 @@ int32_t get_version();
 uint32_t get_flags();
 uint32_t get_uapi_version();
 
-int grant_root();
-int set_ksu_no_new_privs();
 void report_post_fs_data();
 void report_boot_complete();
 void report_module_mounted();
@@ -59,7 +45,6 @@ std::pair<uint64_t, bool> get_feature(uint32_t feature_id);
 int set_feature(uint32_t feature_id, uint64_t value);
 
 int get_wrapped_fd(int fd);
-int get_sulog_fd();
 
 // Mark management
 uint32_t mark_get(int32_t pid);
@@ -67,21 +52,13 @@ int mark_set(int32_t pid);
 int mark_unset(int32_t pid);
 int mark_refresh();
 
-int nuke_ext4_sysfs(const std::string& mnt);
 int set_init_pgrp();
-int set_dynamic_managers(const std::vector<DynamicManagerSign>& signs);
 
-// Umount list management
-int umount_list_wipe();
-int umount_list_add(const std::string& path, uint32_t flags);
-int umount_list_del(const std::string& path);
-std::optional<std::string> umount_list_list();
-
+// Zygisk compatibility stubs: the su/profile/allowlist features were removed
+// from the kernel, so these always report "no root granted / no umount".
+// Kept because zygiskd's query_flags() path calls them when filling module
+// StateFlags; returning false simply means modules see no per-uid grant state.
 bool uid_granted_root(uint32_t uid);
 bool uid_should_umount(uint32_t uid);
-
-int set_magisk_su_profile(const std::string& package, uint32_t uid, bool allow);
-
-int get_manager_uid();
 
 }  // namespace ksud

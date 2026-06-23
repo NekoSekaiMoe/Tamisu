@@ -1,22 +1,26 @@
 #include <linux/cred.h>
 
-#include "manager/manager_identity.h"
-#include "policy/allowlist.h"
 #include "supercall/internal.h"
 
-bool only_manager(void)
+/*
+ * Zygisk-only build: there is no manager app and no su allowlist. Every
+ * privileged ioctl is gated on root (uid 0) only; the daemon (ksud/zygiskd)
+ * always runs as root. "manager_or_root" and "allowed_for_su" collapse to
+ * root-only as well, since the only legitimate caller is root.
+ */
+bool only_root(void)
 {
-	return is_manager();
+	return current_uid().val == 0;
 }
 
-bool only_root(void)
+bool only_manager(void)
 {
 	return current_uid().val == 0;
 }
 
 bool manager_or_root(void)
 {
-	return current_uid().val == 0 || is_manager();
+	return current_uid().val == 0;
 }
 
 bool always_allow(void)
@@ -26,5 +30,5 @@ bool always_allow(void)
 
 bool allowed_for_su(void)
 {
-	return is_manager() || ksu_is_allow_uid_for_current(current_uid().val);
+	return current_uid().val == 0;
 }

@@ -3,8 +3,6 @@
 
 #include <asm/ptrace.h>
 
-long __nocfi ksu_hook_newfstatat(int orig_nr, const struct pt_regs *regs);
-long __nocfi ksu_hook_faccessat(int orig_nr, const struct pt_regs *regs);
 long __nocfi ksu_hook_execve(int orig_nr, const struct pt_regs *regs);
 long __nocfi ksu_hook_setresuid(int orig_nr, const struct pt_regs *regs);
 

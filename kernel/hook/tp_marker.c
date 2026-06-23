@@ -16,7 +16,6 @@
 #include <linux/spinlock.h>
 #include <linux/version.h>
 
-#include "policy/allowlist.h"
 #include "klog.h" // IWYU pragma: keep
 #include "hook/tp_marker.h"
 
@@ -82,7 +81,7 @@ static void ksu_mark_running_process_locked(void)
 		// before boot completed, we shall mark init for marking zygote
 		bool is_init = t->pid == 1;
 		if (ksu_root_process || is_zygote_process || is_shell ||
-		    is_init || ksu_is_allow_uid(uid)) {
+		    is_init) {
 			ksu_set_task_tracepoint_flag(t);
 			pr_info("tp_marker: mark process: pid:%d, uid: %d, "
 				"comm:%s\n",

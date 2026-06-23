@@ -4,9 +4,6 @@
 #include <linux/init.h>
 #include <linux/types.h>
 
-#include "manager/apk_sign.h"
-#include <linux/thread_info.h>
-
 void ksu_setuid_hook_init(void);
 void ksu_setuid_hook_exit(void);
 

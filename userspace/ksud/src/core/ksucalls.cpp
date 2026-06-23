@@ -17,9 +17,6 @@
 
 namespace ksud {
 
-// Magic constants
-// NOTE: Avoid 0xDEAD/0xBEEF patterns - easily detected by root checkers
-
 namespace {
 
 struct PrctlGetFdCmd {
@@ -164,14 +161,6 @@ uint32_t get_uapi_version() {
     return v;
 }
 
-int grant_root() {
-    return ksuctl(KSU_IOCTL_GRANT_ROOT, nullptr);
-}
-
-int set_ksu_no_new_privs() {
-    return ksuctl(KSU_IOCTL_DISABLE_ESCAPE_TO_ROOT, nullptr);
-}
-
 void report_post_fs_data() {
     report_event(EVENT_POST_FS_DATA);
 }
@@ -210,51 +199,18 @@ int set_feature(uint32_t feature_id, uint64_t value) {
     return ksuctl(KSU_IOCTL_SET_FEATURE, &cmd);
 }
 
-bool uid_granted_root(uint32_t uid) {
-    ksu_uid_granted_root_cmd cmd{};
-    cmd.uid = uid;
-    if (ksuctl(KSU_IOCTL_UID_GRANTED_ROOT, &cmd) != 0) {
-        return false;
-    }
-    return cmd.granted != 0;
+// Zygisk compatibility stubs: su/profile/allowlist removed from kernel.
+bool uid_granted_root(uint32_t /*uid*/) {
+    return false;
 }
 
-bool uid_should_umount(uint32_t uid) {
-    ksu_uid_should_umount_cmd cmd{};
-    cmd.uid = uid;
-    if (ksuctl(KSU_IOCTL_UID_SHOULD_UMOUNT, &cmd) != 0) {
-        return false;
-    }
-    return cmd.should_umount != 0;
-}
-
-int set_magisk_su_profile(const std::string& package, uint32_t uid, bool allow) {
-    if (package.empty()) {
-        return -1;
-    }
-    ksu_magisk_persist_cmd cmd{};
-    cmd.uid = uid;
-    cmd.allow = allow ? 1 : 0;
-    strncpy(cmd.package, package.c_str(), sizeof(cmd.package) - 1);
-    return ksuctl(KSU_IOCTL_MAGISK_PERSIST, &cmd);
-}
-
-int get_manager_uid() {
-    ksu_get_manager_uid_cmd cmd = {};
-    if (ksuctl(KSU_IOCTL_GET_MANAGER_UID, &cmd) != 0) {
-        return -1;
-    }
-    return static_cast<int>(cmd.uid);
+bool uid_should_umount(uint32_t /*uid*/) {
+    return false;
 }
 
 int get_wrapped_fd(int fd) {
     GetWrapperFdCmd cmd = {static_cast<__u32>(fd), 0};
     return ksuctl(KSU_IOCTL_GET_WRAPPER_FD, &cmd);
-}
-
-int get_sulog_fd() {
-    GetSulogFdCmd cmd = {0};
-    return ksuctl(KSU_IOCTL_GET_SULOG_FD, &cmd);
 }
 
 uint32_t mark_get(int32_t pid) {
@@ -278,49 +234,8 @@ int mark_refresh() {
     return ksuctl(KSU_IOCTL_MANAGE_MARK, &cmd);
 }
 
-int nuke_ext4_sysfs(const std::string& mnt) {
-    NukeExt4SysfsCmd cmd = {reinterpret_cast<uint64_t>(mnt.c_str())};
-    return ksuctl(KSU_IOCTL_NUKE_EXT4_SYSFS, &cmd);
-}
-
 int set_init_pgrp() {
     return ksuctl(KSU_IOCTL_SET_INIT_PGRP, nullptr);
-}
-
-int set_dynamic_managers(const std::vector<DynamicManagerSign>& signs) {
-    DynamicManagerCmd cmd = {static_cast<uint32_t>(signs.size()),
-                             reinterpret_cast<uint64_t>(signs.empty() ? nullptr : signs.data())};
-    return ksuctl(KSU_IOCTL_SET_DYNAMIC_MANAGERS, &cmd);
-}
-
-int umount_list_wipe() {
-    AddTryUmountCmd cmd = {0, 0, KSU_UMOUNT_WIPE};
-    return ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &cmd);
-}
-
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-int umount_list_add(const std::string& path, uint32_t flags) {
-    AddTryUmountCmd cmd = {reinterpret_cast<uint64_t>(path.c_str()), flags, KSU_UMOUNT_ADD};
-    return ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &cmd);
-}
-
-int umount_list_del(const std::string& path) {
-    AddTryUmountCmd cmd = {reinterpret_cast<uint64_t>(path.c_str()), 0, KSU_UMOUNT_DEL};
-    return ksuctl(KSU_IOCTL_ADD_TRY_UMOUNT, &cmd);
-}
-
-std::optional<std::string> umount_list_list() {
-    constexpr size_t kBufSize = 4096;
-    std::array<char, kBufSize> buffer{};
-
-    ListTryUmountCmd cmd = {reinterpret_cast<uint64_t>(buffer.data()),
-                            static_cast<uint32_t>(buffer.size())};
-    const int ret = ksuctl(KSU_IOCTL_LIST_TRY_UMOUNT, &cmd);
-    if (ret < 0) {
-        return std::nullopt;
-    }
-
-    return std::string(buffer.data());
 }
 
 }  // namespace ksud

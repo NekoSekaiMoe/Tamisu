@@ -8,12 +8,9 @@
 #include "init_event.hpp"
 #include "kernelsu_loader.hpp"
 #include "log.hpp"
-#include "magica/magica.hpp"
 #include "module/metamodule.hpp"
 #include "module/module.hpp"
 #include "module/module_config.hpp"
-#include "profile/profile.hpp"
-#include "umount.hpp"
 #include "utils.hpp"
 
 #include <unistd.h>
@@ -124,21 +121,18 @@ bool run_finalizer_command(const std::vector<std::string>& args, const char* pre
     return false;
 }
 
-void run_post_magica_cleanup() {
-    LOGI("Running post-magica finalization after late-load");
+void run_post_late_load_cleanup() {
+    LOGI("Running post-late-load finalization");
 
-    if (!run_finalizer_command({"setenforce", "1"}, "late-load post-magica")) {
-        LOGE("Failed to re-enable SELinux enforcing after Magica late-load");
-    }
-
-    if (magica::disable_adb_root() != 0) {
-        LOGE("Failed to restore adb properties after Magica late-load");
+    if (!run_finalizer_command({"setenforce", "1"}, "late-load cleanup")) {
+        LOGE("Failed to re-enable SELinux enforcing after late-load");
     }
 }
 
 }  // namespace
 
 int run(bool post_magica, bool allow_shell) {
+    (void)post_magica;
     LOGI("late-load command triggered");
     int result = 0;
 
@@ -173,10 +167,6 @@ int run(bool post_magica, bool allow_shell) {
         LOGW("late-load: load_sepolicy_rule failed");
     }
 
-    if (apply_profile_sepolies() != 0) {
-        LOGW("late-load: apply_profile_sepolies failed");
-    }
-
     if (init_features() != 0) {
         LOGW("late-load: init_features failed");
     }
@@ -191,10 +181,6 @@ int run(bool post_magica, bool allow_shell) {
         LOGW("late-load: metamodule_exec_mount_script failed");
     }
 
-    if (umount_apply_config() != 0) {
-        LOGW("late-load: umount_apply_config failed");
-    }
-
     run_stage_scripts("post-mount", true);
     on_services();
     on_boot_completed();
@@ -202,9 +188,7 @@ int run(bool post_magica, bool allow_shell) {
     restart_manager();
 
 finalize:
-    if (post_magica) {
-        run_post_magica_cleanup();
-    }
+    run_post_late_load_cleanup();
 
     return result;
 }

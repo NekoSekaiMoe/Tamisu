@@ -21,9 +21,7 @@
 #include <linux/version.h>
 #include <linux/workqueue.h>
 
-#include "policy/allowlist.h"
 #include "arch.h"
-#include "feature/selinux_hide.h"
 #include "hook/syscall_hook.h"
 #include "hook/syscall_event_bridge.h"
 #include "klog.h" // IWYU pragma: keep
@@ -31,7 +29,6 @@
 #include "runtime/ksud_boot.h"
 #include "runtime/ksud.h"
 #include "selinux/selinux.h"
-#include "manager/throne_tracker.h"
 
 static const char KERNEL_SU_RC[] =
     "\n"
@@ -65,7 +62,6 @@ static struct work_struct stop_input_hook_work;
 
 static void ksu_initialize_selinux(void)
 {
-	ksu_selinux_hide_handle_second_stage();
 	apply_kernelsu_rules();
 	cache_sid();
 	setup_ksu_cred();

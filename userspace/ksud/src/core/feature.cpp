@@ -1,9 +1,7 @@
 #include "feature.hpp"
 #include "../defs.hpp"
 #include "../log.hpp"
-#include "../magisk_compat/msud.hpp"
 #include "../module/module.hpp"
-#include "../sulog.hpp"
 #include "../utils.hpp"
 #include "ksucalls.hpp"
 
@@ -29,14 +27,6 @@ constexpr uint32_t FEATURE_VERSION = 1;
 
 const std::map<std::string, uint32_t>& get_feature_map() {
     static const std::map<std::string, uint32_t> map = {
-        {"su_compat", KSU_FEATURE_SU_COMPAT},
-        {"kernel_umount", KSU_FEATURE_KERNEL_UMOUNT},
-        {"enhanced_security", KSU_FEATURE_ENHANCED_SECURITY},
-        {"adb_root", KSU_FEATURE_ADB_ROOT},
-        {"selinux_hide", KSU_FEATURE_SELINUX_HIDE},
-        {"default_no_new_privs", KSU_FEATURE_DEFAULT_NO_NEW_PRIVS},
-        {"sulog", KSU_FEATURE_SULOG},
-        {"magisk_compat", KSU_FEATURE_MAGISK_COMPAT},
         {"yukizygisk", KSU_FEATURE_YUKIZYGISK},
     };
     return map;
@@ -44,25 +34,6 @@ const std::map<std::string, uint32_t>& get_feature_map() {
 
 const std::map<uint32_t, const char*>& get_feature_descriptions() {
     static const std::map<uint32_t, const char*> desc = {
-        {KSU_FEATURE_SU_COMPAT,
-         "SU Compatibility Mode - allows authorized apps to gain root via traditional 'su' "
-         "command"},
-        {KSU_FEATURE_KERNEL_UMOUNT,
-         "Kernel Umount - controls whether kernel automatically unmounts modules when not needed"},
-        {KSU_FEATURE_ENHANCED_SECURITY,
-         "Enhanced Security - disable non-KSU root elevation and unauthorized UID downgrades"},
-        {KSU_FEATURE_ADB_ROOT,
-         "ADB Root - run adbd with root privileges via kernel feature injection"},
-        {KSU_FEATURE_SELINUX_HIDE,
-         "SELinux Hide - hides KernelSU sepolicy changes from app-facing SELinux probes"},
-        {KSU_FEATURE_DEFAULT_NO_NEW_PRIVS,
-         "Default No-New-Privs - profiles using the default root profile block re-escalation "
-         "(anti-escape) by default"},
-        {KSU_FEATURE_SULOG,
-         "SU Log - streams kernel sulog events to userspace and persists them to disk"},
-        {KSU_FEATURE_MAGISK_COMPAT,
-         "Magisk-compat su prompt - shows a visible su and asks for authorization on first use "
-         "for apps that are not in the allowlist"},
         {KSU_FEATURE_YUKIZYGISK,
          "YukiZygisk - kernel captures zygote and injects Zygisk modules; the daemon is brought "
          "up at post-fs-data when enabled (off by default)"},
@@ -153,14 +124,6 @@ int feature_set(const std::string& id, uint64_t value) {
     if (ret < 0) {
         LOGE("Failed to set feature %s to %" PRIu64, id.c_str(), value);
         return 1;
-    }
-
-    if (feature_id == KSU_FEATURE_SULOG && value != 0 && ensure_sulogd_running() != 0) {
-        LOGW("Failed to ensure sulogd is running after enabling sulog");
-    }
-
-    if (feature_id == KSU_FEATURE_MAGISK_COMPAT && value != 0 && ensure_msud_running() != 0) {
-        LOGW("Failed to ensure msud is running after enabling magisk_compat");
     }
 
     printf("Feature '%s' set to %" PRIu64 " (%s)\n", feature_id_to_name(feature_id), value,
@@ -362,12 +325,6 @@ void apply_config(const std::map<uint32_t, uint64_t>& features) {
     for (const auto& [id, value] : features) {
         const int ret = set_feature(id, value);
         if (ret >= 0) {
-            if (id == KSU_FEATURE_SULOG && value != 0 && ensure_sulogd_running() != 0) {
-                LOGW("Failed to ensure sulogd is running while applying config");
-            }
-            if (id == KSU_FEATURE_MAGISK_COMPAT && value != 0 && ensure_msud_running() != 0) {
-                LOGW("Failed to ensure msud is running while applying config");
-            }
             LOGI("Set feature %s to %" PRIu64, feature_id_to_name(id), value);
             applied++;
         } else {

@@ -256,7 +256,6 @@ set(KSUD_OUR_SOURCES
     src/log.cpp
     src/utils.cpp
     src/kernelsu_loader.cpp
-    src/dynamic_manager.cpp
     src/core/ksucalls.cpp
     src/core/feature.cpp
     src/core/restorecon.cpp
@@ -267,41 +266,12 @@ set(KSUD_OUR_SOURCES
     src/boot/boot_patch.cpp
     src/boot/tools.cpp
     src/boot/apk_sign.cpp
-    src/profile/profile.cpp
     src/sepolicy/sepolicy.cpp
-    src/su.cpp
     src/init_event.cpp
     src/late_load.cpp
-    src/umount.cpp
     src/debug.cpp
-    src/sulog.cpp
-    src/magisk_compat/msud.cpp
-    src/magisk_compat/su_mount.cpp
-    src/magisk_compat/su_magic.cpp
-    src/magisk_compat/su_protocol.cpp
-    src/magica/adb_client.cpp
-    src/magica/magica.cpp
     src/core/hide_bootloader.cpp
     src/flash/flash_partition.cpp
-    src/hymo/hymo_cli.cpp
-    src/hymo/hymo_main.cpp
-    src/hymo/utils.cpp
-    src/hymo/conf/config.cpp
-    src/hymo/core/executor.cpp
-    src/hymo/core/inventory.cpp
-    src/hymo/core/lkm.cpp
-    src/hymo/core/modules.cpp
-    src/hymo/core/planner.cpp
-    src/hymo/core/state.cpp
-    src/hymo/core/storage.cpp
-    src/hymo/core/sync.cpp
-    src/hymo/core/user_rules.cpp
-    src/hymo/core/webui.cpp
-    src/hymo/mount/kasumi.cpp
-    src/hymo/mount/magic.cpp
-    src/hymo/mount/overlay.cpp
-    src/hymo/mount/mount_utils.cpp
-    src/hymo/mount/partition_utils.cpp
     ${ASSETS_CPP}
 )
 

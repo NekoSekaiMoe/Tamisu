@@ -1,6 +1,5 @@
 #include "metamodule.hpp"
 #include "../defs.hpp"
-#include "../hymo/hymo_cli.hpp"
 #include "../log.hpp"
 #include "../utils.hpp"
 #include "module.hpp"
@@ -125,7 +124,7 @@ int metamodule_exec_stage_script(const std::string& stage, bool block) {
     return run_script(script, block, module_id);
 }
 
-// Check if built-in hymo mount should be disabled
+// Check if built-in mount should be disabled
 // User can create /data/adb/ksu/.disable_builtin_mount to use external metamodule
 namespace {
 bool should_use_builtin_mount() {
@@ -143,7 +142,7 @@ bool should_skip_default_partition_handling() {
     if (!get_enabled_metamodule_script_path(METAMODULE_MOUNT_SCRIPT).empty()) {
         return true;
     }
-    // Built-in hymo active (no external metamodule, built-in not disabled)
+    // Built-in mount active (no external metamodule, built-in not disabled)
     return should_use_builtin_mount();
 }
 
@@ -151,18 +150,6 @@ int metamodule_exec_mount_script() {
     std::string module_id;
     const std::string script =
         get_enabled_metamodule_script_path(METAMODULE_MOUNT_SCRIPT, &module_id);
-
-    // Built-in Hymo mount check first; only use metamodule when no built-in path
-    if (should_use_builtin_mount() && !file_exists(script)) {
-        LOGI("No external metamodule found, using built-in hymo mount");
-        const int ret = hymo::cmd_hymo({"mount"});
-        if (ret == 0) {
-            LOGI("Built-in hymo mount completed successfully");
-        } else {
-            LOGE("Built-in hymo mount failed with code: %d", ret);
-        }
-        return ret;
-    }
 
     if (!should_use_builtin_mount() && !file_exists(script)) {
         LOGI("Built-in mount disabled, skipping (install a metamodule or remove "

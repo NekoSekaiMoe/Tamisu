@@ -7,22 +7,13 @@
 #include "core/restorecon.hpp"
 #include "debug.hpp"
 #include "defs.hpp"
-#include "dynamic_manager.hpp"
 #include "flash/flash_partition.hpp"
-#include "hymo/hymo_cli.hpp"
 #include "init_event.hpp"
 #include "late_load.hpp"
 #include "log.hpp"
-#include "magica/magica.hpp"
-#include "magisk_compat/msud.hpp"
-#include "magisk_compat/su_mount.hpp"
 #include "module/module.hpp"
 #include "module/module_config.hpp"
-#include "profile/profile.hpp"
 #include "sepolicy/sepolicy.hpp"
-#include "su.hpp"
-#include "sulog.hpp"
-#include "umount.hpp"
 #include "utils.hpp"
 
 #include <unistd.h>
@@ -137,7 +128,7 @@ bool CliParser::has_option(const std::string& name) const {
 namespace {
 
 void print_usage() {
-    printf("YukiSU userspace daemon\n\n");
+    printf("YukiSU userspace daemon (zygisk-only)\n\n");
     printf("USAGE: ksud <COMMAND>\n\n");
     printf("COMMANDS:\n");
     printf("  module         Manage KernelSU modules\n");
@@ -149,20 +140,14 @@ void print_usage() {
     printf("  install        Install KernelSU userspace\n");
     printf("  uninstall      Uninstall KernelSU\n");
     printf("  sepolicy       SELinux policy patch tool\n");
-    printf("  profile        Manage app profiles\n");
     printf("  feature        Manage kernel features\n");
-    printf("  dynamic        Manage dynamic manager signatures\n");
     printf("  initrc         Manage init.rc injection\n");
-    printf("  sulogd         Run sulog reader daemon\n");
-    printf("  msud           Run magisk-compat su prompt daemon\n");
     printf("  boot-patch     Patch boot image\n");
     printf("  boot-restore   Restore boot image\n");
     printf("  boot-info      Show boot information\n");
     printf("  flash          Flash partition images\n");
-    printf("  umount         Manage umount paths\n");
     printf("  kernel         Kernel interface\n");
     printf("  debug          For developers\n");
-    printf("  hymo           Kasumi module manager\n");
     printf("  help           Show this help\n");
     printf("  version        Show version\n");
 }
@@ -301,32 +286,21 @@ int cmd_debug(const std::vector<std::string>& args) {
     if (args.empty()) {
         printf("USAGE: ksud debug <SUBCOMMAND>\n\n");
         printf("SUBCOMMANDS:\n");
-        printf("  set-manager [PKG]  Set manager app\n");
         printf("  insmod <KO> [PARAMS...]  Load a kernel module (legacy alias)\n");
-        printf("  su [-g]            Root shell\n");
         printf("  version            Get kernel version\n");
         printf("  mark <get|mark|unmark|refresh> [PID]\n");
-        printf("  sulogd             Launch sulog daemon now\n");
         return 1;
     }
 
     const std::string& subcmd = args[0];
 
-    if (subcmd == "set-manager") {
-        const std::string pkg = args.size() > 1 ? args[1] : "com.anatdx.yukisu";
-        return debug_set_manager(pkg);
-    } else if (subcmd == "insmod" && args.size() > 1) {
+    if (subcmd == "insmod" && args.size() > 1) {
         return debug_insmod(args[1], std::vector<std::string>(args.begin() + 2, args.end()));
     } else if (subcmd == "version") {
         printf("Kernel Version: %d\n", get_version());
         return 0;
-    } else if (subcmd == "su") {
-        const bool global_mnt = args.size() > 1 && args[1] == "-g";
-        return grant_root_shell(global_mnt);
     } else if (subcmd == "mark" && args.size() > 1) {
         return debug_mark(std::vector<std::string>(args.begin() + 1, args.end()));
-    } else if (subcmd == "sulogd") {
-        return ensure_sulogd_running();
     }
 
     printf("Unknown debug subcommand: %s\n", subcmd.c_str());
@@ -342,107 +316,17 @@ int cmd_insmod(const std::vector<std::string>& args) {
     return debug_insmod(args[0], std::vector<std::string>(args.begin() + 1, args.end()));
 }
 
-int cmd_umount(const std::vector<std::string>& args) {
-    if (args.empty()) {
-        printf("USAGE: ksud umount <SUBCOMMAND>\n\n");
-        printf("SUBCOMMANDS:\n");
-        printf("  add <MNT> [-f|--flags <N>]  Add mount point (flags default: 0)\n");
-        printf("  del <MNT>                   Delete mount point (alias: remove)\n");
-        printf("  list                        List all mount points\n");
-        printf("  save                        Save kernel list to config\n");
-        printf("  apply                       Apply config to kernel\n");
-        printf("  clear-custom                Clear custom paths from kernel and config\n");
-        return 1;
-    }
-
-    const std::string& subcmd = args[0];
-
-    if (subcmd == "add") {
-        std::string path;
-        uint32_t flags = 0;
-        for (size_t i = 1; i < args.size(); ++i) {
-            const std::string& a = args[i];
-            if ((a == "-f" || a == "--flags") && i + 1 < args.size()) {
-                if (!parse_uint32(args[++i], &flags)) {
-                    printf("Invalid flags value: %s\n", args[i].c_str());
-                    return 1;
-                }
-            } else if (path.empty()) {
-                path = a;
-            } else {
-                printf("Unexpected argument: %s\n", a.c_str());
-                return 1;
-            }
-        }
-        if (path.empty()) {
-            printf("USAGE: ksud umount add <MNT> [-f|--flags <N>]\n");
-            return 1;
-        }
-        return umount_list_add(path, flags) < 0 ? 1 : 0;
-    } else if ((subcmd == "del" || subcmd == "remove") && args.size() > 1) {
-        return umount_del_entry(args[1]);
-    } else if (subcmd == "list") {
-        auto list = umount_list_list();
-        if (list) {
-            printf("%s", list->c_str());
-        }
-        return 0;
-    } else if (subcmd == "save") {
-        return umount_save_config();
-    } else if (subcmd == "apply") {
-        return umount_apply_config();
-    } else if (subcmd == "clear-custom") {
-        return umount_clear_config();
-    }
-
-    printf("Unknown umount subcommand: %s\n", subcmd.c_str());
-    return 1;
-}
-
 int cmd_kernel(const std::vector<std::string>& args) {
     if (args.empty()) {
         printf("USAGE: ksud kernel <SUBCOMMAND>\n\n");
         printf("SUBCOMMANDS:\n");
-        printf("  nuke-ext4-sysfs <MNT>  Nuke ext4 sysfs\n");
-        printf("  umount <add|del|wipe>  Manage umount list\n");
         printf("  notify-module-mounted  Notify module mounted\n");
         return 1;
     }
 
     const std::string& subcmd = args[0];
 
-    if (subcmd == "nuke-ext4-sysfs" && args.size() > 1) {
-        return nuke_ext4_sysfs(args[1]);
-    } else if (subcmd == "umount" && args.size() > 1) {
-        const std::string& op = args[1];
-        if (op == "add" && args.size() > 2) {
-            std::string path;
-            uint32_t flags = 0;
-            for (size_t i = 2; i < args.size(); ++i) {
-                const std::string& a = args[i];
-                if ((a == "-f" || a == "--flags") && i + 1 < args.size()) {
-                    if (!parse_uint32(args[++i], &flags)) {
-                        printf("Invalid flags value: %s\n", args[i].c_str());
-                        return 1;
-                    }
-                } else if (path.empty()) {
-                    path = a;
-                } else {
-                    printf("Unexpected argument: %s\n", a.c_str());
-                    return 1;
-                }
-            }
-            if (path.empty()) {
-                printf("USAGE: ksud kernel umount add <MNT> [-f|--flags <N>]\n");
-                return 1;
-            }
-            return umount_list_add(path, flags);
-        } else if (op == "del" && args.size() > 2) {
-            return umount_list_del(args[2]);
-        } else if (op == "wipe") {
-            return umount_list_wipe();
-        }
-    } else if (subcmd == "notify-module-mounted") {
+    if (subcmd == "notify-module-mounted") {
         report_module_mounted();
         return 0;
     }
@@ -472,39 +356,6 @@ int cmd_sepolicy(const std::vector<std::string>& args) {
     }
 
     printf("Unknown sepolicy subcommand: %s\n", subcmd.c_str());
-    return 1;
-}
-
-int cmd_profile(const std::vector<std::string>& args) {
-    if (args.empty()) {
-        printf("USAGE: ksud profile <SUBCOMMAND>\n\n");
-        printf("SUBCOMMANDS:\n");
-        printf("  get-sepolicy <PKG>       Get SELinux policy\n");
-        printf("  set-sepolicy <PKG> <POL> Set SELinux policy\n");
-        printf("  get-template <ID>        Get template\n");
-        printf("  set-template <ID> <TPL>  Set template\n");
-        printf("  delete-template <ID>     Delete template\n");
-        printf("  list-templates           List templates\n");
-        return 1;
-    }
-
-    const std::string& subcmd = args[0];
-
-    if (subcmd == "get-sepolicy" && args.size() > 1) {
-        return profile_get_sepolicy(args[1]);
-    } else if (subcmd == "set-sepolicy" && args.size() > 2) {
-        return profile_set_sepolicy(args[1], args[2]);
-    } else if (subcmd == "get-template" && args.size() > 1) {
-        return profile_get_template(args[1]);
-    } else if (subcmd == "set-template" && args.size() > 2) {
-        return profile_set_template(args[1], args[2]);
-    } else if (subcmd == "delete-template" && args.size() > 1) {
-        return profile_delete_template(args[1]);
-    } else if (subcmd == "list-templates") {
-        return profile_list_templates();
-    }
-
-    printf("Unknown profile subcommand: %s\n", subcmd.c_str());
     return 1;
 }
 
@@ -760,48 +611,20 @@ int cmd_flash_new(const std::vector<std::string>& args) {
 }
 
 int cmd_late_load(const std::vector<std::string>& args) {
-    bool post_magica = false;
     bool allow_shell = false;
-    std::optional<uint16_t> magica_port;
 
     for (size_t i = 0; i < args.size(); ++i) {
-        if (args[i] == "--post-magica") {
-            post_magica = true;
-            continue;
-        }
-
         if (args[i] == "--allow-shell") {
             allow_shell = true;
             continue;
         }
 
-        if (args[i] == "--magica") {
-            uint16_t port = 5555;
-            if (i + 1 < args.size() && !args[i + 1].empty() && args[i + 1].rfind("--", 0) != 0) {
-                char* end = nullptr;
-                errno = 0;
-                long parsed_long = std::strtol(args[++i].c_str(), &end, 10);
-                if (end == args[i].c_str() || *end != '\0' || errno == ERANGE || parsed_long <= 0 ||
-                    parsed_long > 65535) {
-                    printf("Invalid magica port: %s\n", args[i].c_str());
-                    return 1;
-                }
-                port = static_cast<uint16_t>(parsed_long);
-            }
-            magica_port = port;
-            continue;
-        }
-
         printf("Unknown late-load option: %s\n", args[i].c_str());
-        printf("Usage: ksud late-load [--magica [PORT]] [--post-magica] [--allow-shell]\n");
+        printf("Usage: ksud late-load [--allow-shell]\n");
         return 1;
     }
 
-    if (magica_port.has_value()) {
-        return magica::run(*magica_port, allow_shell);
-    }
-
-    return late_load::run(post_magica, allow_shell);
+    return late_load::run(false, allow_shell);
 }
 
 }  // namespace
@@ -809,39 +632,6 @@ int cmd_late_load(const std::vector<std::string>& args) {
 int cli_run(int argc, char** argv) {
     // Initialize logging
     log_init("KernelSU");
-
-    // Check if invoked as su or sh
-    const std::string arg0 = argv[0];
-    const size_t last_slash = arg0.rfind('/');
-    const std::string basename =
-        (last_slash != std::string::npos) ? arg0.substr(last_slash + 1) : arg0;
-
-    if (basename == "su") {
-        return su_main(argc, argv);
-    }
-
-    // If invoked as "sh", forward to busybox sh with all arguments
-    // This handles the case where /system/bin/sh is a hardlink to ksud
-    if (basename == "sh") {
-        // Use busybox to handle shell operations
-        const char* busybox = "/data/adb/ksu/bin/busybox";
-
-        // Build argv for busybox: busybox sh [original args...]
-        std::vector<char*> new_argv;
-        new_argv.push_back(const_cast<char*>("sh"));
-        for (int i = 1; i < argc; i++) {
-            new_argv.push_back(argv[i]);
-        }
-        new_argv.push_back(nullptr);
-
-        // Set ASH_STANDALONE to make busybox ash work properly
-        setenv("ASH_STANDALONE", "1", 1);
-
-        execv(busybox, new_argv.data());
-        // If busybox fails, try system sh as fallback
-        execv("/system/bin/toybox", new_argv.data());
-        _exit(127);
-    }
 
     if (argc < 2) {
         print_usage();
@@ -862,9 +652,6 @@ int cli_run(int argc, char** argv) {
         return 0;
     } else if (cmd == "version" || cmd == "-v" || cmd == "-V" ||
                cmd == "--version") {
-        // -V is the conventional version flag (upstream's clap-based ksud
-        // accepts it); some root-gating apps probe `ksud -V` and treat its
-        // absence as "no/incompatible root". Alias it to `version`.
         print_version();
         return 0;
     } else if (cmd == "insmod") {
@@ -902,44 +689,20 @@ int cli_run(int argc, char** argv) {
         return uninstall(magiskboot);
     } else if (cmd == "sepolicy") {
         return cmd_sepolicy(args);
-    } else if (cmd == "profile") {
-        return cmd_profile(args);
     } else if (cmd == "feature") {
         return cmd_feature(args);
-    } else if (cmd == "dynamic") {
-        return cmd_dynamic_manager(args);
     } else if (cmd == "initrc") {
         return cmd_initrc(args);
-    } else if (cmd == "sulogd") {
-        return run_sulogd();
-    } else if (cmd == "msud") {
-        return run_msud();
-    } else if (cmd == "magisk-compat") {
-        if (!args.empty() && args[0] == "apply") {
-            return apply_magisk_compat_now();
-        }
-        if (!args.empty() && args[0] == "mount") {
-            return mount_su_now();
-        }
-        if (!args.empty() && args[0] == "umount") {
-            return umount_su_now();
-        }
-        LOGE("Usage: ksud magisk-compat apply|mount|umount");
-        return 1;
     } else if (cmd == "boot-patch") {
         return boot_patch(args);
     } else if (cmd == "boot-restore") {
         return boot_restore(args);
     } else if (cmd == "boot-info") {
         return cmd_boot_info(args);
-    } else if (cmd == "umount") {
-        return cmd_umount(args);
     } else if (cmd == "kernel") {
         return cmd_kernel(args);
     } else if (cmd == "debug") {
         return cmd_debug(args);
-    } else if (cmd == "hymo") {
-        return hymo::cmd_hymo(args);
     } else if (cmd == "flash") {
         return cmd_flash_new(args);
     }

@@ -3,12 +3,11 @@
 #include <cstdint>
 #include <string>
 
-// Kernel uapi headers provide feature IDs, event constants,
-// mark/umount operation constants, and ioctl numbers.
+// Kernel uapi headers provide feature IDs, event constants, and ioctl numbers.
 extern "C" {
 #include "uapi/feature.h"
 }
-#include "uapi/supercall.h"  // EVENT_*, KSU_MARK_*, KSU_UMOUNT_* are macros
+#include "uapi/supercall.h"  // EVENT_*, KSU_MARK_* are macros
 
 namespace ksud {
 
@@ -30,10 +29,6 @@ constexpr const char* BUSYBOX_PATH = "/data/adb/ksu/bin/busybox";
 constexpr const char* RESETPROP_PATH = "/data/adb/ksu/bin/resetprop";
 constexpr const char* BOOTCTL_PATH = "/data/adb/ksu/bin/bootctl";
 
-constexpr const char* PROFILE_DIR = "/data/adb/ksu/profile/";
-constexpr const char* PROFILE_SELINUX_DIR = "/data/adb/ksu/profile/selinux/";
-constexpr const char* PROFILE_TEMPLATE_DIR = "/data/adb/ksu/profile/templates/";
-
 constexpr const char* KSURC_PATH = "/data/adb/ksu/.ksurc";
 constexpr const char* DAEMON_PATH = "/data/adb/ksud";
 constexpr const char* MAGISKBOOT_PATH = "/data/adb/ksu/bin/magiskboot";
@@ -47,7 +42,6 @@ constexpr const char* YUKIZYGISK_DIR = "/data/adb/ksu/lib/yukizygisk/";
 constexpr const char* ZLOADER_PATH = "/data/adb/ksu/lib/yukizygisk/libzloader.so";
 constexpr const char* ZCORE_PATH = "/data/adb/ksu/lib/yukizygisk/libzygisk.so";
 constexpr const char* DAEMON_LINK_PATH = "/data/adb/ksu/bin/ksud";
-constexpr const char* SULOGD_LOCK_PATH = "/data/adb/ksu/sulogd.lock";
 
 constexpr const char* MODULE_DIR = "/data/adb/modules/";
 constexpr const char* MODULE_UPDATE_DIR = "/data/adb/modules_update/";
@@ -78,9 +72,8 @@ constexpr const char* METAMODULE_METAUNINSTALL_SCRIPT = "metauninstall.sh";
 constexpr const char* KSU_BACKUP_DIR = "/data/adb/ksu/";
 constexpr const char* KSU_BACKUP_FILE_PREFIX = "ksu_backup_";
 constexpr const char* BACKUP_FILENAME = "stock_image.sha1";
-constexpr const char* UMOUNT_CONFIG_PATH = "/data/adb/ksu/.umount";
 
-// No need to redefine FeatureId, EVENT_*, KSU_MARK_*, UMOUNT_* —
+// No need to redefine FeatureId, EVENT_*, KSU_MARK_* —
 // they are all provided by uapi/feature.h and uapi/supercall.h.
 // C++ callers can use the C enum ksu_feature_id values directly or
 // via the convenience wrappers in core/ksucalls.hpp.
