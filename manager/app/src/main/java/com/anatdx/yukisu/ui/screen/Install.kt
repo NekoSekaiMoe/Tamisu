@@ -179,10 +179,7 @@ fun InstallScreen(
                 lkm = lkmSelection,
                 ota = isOta,
                 partition = partitionSelection,
-                allowShell = allowShell,
                 enableAdb = enableAdb,
-                superKey = effectiveSuperKey.ifBlank { null },
-                signatureBypass = signatureBypass,
                 kasumiInCpio = kasumiInCpio,
                 kasumiLkmUri = kasumiLkmUri
             )

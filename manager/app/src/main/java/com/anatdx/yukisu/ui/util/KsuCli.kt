@@ -573,10 +573,7 @@ fun installBoot(
     lkm: LkmSelection,
     ota: Boolean,
     partition: String?,
-    allowShell: Boolean = false,
     enableAdb: Boolean = false,
-    superKey: String? = null,
-    signatureBypass: Boolean = false,
     kasumiInCpio: Boolean = false,  // Experimental: embed Kasumi LKM in cpio, load after KernelSU
     kasumiLkmUri: Uri? = null,      // Custom Kasumi LKM file; when null, use embedded
     onFinish: (Boolean, Int) -> Unit,
@@ -622,15 +619,6 @@ fun installBoot(
         cmd += " -u"
     }
 
-    // Add superkey if specified
-    if (!superKey.isNullOrBlank()) {
-        cmd += " --superkey \"$superKey\""
-        // Add signature bypass flag if enabled
-        if (signatureBypass) {
-            cmd += " --signature-bypass"
-        }
-    }
-
     var lkmFile: File? = null
     when (lkm) {
         is LkmSelection.LkmUri -> {
@@ -661,10 +649,6 @@ fun installBoot(
 
     partition?.let { part ->
         cmd += " --partition $part"
-    }
-
-    if (allowShell) {
-        cmd += " --allow-shell"
     }
 
     if (enableAdb) {

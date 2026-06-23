@@ -21,22 +21,9 @@
 #include <regex>
 #include <vector>
 
-#include <mbedtls/sha256.h>
-
 namespace fs = std::filesystem;
 
 namespace ksud {
-
-// SuperKey magic marker (must match kernel's SUPERKEY_MAGIC)
-constexpr uint64_t SUPERKEY_MAGIC = 0x5355504552;  // "SUPER" in hex
-
-// SuperKey verification mode definitions (must match kernel)
-// 0: signature-only (no superkey)      - do not register prctl kprobe
-// 1: signature + superkey (default)    - register prctl kprobe, require both
-// 2: superkey-only (signature bypass)  - register prctl kprobe, bypass signature
-constexpr uint64_t SUPERKEY_VERIFICATION_SIGNATURE_ONLY = 0;
-constexpr uint64_t SUPERKEY_VERIFICATION_SIGN_AND_KEY = 1;
-constexpr uint64_t SUPERKEY_VERIFICATION_KEY_ONLY = 2;
 
 // Arch suffix for Kasumi LKM asset name (must match lkm.cpp)
 #if defined(__aarch64__)
@@ -72,117 +59,6 @@ bool copy_embedded_kasumi_asset(const std::string& kmi, const std::string& dest_
 
 // LZ4 legacy ramdisk magic (reject before cpio to avoid huge cache/hang).
 constexpr std::array<unsigned char, 4> LZ4_LEGACY_MAGIC = {0x02, 0x21, 0x4c, 0x18};
-
-constexpr size_t SUPERKEY_SALT_LEN = 16;
-
-// SHA-256(salt || key), truncated to first 8 bytes (little-endian u64). Must
-// match the kernel-side hash_superkey() in kernel/superkey.c.
-uint64_t hash_superkey(const std::array<uint8_t, SUPERKEY_SALT_LEN>& salt, const std::string& key) {
-    unsigned char digest[32] = {0};
-    mbedtls_sha256_context ctx;
-    mbedtls_sha256_init(&ctx);
-    mbedtls_sha256_starts(&ctx, 0);
-    mbedtls_sha256_update(&ctx, salt.data(), salt.size());
-    mbedtls_sha256_update(&ctx, reinterpret_cast<const unsigned char*>(key.data()), key.size());
-    mbedtls_sha256_finish(&ctx, digest);
-    mbedtls_sha256_free(&ctx);
-
-    uint64_t out = 0;
-    for (size_t i = 0; i < 8; ++i) {
-        out |= static_cast<uint64_t>(digest[i]) << (i * 8);
-    }
-    return out;
-}
-
-bool fill_random(uint8_t* buf, size_t len) {
-    std::ifstream urandom("/dev/urandom", std::ios::in | std::ios::binary);
-    if (!urandom)
-        return false;
-    urandom.read(reinterpret_cast<char*>(buf), static_cast<std::streamsize>(len));
-    return static_cast<size_t>(urandom.gcount()) == len;
-}
-
-// Inject superkey salt+hash and verification mode into LKM file.
-// Layout in the LKM .data section (matches struct superkey_data in kernel):
-//   [+0]  u64 magic   (SUPERKEY_MAGIC)
-//   [+8]  u8  salt[16]
-//   [+24] u64 hash    (first 8 bytes of SHA-256(salt || key))
-//   [+32] u64 flags   (verification mode)
-// The verification mode is always injected, even when superkey is empty.
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters) path then superkey
-bool inject_superkey_to_lkm(const std::string& lkm_path, const std::string& superkey,
-                            bool signature_bypass) {
-    std::array<uint8_t, SUPERKEY_SALT_LEN> salt{};
-    if (!superkey.empty()) {
-        if (!fill_random(salt.data(), salt.size())) {
-            LOGE("Failed to read /dev/urandom for SuperKey salt");
-            return false;
-        }
-    }
-    uint64_t hash = superkey.empty() ? 0 : hash_superkey(salt, superkey);
-
-    uint64_t flags;
-    if (superkey.empty()) {
-        // User did not configure a SuperKey: pure signature mode.
-        flags = SUPERKEY_VERIFICATION_SIGNATURE_ONLY;
-    } else {
-        // SuperKey is set; choose between "sign+key" and "key only".
-        flags =
-            signature_bypass ? SUPERKEY_VERIFICATION_KEY_ONLY : SUPERKEY_VERIFICATION_SIGN_AND_KEY;
-    }
-
-    printf("- SuperKey hash: 0x%016llx\n", (unsigned long long)hash);
-    const char* mode_str;
-    if (superkey.empty()) {
-        mode_str = "signature-only";
-    } else {
-        mode_str = signature_bypass ? "key-only" : "sign+key";
-    }
-    printf("- Verification mode: %llu (%s)\n", (unsigned long long)flags, mode_str);
-
-    std::fstream file(lkm_path, std::ios::in | std::ios::out | std::ios::binary);
-    if (!file) {
-        LOGE("Failed to open LKM file: %s", lkm_path.c_str());
-        return false;
-    }
-
-    // Read entire file
-    file.seekg(0, std::ios::end);
-    const size_t size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    std::vector<uint8_t> content(size);
-    file.read(reinterpret_cast<char*>(content.data()), size);
-
-    // Search for SUPERKEY_MAGIC in the binary
-    std::array<uint8_t, 8> magic_bytes{};
-    memcpy(magic_bytes.data(), &SUPERKEY_MAGIC, magic_bytes.size());
-
-    constexpr size_t SUPERKEY_BLOCK_LEN = 40;  // magic(8) + salt(16) + hash(8) + flags(8)
-    bool found = false;
-    for (size_t i = 0; i + SUPERKEY_BLOCK_LEN <= size; i++) {
-        if (memcmp(&content[i], magic_bytes.data(), magic_bytes.size()) == 0) {
-            memcpy(&content[i + 8], salt.data(), salt.size());
-            memcpy(&content[i + 24], &hash, sizeof(hash));
-            memcpy(&content[i + 32], &flags, sizeof(flags));
-            found = true;
-            printf("- Injected SuperKey data at offset 0x%zx (40 bytes)\n", i);
-            break;
-        }
-    }
-
-    if (!found) {
-        printf("- Warning: SUPERKEY_MAGIC not found in LKM, SuperKey may not work\n");
-        printf("- Make sure the kernel module is compiled with SuperKey support\n");
-    } else {
-        // Write back the patched content
-        file.seekp(0, std::ios::beg);
-        file.write(reinterpret_cast<char*>(content.data()), size);
-        file.sync();
-    }
-
-    return true;
-}
 
 // Execute magiskboot cpio command (runs in workdir for relative path resolution).
 bool do_cpio_cmd(const std::string& magiskboot, const std::string& workdir,
@@ -220,9 +96,19 @@ bool is_magisk_patched(const std::string& magiskboot, const std::string& workdir
     return has_magisk_init.exit_code == 0 || has_overlay.exit_code == 0;
 }
 
-// Check if boot image is patched by KernelSU
+// Check if boot image is already patched by Tamisu/KernelSU.
+// Detects both the new modprobe layout (tamisu.ko under /lib/modules/) and
+// the legacy flat kernelsu.ko layout.
 bool is_kernelsu_patched(const std::string& magiskboot, const std::string& workdir,
                          const std::string& cpio_path) {
+    // New layout: tamisu.ko anywhere in /lib/modules/
+    auto tamisu_result = exec_command_magiskboot(
+        magiskboot, {"cpio", cpio_path, "exists lib/modules"}, workdir);
+    if (tamisu_result.exit_code == 0) {
+        // Deeper check would need a directory listing; the dir itself is a strong signal.
+        return true;
+    }
+    // Legacy: flat kernelsu.ko at ramdisk root
     auto result =
         exec_command_magiskboot(magiskboot, {"cpio", cpio_path, "exists kernelsu.ko"}, workdir);
     return result.exit_code == 0;
@@ -405,9 +291,6 @@ struct BootPatchArgs {
     std::string boot_image;         // -b, --boot
     std::string kernel;             // -k, --kernel
     std::string module;             // -m, --module (LKM path)
-    std::string init;               // -i, --init
-    std::string superkey;           // -s, --superkey
-    bool signature_bypass = false;  // --signature-bypass
     bool ota = false;               // -u, --ota
     bool flash = false;             // -f, --flash
     std::string out;                // -o, --out
@@ -416,8 +299,6 @@ struct BootPatchArgs {
     std::string kmi;                // --kmi
     std::string partition;          // --partition
     std::string out_name;           // --out-name
-    bool allow_shell = false;       // --allow-shell
-    bool no_custom_rc = false;      // --no-custom-rc
     bool enable_adbd = false;       // --enable-adbd
     std::string adb_debug_prop;     // --adb-debug-prop
     bool kasumi_in_cpio =
@@ -442,14 +323,6 @@ BootPatchArgs parse_boot_patch_args(const std::vector<std::string>& args) {
         } else if (arg == "-m" || arg == "--module") {
             if (i + 1 < args.size())
                 result.module = args[++i];
-        } else if (arg == "-i" || arg == "--init") {
-            if (i + 1 < args.size())
-                result.init = args[++i];
-        } else if (arg == "-s" || arg == "--superkey") {
-            if (i + 1 < args.size())
-                result.superkey = args[++i];
-        } else if (arg == "--signature-bypass") {
-            result.signature_bypass = true;
         } else if (arg == "-u" || arg == "--ota") {
             result.ota = true;
         } else if (arg == "-f" || arg == "--flash") {
@@ -472,10 +345,6 @@ BootPatchArgs parse_boot_patch_args(const std::vector<std::string>& args) {
         } else if (arg == "--out-name") {
             if (i + 1 < args.size())
                 result.out_name = args[++i];
-        } else if (arg == "--allow-shell") {
-            result.allow_shell = true;
-        } else if (arg == "--no-custom-rc") {
-            result.no_custom_rc = true;
         } else if (arg == "--enable-adbd") {
             result.enable_adbd = true;
         } else if (arg == "--adb-debug-prop") {
@@ -694,35 +563,23 @@ int boot_patch_impl(const std::vector<std::string>& args) {
         }
     }
 
-    // Always inject verification mode (and SuperKey hash if set).
-    // Pure signature mode (no superkey) still needs flags=0 to be explicitly written,
-    // otherwise the LKM may have stale/wrong values and signature verification fails.
-    if (!parsed.superkey.empty()) {
-        printf("- Injecting SuperKey into LKM\n");
-    } else if (parsed.signature_bypass) {
-        printf("- Warning: signature_bypass requires superkey to be set, ignoring\n");
-    }
-    inject_superkey_to_lkm(kmod_file, parsed.superkey, parsed.signature_bypass);
-
-    // Prepare init only if the user supplied --init (no built-in ksuinit anymore:
-    // the early-init PID-1 boot path was removed; the default flow is late-load
-    // via `ksud late-load`). Without an explicit init payload we skip ramdisk
-    // /init injection entirely.
-    const std::string init_file = workdir + "/init";
-    bool have_init = false;
-    if (!parsed.init.empty()) {
-        std::ifstream src(parsed.init, std::ios::binary);  // NOLINT(misc-const-correctness)
-        std::ofstream dst(init_file, std::ios::binary);
-        if (!src || !dst) {
-            LOGE("Failed to copy init from %s", parsed.init.c_str());
-            cleanup();
-            return 1;
+    // Read the real kernel release (e.g. "6.6.66-android15-8-g29d86c5fc9dd").
+    // This is the directory name AOSP first_stage init's LoadKernelModules() looks for under
+    // /lib/modules/. boot-patch runs on the target device, so /proc/sys/kernel/osrelease gives
+    // the correct release of the kernel we are patching for.
+    std::string kernel_release = read_kernel_release_from_sysfs();
+    if (kernel_release.empty()) {
+        struct utsname uts{};
+        if (uname(&uts) == 0) {
+            kernel_release = uts.release;
         }
-        dst << src.rdbuf();
-        chmod(init_file.c_str(), 0755);
-        have_init = true;
-        printf("- Using user-supplied init: %s\n", parsed.init.c_str());
     }
+    if (kernel_release.empty()) {
+        LOGE("Failed to determine kernel release for modprobe directory layout");
+        cleanup();
+        return 1;
+    }
+    printf("- Kernel release: %s\n", kernel_release.c_str());
 
     // Unpack boot image (must run in workdir so output files go there)
     printf("- Unpacking boot image\n");
@@ -830,70 +687,83 @@ int boot_patch_impl(const std::vector<std::string>& args) {
         return 1;
     }
 
-    printf("- Adding KernelSU LKM\n");
+    printf("- Adding tamisu.ko via AOSP first_stage modprobe layout\n");
     const bool already_patched = is_kernelsu_patched(magiskboot, workdir, ramdisk);
+    (void)already_patched;
 
-    if (!already_patched) {
-        // Backup init if it exists AND we are going to replace it
-        if (have_init) {
-            auto init_exists =
-                exec_command_magiskboot(magiskboot, {"cpio", ramdisk, "exists init"}, workdir);
-            if (init_exists.exit_code == 0) {
-                do_cpio_cmd(magiskboot, workdir, ramdisk, "mv init init.real");
-            }
-        }
-    }
+    // AOSP first_stage init's LoadKernelModules() scans /lib/modules/<uname -r>/
+    // and reads modules.load to decide which .ko to insmod. We inject tamisu.ko
+    // there so the kernel module is loaded by init itself (before SELinux setup,
+    // long before zygote), without needing a custom /init replacement.
+    const std::string mod_dir = "lib/modules/" + kernel_release;
+    const std::string mod_dir_local = workdir + "/modroot/lib/modules/" + kernel_release;
 
-    // Add init (only when user supplied --init) and kernelsu.ko
-    if (have_init) {
-        if (!do_cpio_cmd(magiskboot, workdir, ramdisk, "add 0755 init init")) {
-            cleanup();
-            return 1;
-        }
-    }
-    if (!do_cpio_cmd(magiskboot, workdir, ramdisk, "add 0755 kernelsu.ko kernelsu.ko")) {
+    // Build the modprobe directory tree on disk so we can add each file into the cpio.
+    std::error_code ec;
+    fs::create_directories(mod_dir_local, ec);
+    if (ec) {
+        LOGE("Failed to create %s: %s", mod_dir_local.c_str(), ec.message().c_str());
         cleanup();
         return 1;
     }
 
-    std::vector<std::string> ksu_config;
-    if (parsed.allow_shell) {
-        printf("- Adding allow shell config\n");
-        ksu_config.emplace_back("allow_shell=1");
-    }
-    if (parsed.no_custom_rc) {
-        printf("- Adding no custom rc config\n");
-        ksu_config.emplace_back("norc=1");
-    }
-
-    if (!ksu_config.empty()) {
-        std::ofstream config_file(workdir + "/ksu_config", std::ios::binary | std::ios::trunc);
-        if (!config_file.is_open()) {
-            LOGE("Failed to create ksu_config");
+    // tamisu.ko  (the LKM was prepared above as kmod_file)
+    {
+        const std::string dst_ko = mod_dir_local + "/tamisu.ko";
+        std::ifstream src(kmod_file, std::ios::binary);
+        std::ofstream dst(dst_ko, std::ios::binary);
+        if (!src || !dst) {
+            LOGE("Failed to stage tamisu.ko into modprobe dir");
             cleanup();
             return 1;
         }
-        for (size_t i = 0; i < ksu_config.size(); ++i) {
-            if (i != 0) {
-                config_file << ' ';
-            }
-            config_file << ksu_config[i];
-        }
-        config_file.close();
-        if (!do_cpio_cmd(magiskboot, workdir, ramdisk, "add 0644 ksu_config ksu_config")) {
+        dst << src.rdbuf();
+    }
+
+    // modules.load  — one module per line; libmodprobe reads this list
+    {
+        std::ofstream f(mod_dir_local + "/modules.load");
+        if (!f) {
+            LOGE("Failed to create modules.load");
             cleanup();
             return 1;
         }
-    } else {
-        do_cpio_cmd(magiskboot, workdir, ramdisk, "rm ksu_config");
+        f << "tamisu.ko\n";
     }
 
-    auto allow_shell_exists =
-        exec_command_magiskboot(magiskboot, {"cpio", ramdisk, "exists ksu_allow_shell"}, workdir);
-    if (allow_shell_exists.exit_code == 0) {
-        printf("- Removing legacy allow shell config\n");
-        do_cpio_cmd(magiskboot, workdir, ramdisk, "rm ksu_allow_shell");
+    // modules.dep  — libmodprobe needs a dependency entry for every module it loads.
+    // tamisu.ko has no dependencies, so the entry is just "tamisu.ko:".
+    {
+        std::ofstream f(mod_dir_local + "/modules.dep");
+        if (!f) {
+            LOGE("Failed to create modules.dep");
+            cleanup();
+            return 1;
+        }
+        f << "tamisu.ko:\n";
     }
+
+    // Create the cpio directory structure and add each file.
+    // magiskboot cpio needs intermediate dirs created explicitly.
+    for (const auto& sub : {"lib", "lib/modules", mod_dir}) {
+        if (!do_cpio_cmd(magiskboot, workdir, ramdisk, "mkdir 0755 " + sub)) {
+            LOGE("Failed to mkdir %s in ramdisk", sub.c_str());
+            cleanup();
+            return 1;
+        }
+    }
+    for (const auto& name : {"tamisu.ko", "modules.load", "modules.dep"}) {
+        const std::string local = mod_dir_local + "/" + name;
+        const std::string cpio_path = mod_dir + "/" + name;
+        if (!do_cpio_cmd(magiskboot, workdir, ramdisk,
+                         std::string("add 0644 ") + local + " " + cpio_path)) {
+            LOGE("Failed to add %s to ramdisk", cpio_path.c_str());
+            cleanup();
+            return 1;
+        }
+    }
+    printf("- Injected tamisu.ko into /lib/modules/%s/ (modprobe layout)\n",
+           kernel_release.c_str());
 
     if (parsed.enable_adbd || !parsed.adb_debug_prop.empty()) {
         printf("- Adding adb debug props\n");
@@ -1145,6 +1015,15 @@ int boot_restore(const std::vector<std::string>& args) {
     // Get KMI for partition detection
     const std::string kmi = get_current_kmi();
 
+    // Kernel release for removing the modprobe layout injected by boot-patch.
+    std::string kernel_release = read_kernel_release_from_sysfs();
+    if (kernel_release.empty()) {
+        struct utsname uts{};
+        if (uname(&uts) == 0) {
+            kernel_release = uts.release;
+        }
+    }
+
     // Determine boot image path
     std::string bootimage;
     std::string bootdevice;
@@ -1265,10 +1144,20 @@ int boot_restore(const std::vector<std::string>& args) {
         printf("- Backup info is absent!\n");
     }
 
-    // If no backup, manually remove KernelSU
+    // If no backup, manually remove KernelSU/Tamisu
     if (!from_backup) {
-        // Remove kernelsu.ko
+        // Remove legacy flat kernelsu.ko
         do_cpio_cmd(magiskboot, workdir, ramdisk, "rm kernelsu.ko");
+
+        // Remove modprobe layout: rm the /lib/modules tree (tamisu.ko lives inside).
+        // magiskboot cpio 'rm' on a directory removes recursively on some builds,
+        // but to be safe we also rm the known leaf files first.
+        for (const auto& leaf : {"tamisu.ko", "modules.load", "modules.dep"}) {
+            do_cpio_cmd(magiskboot, workdir, ramdisk,
+                        "rm lib/modules/" + kernel_release + "/" + leaf);
+        }
+        do_cpio_cmd(magiskboot, workdir, ramdisk, "rm lib/modules/" + kernel_release);
+        do_cpio_cmd(magiskboot, workdir, ramdisk, "rm lib/modules");
 
         // Remove kasumi.ko if present (experimental cpio embed)
         auto kasumi_exists =
