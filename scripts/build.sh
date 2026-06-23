@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# YukiSU 本地构建: DDK LKM -> ksuinit -> ksud -> Manager App
+# YukiSU 本地构建: DDK LKM -> ksud -> Manager App
 # 签名环境变量: YUKISU_KEYSTORE, YUKISU_KEYSTORE_PASSWORD, YUKISU_KEY_ALIAS, YUKISU_KEY_PASSWORD
 # 用法: ./scripts/build.sh [-k KMI] [-a ABI] [--skip-lkm] [--skip-kasumi] [--kasumi-dir PATH] [-i] [-h]
 
@@ -116,7 +116,7 @@ echo "KMI: $KMI | ABI: $ABI | NDK: $ANDROID_NDK_HOME"
 echo ""
 
 if [[ "$SKIP_LKM" != "true" ]]; then
-	echo ">>> [1/5] 构建 KernelSU LKM (DDK) ..."
+	echo ">>> [1/4] 构建 KernelSU LKM (DDK) ..."
 	mkdir -p "$OUT_DIR"
 	docker run --rm -v "$REPO_ROOT:/src" -w /src \
 		"ghcr.io/ylarod/ddk-min:${KMI}-${DDK_RELEASE}" \
@@ -126,31 +126,15 @@ if [[ "$SKIP_LKM" != "true" ]]; then
 	             (llvm-strip -d /src/out/${KMI}_kernelsu.ko 2>/dev/null || true)"
 	echo "    LKM 已输出: $OUT_DIR/${KMI}_kernelsu.ko"
 else
-	echo ">>> [1/5] 跳过 LKM 构建"
+	echo ">>> [1/4] 跳过 LKM 构建"
 fi
 
-echo ">>> [2/5] 构建 ksuinit ..."
-KSUINIT_DIR="$REPO_ROOT/userspace/ksuinit"
-rm -rf "$KSUINIT_DIR/build"
-mkdir -p "$KSUINIT_DIR/build"
-cd "$KSUINIT_DIR/build"
+echo ">>> [2/4] 配置工具链 ..."
 
 export CC="$TOOLCHAIN/bin/${ANDROID_TARGET}-clang"
 export CXX="$TOOLCHAIN/bin/${ANDROID_TARGET}-clang++"
 export AR="$TOOLCHAIN/bin/llvm-ar"
 export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
-
-cmake .. \
-	-G Ninja \
-	-DCMAKE_SYSTEM_NAME=Android \
-	-DCMAKE_ANDROID_ARCH_ABI="$ABI" \
-	-DCMAKE_ANDROID_NDK="$ANDROID_NDK_HOME" \
-	-DCMAKE_C_COMPILER="$CC" \
-	-DCMAKE_CXX_COMPILER="$CXX" \
-	-DCMAKE_BUILD_TYPE=Release
-
-ninja
-echo "    ksuinit 已构建"
 
 case "$TARGET_ARCH" in
 aarch64) arch_suffix="_arm64" ;;
@@ -160,7 +144,7 @@ armv7) arch_suffix="_armv7" ;;
 esac
 
 if [[ "$SKIP_KASUMI" != "true" ]]; then
-	echo ">>> [2.5/5] 构建 Kasumi LKM (DDK) from $KASUMI_DIR ..."
+	echo ">>> [2.5/4] 构建 Kasumi LKM (DDK) from $KASUMI_DIR ..."
 	if [[ ! -f "$KASUMI_DIR/src/Makefile" ]]; then
 		echo "    错误: 在 $KASUMI_DIR 找不到 src/Makefile，请用 --kasumi-dir 指定正确路径"
 		exit 1
@@ -178,10 +162,10 @@ if [[ "$SKIP_KASUMI" != "true" ]]; then
 	rm -f "$KASUMI_DIR/.kasumi_built.ko"
 	echo "    Kasumi LKM 已输出: $KASUMI_OUT_DIR/${KMI}${arch_suffix}_kasumi_lkm.ko"
 else
-	echo ">>> [2.5/5] 跳过 Kasumi LKM 构建"
+	echo ">>> [2.5/4] 跳过 Kasumi LKM 构建"
 fi
 
-echo ">>> [3/5] 构建 ksud ..."
+echo ">>> [3/4] 构建 ksud ..."
 KSUD_ASSETS="$REPO_ROOT/userspace/ksud/assets"
 mkdir -p "$KSUD_ASSETS"
 mkdir -p "$OUT_DIR"
@@ -196,8 +180,6 @@ shopt -s nullglob 2>/dev/null || true
 for d in "$OUT_DIR"/*-kasumi-lkm; do
 	[[ -d "$d" ]] && cp "$d"/*"${arch_suffix}_kasumi_lkm.ko" "$KSUD_ASSETS/" 2>/dev/null || true
 done
-
-cp "$KSUINIT_DIR/build/ksuinit" "$KSUD_ASSETS/"
 
 # YukiZygisk payload (libzloader + libzygisk): standalone NDK libs,
 # staged into ksud assets so embed_assets embeds them; ksud then places them
@@ -249,12 +231,12 @@ cmake .. \
 	-DCMAKE_CXX_COMPILER="$CXX" \
 	-DCMAKE_BUILD_TYPE=Release
 
-# su, ksuinit and the .ko assets are all staged into assets/ above (before this
-# configure), so ksud just embeds whatever is there -- no in-tree su target.
+# The .ko assets are staged into assets/ above (before this
+# configure), so ksud just embeds whatever is there.
 ninja
 echo "    ksud 已构建 (含嵌入式 su)"
 
-echo ">>> [4/5] 构建 Manager App ..."
+echo ">>> [4/4] 构建 Manager App ..."
 MANAGER_DIR="$REPO_ROOT/manager"
 JNILIBS="$MANAGER_DIR/app/src/main/jniLibs/$ABI"
 mkdir -p "$JNILIBS"

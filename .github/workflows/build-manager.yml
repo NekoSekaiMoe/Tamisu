@@ -10,7 +10,6 @@ on:
       - '.github/workflows/build-kasumi-lkm.yml'
       - '.github/workflows/kasumi-lkm.yml'
       - '.github/workflows/ksud.yml'
-      - '.github/workflows/ksuinit.yml'
       - 'repack_apk.py'
       - 'manager/**'
       - 'kernel/**'
@@ -23,7 +22,6 @@ on:
       - '.github/workflows/build-kasumi-lkm.yml'
       - '.github/workflows/kasumi-lkm.yml'
       - '.github/workflows/ksud.yml'
-      - '.github/workflows/ksuinit.yml'
       - 'repack_apk.py'
       - 'manager/**'
       - 'kernel/**'
@@ -31,7 +29,7 @@ on:
   workflow_call:
     inputs:
       full_archs:
-        description: "Build extra ksud/ksuinit archs for release; Kasumi LKM is arm64-only in DDK CI"
+        description: "Build extra ksud archs for release; Kasumi LKM is arm64-only in DDK CI"
         required: false
         default: false
         type: boolean
@@ -76,17 +74,8 @@ jobs:
     with:
       full_archs: ${{ inputs.full_archs == true || github.event_name == 'pull_request' }}
 
-  build-ksuinit:
-    strategy:
-      matrix:
-        include: ${{ (inputs.full_archs == true || github.event_name == 'pull_request') && fromJSON('[{"target":"aarch64-linux-android"},{"target":"x86_64-linux-android"},{"target":"armv7-linux-androideabi"}]') || fromJSON('[{"target":"aarch64-linux-android"}]') }}
-    uses: ./.github/workflows/ksuinit.yml
-    secrets: inherit
-    with:
-      target: ${{ matrix.target }}
-
   build-ksud:
-    needs: [build-lkm, build-kasumi-lkm, build-ksuinit]
+    needs: [build-lkm, build-kasumi-lkm]
     strategy:
       matrix:
         include: ${{ (inputs.full_archs == true || github.event_name == 'pull_request') && fromJSON('[{"target":"aarch64-linux-android","os":"ubuntu-latest"},{"target":"x86_64-linux-android","os":"ubuntu-latest"},{"target":"armv7-linux-androideabi","os":"ubuntu-latest"}]') || fromJSON('[{"target":"aarch64-linux-android","os":"ubuntu-latest"}]') }}

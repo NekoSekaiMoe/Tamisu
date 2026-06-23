@@ -704,8 +704,12 @@ int boot_patch_impl(const std::vector<std::string>& args) {
     }
     inject_superkey_to_lkm(kmod_file, parsed.superkey, parsed.signature_bypass);
 
-    // Prepare init if specified
+    // Prepare init only if the user supplied --init (no built-in ksuinit anymore:
+    // the early-init PID-1 boot path was removed; the default flow is late-load
+    // via `ksud late-load`). Without an explicit init payload we skip ramdisk
+    // /init injection entirely.
     const std::string init_file = workdir + "/init";
+    bool have_init = false;
     if (!parsed.init.empty()) {
         std::ifstream src(parsed.init, std::ios::binary);  // NOLINT(misc-const-correctness)
         std::ofstream dst(init_file, std::ios::binary);
@@ -715,28 +719,10 @@ int boot_patch_impl(const std::vector<std::string>& args) {
             return 1;
         }
         dst << src.rdbuf();
-    } else {
-        // Try to extract ksuinit from embedded assets first (like Rust version)
-        if (copy_asset_to_file("ksuinit", init_file)) {
-            printf("- Using embedded ksuinit\n");
-        } else {
-            // Fallback: check standard location
-            const std::string ksuinit_path = std::string(BINARY_DIR) + "ksuinit";
-            if (access(ksuinit_path.c_str(), R_OK) == 0) {
-                std::ifstream src(ksuinit_path,
-                                  std::ios::binary);  // NOLINT(misc-const-correctness)
-                std::ofstream dst(init_file, std::ios::binary);
-                dst << src.rdbuf();
-                printf("- Using ksuinit from %s\n", ksuinit_path.c_str());
-            } else {
-                LOGE("ksuinit not found in embedded assets or %s", ksuinit_path.c_str());
-                LOGE("Please install KernelSU Manager or rebuild ksud with ksuinit embedded");
-                cleanup();
-                return 1;
-            }
-        }
+        chmod(init_file.c_str(), 0755);
+        have_init = true;
+        printf("- Using user-supplied init: %s\n", parsed.init.c_str());
     }
-    chmod(init_file.c_str(), 0755);
 
     // Unpack boot image (must run in workdir so output files go there)
     printf("- Unpacking boot image\n");
@@ -848,18 +834,22 @@ int boot_patch_impl(const std::vector<std::string>& args) {
     const bool already_patched = is_kernelsu_patched(magiskboot, workdir, ramdisk);
 
     if (!already_patched) {
-        // Backup init if it exists
-        auto init_exists =
-            exec_command_magiskboot(magiskboot, {"cpio", ramdisk, "exists init"}, workdir);
-        if (init_exists.exit_code == 0) {
-            do_cpio_cmd(magiskboot, workdir, ramdisk, "mv init init.real");
+        // Backup init if it exists AND we are going to replace it
+        if (have_init) {
+            auto init_exists =
+                exec_command_magiskboot(magiskboot, {"cpio", ramdisk, "exists init"}, workdir);
+            if (init_exists.exit_code == 0) {
+                do_cpio_cmd(magiskboot, workdir, ramdisk, "mv init init.real");
+            }
         }
     }
 
-    // Add init and kernelsu.ko (use workdir for relative paths in cpio add)
-    if (!do_cpio_cmd(magiskboot, workdir, ramdisk, "add 0755 init init")) {
-        cleanup();
-        return 1;
+    // Add init (only when user supplied --init) and kernelsu.ko
+    if (have_init) {
+        if (!do_cpio_cmd(magiskboot, workdir, ramdisk, "add 0755 init init")) {
+            cleanup();
+            return 1;
+        }
     }
     if (!do_cpio_cmd(magiskboot, workdir, ramdisk, "add 0755 kernelsu.ko kernelsu.ko")) {
         cleanup();
@@ -954,7 +944,7 @@ int boot_patch_impl(const std::vector<std::string>& args) {
         }
     }
 
-    // Experimental: add or remove Kasumi LKM in cpio (load after KernelSU in ksuinit)
+    // Experimental: add or remove Kasumi LKM in cpio
     if (parsed.kasumi_in_cpio) {
         const std::string kasumi_file = workdir + "/kasumi.ko";
         bool have_kasumi = false;

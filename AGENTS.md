@@ -5,11 +5,11 @@ YukiSU / KernelSU fork: Android kernel-level root delivered as a loadable kernel
 ## Repo layout (what owns what)
 
 - `kernel/` — the `kernelsu.ko` LKM source (C). Built via DDK against a specific Android KMI (e.g. `android16-6.12`). `kernel/Kconfig` + `kernel/Kbuild` are the source of truth for which objects/CONFIG flags exist. `CONFIG_KSU=m` is mandatory.
-- `userspace/ksud/` — the daemon. Embeds assets (su, ksuinit, `.ko` modules) via `scripts/embed_assets.py` at configure time. Requires CMake + Ninja + Clang (no GCC — LTO/`-faddrsig` need Clang). Git submodules (`third_party/MagiskbootAlone`, `bootctlAlone`, `resetpropAlone`, `ndk-busybox`) are required: `git submodule update --init --recursive`.
-- `userspace/ksuinit/`, `userspace/su/`, `userspace/zygisk/{loader,core}/` — standalone CMake+Ninja projects. Each is built **separately**, then its binary is copied into `userspace/ksud/assets/` **before** ksud configures, so `embed_assets.py` picks it up. ksud does **not** compile su/ksuinit/zygisk itself.
+- `userspace/ksud/` — the daemon. Embeds assets (`.ko` modules, zygisk payloads) via `scripts/embed_assets.py` at configure time. Requires CMake + Ninja + Clang (no GCC — LTO/`-faddrsig` need Clang). Git submodules (`third_party/MagiskbootAlone`, `bootctlAlone`, `resetpropAlone`, `ndk-busybox`) are required: `git submodule update --init --recursive`.
+- `userspace/zygisk/{loader,core}/` — standalone CMake+Ninja projects. Each is built **separately**, then its binary is copied into `userspace/ksud/assets/` **before** ksud configures, so `embed_assets.py` picks it up. ksud does **not** compile zygisk itself.
 - `manager/` — Android app (Gradle 9.2, AGP 8.13, Kotlin 2.2, Compose, JDK 17). Packages `ksud` as `app/src/main/jniLibs/<abi>/libksud.so`. Version code/name derived from `git describe --tags`.
 - `uapi/` — shared UAPI headers; `kernel/include/uapi` mirrors these. If you change a supercall/profile struct here, update both sides.
-- `scripts/build.sh` — one-shot local build orchestrator (LKM → ksuinit → su → zygisk → ksud → Manager). See it for the exact stage order and asset-staging rules.
+- `scripts/build.sh` — one-shot local build orchestrator (LKM → zygisk → ksud → Manager). See it for the exact stage order and asset-staging rules.
 
 ## Build & verify commands
 
@@ -52,10 +52,10 @@ CONFIG_KSU=m CONFIG_KSU_SUPERKEY=y CC=clang make -j$(nproc)
 
 ## Conventions & gotchas
 
-- **Asset staging order matters.** su, ksuinit, and `.ko` modules must exist in `userspace/ksud/assets/` before ksud CMake configure, or they won't be embedded. `scripts/build.sh` and the `ksud.yml` workflow enforce this; if you build ksud manually you must replicate it.
+- **Asset staging order matters.** `.ko` modules and zygisk payloads must exist in `userspace/ksud/assets/` before ksud CMake configure, or they won't be embedded. `scripts/build.sh` and the `ksud.yml` workflow enforce this; if you build ksud manually you must replicate it.
 - **KMI tagging.** Kasumi LKMs are named `<KMI>_<arch>_kasumi_lkm.ko` (e.g. `android16-6.12_arm64_kasumi_lkm.ko`); `lkm.cpp` and CI assert this exact form. ksud for arm64 fails CI if no KMI-tagged Kasumi asset is embedded.
 - **Sign via env, not files.** Manager signing reads `YUKISU_KEYSTORE`, `YUKISU_KEYSTORE_PASSWORD`, `YUKISU_KEY_ALIAS`, `YUKISU_KEY_PASSWORD` (mapped to gradle props by `app/build.gradle.kts`). Example config in `manager/sign.example.properties`. Never commit real keystore creds.
-- **Kasumi LKM = arm64-only** in DDK CI; `full_archs` only expands ksud/ksuinit to x86_64/armv7.
+- **Kasumi LKM = arm64-only** in DDK CI; `full_archs` only expands ksud to x86_64/armv7.
 - **NDK min API 28** for ksud (bionic symbols); Manager `minSdk` 26.
 - **No built-in support / no `=y`.** `kernel/setup.sh` integrates into an out-of-tree kernel source tree; it symlinks `kernel/` into `<kernel>/drivers/kernelsu`.
 - Branch `dev` exists alongside `main`; `feat/kasumi*` branches auto-select Kasumi `dev` ref in CI.

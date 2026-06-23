@@ -14,10 +14,6 @@ on:
         required: false
         type: boolean
         default: true
-      pack_ksuinit:
-        required: false
-        type: boolean
-        default: true
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
@@ -62,14 +58,6 @@ jobs:
           exit 1
         fi
     
-    - name: Prepare ksuinit
-      if: ${{ inputs.pack_ksuinit }}
-      run: |
-        mkdir -p ./userspace/ksud/assets
-        if [ -f ksuinit-${{ inputs.target }}/ksuinit ]; then
-          cp ksuinit-${{ inputs.target }}/ksuinit ./userspace/ksud/assets/
-        fi
-
     - name: Determine target settings
       id: target
       run: |
