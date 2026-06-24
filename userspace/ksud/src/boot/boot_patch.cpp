@@ -748,7 +748,7 @@ int boot_patch_impl(const std::vector<std::string>& args) {
 
     // Create the cpio directory structure and add each file.
     // magiskboot cpio needs intermediate dirs created explicitly.
-    for (const auto& sub : {"lib", "lib/modules", mod_dir}) {
+    for (const auto& sub : std::vector<std::string>{"lib", "lib/modules", mod_dir}) {
         if (!do_cpio_cmd(magiskboot, workdir, ramdisk, "mkdir 0755 " + sub)) {
             LOGE("Failed to mkdir %s in ramdisk", sub.c_str());
             cleanup();
