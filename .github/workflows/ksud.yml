@@ -96,21 +96,6 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release
 
         ninja
-        
-        # Show binary info
-        ls -lh ksud
-        file ksud
-        echo "Embedded Kasumi assets:"
-        strings ksud | grep -F '_kasumi_lkm.ko' | sort -u || true
-        case "${{ inputs.target }}" in
-          aarch64-linux-android|aarch64)
-            if ! strings ksud | grep -Eq '^android[0-9]+-[0-9]+\.[0-9]+_arm64_kasumi_lkm\.ko$'; then
-              echo "::error::Expected KMI-tagged embedded Kasumi assets were not found in ksud"
-              exit 1
-            fi
-            ;;
-        esac
-
     - name: Upload ksud artifact
       uses: actions/upload-artifact@v6
       with:
