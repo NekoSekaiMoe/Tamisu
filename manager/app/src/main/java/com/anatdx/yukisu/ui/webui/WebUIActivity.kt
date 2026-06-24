@@ -24,8 +24,6 @@ import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
 import com.anatdx.yukisu.ui.util.createRootShell
 import com.anatdx.yukisu.ui.util.setTaskDescriptionLabel
-import com.anatdx.yukisu.ui.viewmodel.SuperUserViewModel
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -56,7 +54,6 @@ class WebUIActivity : ComponentActivity() {
         }
 
         lifecycleScope.launch {
-            SuperUserViewModel.isAppListLoaded.first { it }
             setupWebView()
         }
     }
@@ -75,7 +72,13 @@ class WebUIActivity : ComponentActivity() {
             .setDomain("mui.kernelsu.org")
             .addPathHandler(
                 "/",
-                SuFilePathHandler(webRoot, rootShell) { insets }
+                WebViewAssetLoader.PathHandler { path ->
+                    val file = File(webRoot, path)
+                    if (file.exists() && file.isFile) {
+                        val mime = java.net.URLConnection.guessContentTypeFromName(path) ?: "application/octet-stream"
+                        WebResourceResponse(mime, null, file.inputStream())
+                    } else null
+                }
             )
             .build()
 

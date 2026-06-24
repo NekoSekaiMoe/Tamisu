@@ -14,7 +14,6 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
 import com.dergoogler.mmrl.webui.model.JavaScriptInterface
-import com.anatdx.yukisu.ui.viewmodel.SuperUserViewModel
 import com.anatdx.yukisu.ui.util.*
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.ShellUtils
@@ -208,12 +207,13 @@ class WebViewInterface(
 
     @JavascriptInterface
     fun listPackages(type: String): String {
-        val packageNames = SuperUserViewModel.apps
+        val pm = context.packageManager
+        val packages = pm.getInstalledApplications(0)
+        val packageNames = packages
             .filter { appInfo ->
-                val flags = appInfo.packageInfo.applicationInfo?.flags ?: 0
                 when (type.lowercase()) {
-                    "system" -> (flags and ApplicationInfo.FLAG_SYSTEM) != 0
-                    "user" -> (flags and ApplicationInfo.FLAG_SYSTEM) == 0
+                    "system" -> (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+                    "user" -> (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) == 0
                     else -> true
                 }
             }
@@ -229,29 +229,25 @@ class WebViewInterface(
 
     @JavascriptInterface
     fun getPackagesInfo(packageNamesJson: String): String {
+        val pm = context.packageManager
         val packageNames = JSONArray(packageNamesJson)
         val jsonArray = JSONArray()
-        val appMap = SuperUserViewModel.apps.associateBy { it.packageName }
         for (i in 0 until packageNames.length()) {
             val pkgName = packageNames.getString(i)
-            val appInfo = appMap[pkgName]
-            if (appInfo != null) {
-                val pkg = appInfo.packageInfo
+            val pkg = runCatching { pm.getPackageInfo(pkgName, 0) }.getOrNull()
+            val obj = JSONObject()
+            obj.put("packageName", pkgName)
+            if (pkg != null) {
                 val app = pkg.applicationInfo
-                val obj = JSONObject()
-                obj.put("packageName", pkg.packageName)
                 obj.put("versionName", pkg.versionName ?: "")
                 obj.put("versionCode", PackageInfoCompat.getLongVersionCode(pkg))
-                obj.put("appLabel", appInfo.label)
-                obj.put("isSystem", if (app != null) ((app.flags and ApplicationInfo.FLAG_SYSTEM) != 0) else JSONObject.NULL)
-                obj.put("uid", app?.uid ?: JSONObject.NULL)
-                jsonArray.put(obj)
+                obj.put("appLabel", pm.getApplicationLabel(app))
+                obj.put("isSystem", (app.flags and ApplicationInfo.FLAG_SYSTEM) != 0)
+                obj.put("uid", app.uid)
             } else {
-                val obj = JSONObject()
-                obj.put("packageName", pkgName)
                 obj.put("error", "Package not found or inaccessible")
-                jsonArray.put(obj)
             }
+            jsonArray.put(obj)
         }
         return jsonArray.toString()
     }

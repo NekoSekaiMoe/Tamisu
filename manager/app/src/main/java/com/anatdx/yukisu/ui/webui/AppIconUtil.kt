@@ -8,10 +8,8 @@ import android.graphics.drawable.Drawable
 import android.util.LruCache
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
-import com.anatdx.yukisu.ui.viewmodel.SuperUserViewModel.Companion.getAppIconDrawable
 
 object AppIconUtil {
-    // Limit cache size to 200 icons
     private const val CACHE_SIZE = 200
     private val iconCache = LruCache<String?, Bitmap?>(CACHE_SIZE)
 
@@ -21,7 +19,10 @@ object AppIconUtil {
         if (cached != null) return cached
 
         try {
-            val drawable = getAppIconDrawable(context, packageName) ?: return null
+            val pm = context.packageManager
+            val drawable = runCatching {
+                pm.getApplicationIcon(packageName)
+            }.getOrNull() ?: return null
             val raw = drawableToBitmap(drawable, sizePx)
             val icon = raw.scale(sizePx, sizePx)
             iconCache.put(packageName, icon)

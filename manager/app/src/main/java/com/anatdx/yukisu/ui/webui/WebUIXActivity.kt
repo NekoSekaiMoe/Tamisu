@@ -46,10 +46,6 @@ class WebUIXActivity : ComponentActivity() {
 
         webView = WebView(this)
 
-        lifecycleScope.launch {
-            initPlatform()
-        }
-
         val moduleId = intent.getStringExtra("id")!!
         val name = intent.getStringExtra("name")!!
         setTaskDescriptionLabel("YukiSU - $name")

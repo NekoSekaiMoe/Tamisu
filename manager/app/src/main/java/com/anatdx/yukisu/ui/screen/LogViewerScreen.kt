@@ -69,7 +69,11 @@ fun resolveSelectedSulogSource(
     currentLogPath: String,
     activeLogPath: String,
     previousActivePath: String? = null
-): SulogLogSource? = logSources.firstOrNull { it.path == currentLogPath }
+): SulogLogSource {
+    return logSources.firstOrNull { it.path == currentLogPath }
+        ?: logSources.firstOrNull()
+        ?: SulogLogSource("", "")
+}
 
 /** Stubs for the removed sulog log-source helpers. These provide minimal
  *  no-op / empty implementations so the log viewer compiles and runs; the
@@ -107,7 +111,7 @@ fun parseSulogEntries(content: String, useCurrentClockFallback: Boolean): List<L
         val parts = line.split(Regex("\\s+"), limit = 6)
         LogEntry(
             timestamp = parts.getOrNull(0) ?: "",
-            type = LogType.INFO,
+            type = LogType.UNKNOWN,
             uid = parts.getOrNull(1) ?: "",
             comm = parts.getOrNull(2) ?: "",
             details = parts.getOrNull(3) ?: "",
