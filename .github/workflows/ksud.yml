@@ -132,35 +132,9 @@ jobs:
             ;;
         esac
 
-    - name: Import GPG key
-      env:
-        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-      run: |
-        mkdir -p ~/.gnupg && chmod 700 ~/.gnupg
-        echo "$GPG_PRIVATE_KEY" > key.asc
-        gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --import key.asc
-        rm -f key.asc
-
-    - name: Sign ksud with GPG
-      run: |
-        cd userspace/ksud/build
-        echo "Signing ksud..."
-        gpg --detach-sign --local-user an@anatdx.com --batch --yes --pinentry-mode loopback \
-          --passphrase "${{ secrets.GPG_PASSPHRASE }}" \
-          --output "ksud.sig" "ksud"
-        if [ -f "ksud.sig" ]; then
-          echo "Signature created successfully"
-          ls -lh ksud.sig
-        else
-          echo "Error: Signature file not created!"
-          exit 1
-        fi
-
     - name: Upload ksud artifact
       uses: actions/upload-artifact@v6
       with:
         name: ksud-${{ inputs.target }}
         path: |
           userspace/ksud/build/ksud
-          userspace/ksud/build/ksud.sig

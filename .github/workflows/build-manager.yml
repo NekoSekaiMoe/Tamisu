@@ -194,17 +194,6 @@ jobs:
           echo "title=Manager" >> "$GITHUB_OUTPUT"
           echo "topicid=${{ vars.MESSAGE_THREAD_ID }}" >> "$GITHUB_OUTPUT"
 
-      - name: Check GPG available
-        id: gpg_check
-        env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-        run: |
-          if [ -n "$GPG_PRIVATE_KEY" ]; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "available=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
@@ -272,32 +261,6 @@ jobs:
             -P "$SIGN_KEYSTORE_PASSWORD" \
             -S "$SIGN_KEY_PASSWORD" \
             --strip
-
-      - name: Import GPG key
-        if: steps.gpg_check.outputs.available == 'true'
-        env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: |
-          mkdir -p ~/.gnupg && chmod 700 ~/.gnupg
-          echo "$GPG_PRIVATE_KEY" > key.asc
-          gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --import key.asc
-          rm -f key.asc
-
-      - name: Sign APK with GPG
-        if: steps.gpg_check.outputs.available == 'true'
-        run: |
-          cd dist
-          for apk in ./*.apk; do
-            if [ -f "$apk" ]; then
-              echo "Signing $apk..."
-              gpg --detach-sign --local-user an@anatdx.com --batch --yes --pinentry-mode loopback \
-                --passphrase "${{ secrets.GPG_PASSPHRASE }}" \
-                --output "${apk}.sig" "$apk"
-            fi
-          done
-          echo "Signatures created:"
-          ls -lh ./*.sig || true
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v6

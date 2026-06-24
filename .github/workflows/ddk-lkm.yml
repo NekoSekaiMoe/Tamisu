@@ -50,40 +50,9 @@ jobs:
         llvm-strip -d "/github/workspace/out/$OUTPUT_NAME"
         echo "Size after stripping: $(du -h "/github/workspace/out/$OUTPUT_NAME" | cut -f1)"
         
-    - name: Install GPG
-      run: |
-        apt-get update && apt-get install -y gnupg
-
-    - name: Import GPG key
-      env:
-        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-      run: |
-        mkdir -p ~/.gnupg && chmod 700 ~/.gnupg
-        echo "$GPG_PRIVATE_KEY" > key.asc
-        gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --import key.asc
-        rm -f key.asc
-
-    - name: Sign kernelsu.ko with GPG
-      run: |
-        cd /github/workspace/out
-        KO_FILE="${{ inputs.kmi }}_kernelsu.ko"
-        echo "Signing $KO_FILE..."
-        gpg --detach-sign --local-user an@anatdx.com --batch --yes --pinentry-mode loopback \
-          --passphrase "${{ secrets.GPG_PASSPHRASE }}" \
-          --output "${KO_FILE}.sig" "$KO_FILE"
-        if [ -f "${KO_FILE}.sig" ]; then
-          echo "Signature created successfully"
-          ls -lh "${KO_FILE}.sig"
-        else
-          echo "Error: Signature file not created!"
-          exit 1
-        fi
-
     - name: Upload kernelsu.ko artifact
       uses: actions/upload-artifact@v6
       with:
         name: ${{ inputs.kmi }}-lkm
         path: |
           /github/workspace/out/${{ inputs.kmi }}_kernelsu.ko
-          /github/workspace/out/${{ inputs.kmi }}_kernelsu.ko.sig

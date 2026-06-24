@@ -93,38 +93,9 @@ jobs:
           llvm-strip -d "$OUT/$KO_FILE" 2>/dev/null || true
           ls -la "$OUT/"
 
-      - name: Install GPG
-        run: |
-          apt-get update
-          apt-get install -y gnupg
-
-      - name: Import GPG key and Sign kasumi_lkm.ko
-        env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: |
-          set -euo pipefail
-          mkdir -p ~/.gnupg && chmod 700 ~/.gnupg
-          if [ -z "${GPG_PRIVATE_KEY:-}" ]; then
-            echo "GPG_PRIVATE_KEY not set, skipping signing."
-            touch "$OUT/${KMI}_${TARGET_ARCH}_kasumi_lkm.ko.asc"
-            exit 0
-          fi
-          printf '%s\n' "$GPG_PRIVATE_KEY" > key.asc
-          gpg --batch --yes --pinentry-mode loopback --passphrase "$GPG_PASSPHRASE" --import key.asc
-          rm -f key.asc
-          cd "$OUT"
-          KO_FILE="${KMI}_${TARGET_ARCH}_kasumi_lkm.ko"
-          echo "Signing $KO_FILE..."
-          gpg --detach-sign --local-user an@anatdx.com --batch --yes --pinentry-mode loopback \
-            --passphrase "$GPG_PASSPHRASE" \
-            --output "${KO_FILE}.asc" "$KO_FILE"
-          ls -lh "${KO_FILE}.asc"
-
       - name: Upload .ko
         uses: actions/upload-artifact@v6
         with:
           name: ${{ env.KMI }}-${{ env.TARGET_ARCH }}-kasumi-lkm
           path: |
             ${{ env.OUT }}/${{ env.KMI }}_${{ env.TARGET_ARCH }}_kasumi_lkm.ko
-            ${{ env.OUT }}/${{ env.KMI }}_${{ env.TARGET_ARCH }}_kasumi_lkm.ko.asc
