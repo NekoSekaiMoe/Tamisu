@@ -51,11 +51,37 @@ private const val MAX_TOTAL_LOGS = 100000
 
 private const val DEFAULT_LOG_PATH = ""
 
-/** Stub types for the removed sulog feature. The log viewer still uses them
- *  internally for its source-selection UI; these no-ops keep it compiling. */
-data class SulogLogSource(val path: String, val displayName: String) {
-    val name: String get() = path
+/** A log source the viewer can read. `cmd` is the shell command whose stdout
+ *  becomes the log content; `clearCmd` (optional) clears/deletes it.
+ *
+ *  - File sources live under /data/adb/ksu/log (ksud writes there when it
+ *    routes events via the `sulog` ksu tool, or via its own logging).
+ *  - "dmesg" reads the kernel ring buffer directly. Tamisu's YukiZygisk
+ *    dmesg_log feature routes zygisk events there, so this is the live
+ *    injection log on devices without a separate sulog file.
+ */
+class SulogLogSource(
+    val path: String,        // unique key, also the path/cmd we use for hashing
+    val displayName: String, // shown in the source picker
+    val cmd: String,
+    val lineCountCmd: String,
+    val clearCmd: String?,
+    val canDelete: Boolean,
+) {
+    constructor(path: String, displayName: String) : this(
+        path = path,
+        displayName = displayName,
+        cmd = "cat ${shellQuote(path)} 2>/dev/null",
+        lineCountCmd = "wc -l < ${shellQuote(path)} 2>/dev/null || echo 0",
+        clearCmd = ": > ${shellQuote(path)}",
+        canDelete = true,
+    )
+
+    val name: String get() = displayName
+    val isDmesg: Boolean get() = path == DMESG_PATH
 }
+
+internal const val DMESG_PATH = "__dmesg__"
 
 enum class SulogLogSourceCleanAction { None, Clear, Delete }
 
@@ -75,40 +101,93 @@ fun resolveSelectedSulogSource(
         ?: SulogLogSource("", "")
 }
 
-/** Stubs for the removed sulog log-source helpers. These provide minimal
- *  no-op / empty implementations so the log viewer compiles and runs; the
- *  real implementations were in deleted sulog source files. */
-
-private const val SULOG_LOG_DIR = "/data/adb/ksu/log"
-
-@Suppress("UNUSED_PARAMETER")
+/** Build the list of readable log sources on this device.
+ *
+ *  Always probes: ksud-written log files under /data/adb/ksu/log, plus a
+ *  synthetic "dmesg" source that reads the kernel ring buffer (where
+ *  YukiZygisk events land when dmesg_log is on). Sources whose backing
+ *  file is absent are skipped so the picker only offers real data. */
 fun listSulogSources(shell: com.topjohnwu.superuser.Shell): List<SulogLogSource> {
-    val files = listOf("ksu.log", "ksud.log")
-    return files.map { SulogLogSource("$SULOG_LOG_DIR/$it", it) }
+    val out = mutableListOf<SulogLogSource>()
+    val candidates = listOf("ksu.log", "ksud.log")
+    for (name in candidates) {
+        val p = "$SULOG_LOG_DIR/$name"
+        val exists = runCmd(shell, "test -f ${shellQuote(p)} && echo yes || echo no").trim() == "yes"
+        if (exists) {
+            out += SulogLogSource(path = p, displayName = name)
+        }
+    }
+    // dmesg is always readable as root; offer it as a live kernel log source.
+    out += SulogLogSource(
+        path = DMESG_PATH,
+        displayName = "dmesg",
+        cmd = "dmesg 2>/dev/null",
+        lineCountCmd = "dmesg 2>/dev/null | wc -l",
+        // `dmesg -C` clears the ring buffer (root only). Offer Clear but not Delete.
+        clearCmd = "dmesg -C",
+        canDelete = false,
+    )
+    return out
 }
 
-@Suppress("UNUSED_PARAMETER")
 fun readActiveSulogPath(shell: com.topjohnwu.superuser.Shell): String = ""
 
-@Suppress("UNUSED_PARAMETER")
 fun buildVisibleSulogSourceSignature(
     shell: com.topjohnwu.superuser.Shell,
     sources: List<SulogLogSource>,
     selected: SulogLogSource?,
     activePath: String
-): String = "${selected?.path ?: ""}|${activePath}"
+): String {
+    if (selected == null) return ""
+    // For files: hash by size+mtime. For dmesg: hash by line count (changes
+    // whenever the kernel emits a new line).
+    return if (selected.isDmesg) {
+        "dmesg|" + runCmd(shell, selected.lineCountCmd).trim()
+    } else {
+        "file|" + selected.path + "|" +
+            runCmd(shell, "stat -c '%s %Y' ${shellQuote(selected.path)} 2>/dev/null").trim()
+    }
+}
 
-@Suppress("UNUSED_PARAMETER")
 fun readSulogSourceStat(shell: com.topjohnwu.superuser.Shell, path: String): String {
-    return "0 0"
+    // Caller treats "0 0" as "empty source"; any other value means "has data".
+    // We can't cheaply get line+byte counts for both dmesg and a file in one
+    // shape, so just return "1 1" when the source exists. The actual line
+    // count is recomputed by loadLogsWithPagination via lineCountCmd.
+    if (path.isEmpty()) return "0 0"
+    return "1 1"
 }
 
 fun shellQuote(s: String): String = "'${s.replace("'", "'\\''")}'"
 
+/** Parse raw log content into LogEntry rows. Handles two formats:
+ *   - structured sulog lines: "<ts> <uid> <comm> <type> <pid> <details>"
+ *   - free-form kernel/ksud lines (including dmesg): timestamped but unstructured.
+ *
+ * The free-form path tries to peel a leading dmesg-style timestamp
+ * ("<6>[12345.67890]") or syslog-style prefix, then stuffs the rest into
+ * details + rawLine.
+ */
 fun parseSulogEntries(content: String, useCurrentClockFallback: Boolean): List<LogEntry> {
     if (content.isBlank()) return emptyList()
     return content.lineSequence().filter { it.isNotBlank() }.map { line ->
-        val parts = line.split(Regex("\\s+"), limit = 6)
+        val trimmed = line.trim()
+        // dmesg prefix: "<n>[seconds.usec]"; capture the trailing message.
+        val dmesgMatch = Regex("""^<\d+>\[\s*\d+\.\d+\]\s*(.*)$""").find(trimmed)
+        if (dmesgMatch != null) {
+            val msg = dmesgMatch.groupValues[1]
+            return@map LogEntry(
+                timestamp = "",
+                type = LogType.UNKNOWN,
+                uid = "",
+                comm = "",
+                details = msg,
+                pid = "",
+                rawLine = trimmed,
+            )
+        }
+        // Structured (sulog) line: split into 6 whitespace-separated fields.
+        val parts = trimmed.split(Regex("\\s+"), limit = 6)
         LogEntry(
             timestamp = parts.getOrNull(0) ?: "",
             type = LogType.UNKNOWN,
@@ -116,7 +195,7 @@ fun parseSulogEntries(content: String, useCurrentClockFallback: Boolean): List<L
             comm = parts.getOrNull(2) ?: "",
             details = parts.getOrNull(3) ?: "",
             pid = parts.getOrNull(4) ?: "",
-            rawLine = line.trim(),
+            rawLine = trimmed,
         )
     }.toList()
 }
@@ -341,6 +420,8 @@ fun LogViewerScreen(navigator: DestinationsNavigator) {
                 onClearLogs = {
                     scope.launch {
                         if (currentLogPath.isBlank()) return@launch
+                        val source = logSources.firstOrNull { it.path == currentLogPath }
+                            ?: return@launch
                         val result = confirmDialog.awaitConfirm(
                             title = currentManageTitle,
                             content = currentManageConfirmMessage
@@ -349,8 +430,8 @@ fun LogViewerScreen(navigator: DestinationsNavigator) {
                             loadingDialog.withLoading {
                                 when (currentCleanAction) {
                                     SulogLogSourceCleanAction.None -> {}
-                                    SulogLogSourceCleanAction.Clear -> clearLogs(currentLogPath)
-                                    SulogLogSourceCleanAction.Delete -> deleteLogs(currentLogPath)
+                                    SulogLogSourceCleanAction.Clear -> clearLogs(source)
+                                    SulogLogSourceCleanAction.Delete -> deleteLogs(source)
                                 }
                                 loadPage(0, true)
                             }
@@ -1154,8 +1235,6 @@ private suspend fun loadLogsWithPagination(
                 return@withContext
             }
 
-            val quotedPath = shellQuote(source.path)
-
             if (page == 0 && !forceRefresh && currentHash == lastHash && statPart != "0 0") {
                 withContext(Dispatchers.Main) {
                     onLoaded(
@@ -1170,9 +1249,7 @@ private suspend fun loadLogsWithPagination(
                 return@withContext
             }
 
-            val totalLinesResult = runCmd(shell, "wc -l < $quotedPath 2>/dev/null || echo '0'")
-            val totalLines = totalLinesResult.trim().toIntOrNull() ?: 0
-
+            val totalLines = runCmd(shell, source.lineCountCmd).trim().toIntOrNull() ?: 0
             if (totalLines == 0) {
                 withContext(Dispatchers.Main) {
                     onLoaded(
@@ -1189,38 +1266,34 @@ private suspend fun loadLogsWithPagination(
 
             val effectiveTotal = minOf(totalLines, MAX_TOTAL_LOGS)
             val totalPages = (effectiveTotal + PAGE_SIZE - 1) / PAGE_SIZE
-            val retainedStartLine = totalLines - effectiveTotal + 1
 
-            val endOffsetExclusive = effectiveTotal - page * PAGE_SIZE
-            val startOffsetInclusive = maxOf(0, endOffsetExclusive - PAGE_SIZE)
-            val startLine = retainedStartLine + startOffsetInclusive
-            val endLine = retainedStartLine + endOffsetExclusive - 1
-
-            if (startLine > endLine || startLine > totalLines) {
-                withContext(Dispatchers.Main) {
-                    onLoaded(
-                        emptyList(),
-                        LogPageInfo(
-                            currentPage = page,
-                            totalPages = totalPages,
-                            totalLogs = effectiveTotal,
-                            hasMore = false,
-                            currentFileName = source.name
-                        ),
-                        currentHash,
-                        source.path,
-                        sources,
-                        activePath
-                    )
+            // For file sources we can page with sed; for dmesg we read all
+            // and slice in memory (the ring buffer is not seekable).
+            val entries: List<LogEntry> = if (source.isDmesg) {
+                val all = runCmd(shell, source.cmd)
+                val parsed = parseLogEntries(all, useCurrentClockFallback = false)
+                val retained = parsed.takeLast(effectiveTotal)
+                val endOffsetExclusive = retained.size - page * PAGE_SIZE
+                val startOffsetInclusive = maxOf(0, endOffsetExclusive - PAGE_SIZE)
+                if (startOffsetInclusive >= endOffsetExclusive) {
+                    emptyList()
+                } else {
+                    retained.subList(startOffsetInclusive, endOffsetInclusive)
                 }
-                return@withContext
+            } else {
+                val retainedStartLine = totalLines - effectiveTotal + 1
+                val endOffsetExclusive = effectiveTotal - page * PAGE_SIZE
+                val startOffsetInclusive = maxOf(0, endOffsetExclusive - PAGE_SIZE)
+                val startLine = retainedStartLine + startOffsetInclusive
+                val endLine = retainedStartLine + endOffsetExclusive - 1
+                if (startLine > endLine || startLine > totalLines) {
+                    emptyList()
+                } else {
+                    val quotedPath = shellQuote(source.path)
+                    val result = runCmd(shell, "sed -n '${startLine},${endLine}p' $quotedPath 2>/dev/null || echo ''")
+                    parseLogEntries(result, useCurrentClockFallback = source.path == activePath)
+                }
             }
-
-            val result = runCmd(shell, "sed -n '${startLine},${endLine}p' $quotedPath 2>/dev/null || echo ''")
-            val entries = parseLogEntries(
-                logContent = result,
-                useCurrentClockFallback = source.path == activePath
-            )
 
             val hasMore = page < totalPages - 1
             val pageInfo = LogPageInfo(
@@ -1242,23 +1315,23 @@ private suspend fun loadLogsWithPagination(
     }
 }
 
-private suspend fun clearLogs(path: String) {
+private suspend fun clearLogs(source: SulogLogSource) {
     withContext(Dispatchers.IO) {
         try {
-            if (path.isBlank()) return@withContext
+            val cmd = source.clearCmd ?: return@withContext
             val shell = getRootShell()
-            runCmd(shell, ": > ${shellQuote(path)}")
+            runCmd(shell, cmd)
         } catch (_: Exception) {
         }
     }
 }
 
-private suspend fun deleteLogs(path: String) {
+private suspend fun deleteLogs(source: SulogLogSource) {
     withContext(Dispatchers.IO) {
         try {
-            if (path.isBlank()) return@withContext
+            if (!source.canDelete) return@withContext
             val shell = getRootShell()
-            runCmd(shell, "rm -f ${shellQuote(path)}")
+            runCmd(shell, "rm -f ${shellQuote(source.path)}")
         } catch (_: Exception) {
         }
     }
