@@ -212,7 +212,7 @@ bool is_zygote(const struct cred *cred)
 
 bool is_init(const struct cred *cred)
 {
- 	return is_sid_match(cred, cached_init_sid, INIT_CONTEXT);
+	return is_sid_match(cred, cached_init_sid, INIT_CONTEXT);
 }
 
 u32 ksu_get_ksu_file_sid()

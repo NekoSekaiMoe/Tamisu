@@ -455,7 +455,7 @@ long ksu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
 		}
 	}
 
-	pr_warn("ksu ioctl: unknown cmd 0x%x uid=%d\n", cmd,
-		current_uid().val);
+	pr_warn("ksu ioctl: unknown cmd 0x%x uid=%d\n",
+		cmd, current_uid().val);
 	return -EINVAL;
 }

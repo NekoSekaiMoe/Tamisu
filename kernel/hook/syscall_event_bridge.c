@@ -47,7 +47,7 @@ static void ksu_handle_init_mark_tracker(const char __user *filename_user)
 	path[sizeof(path) - 1] = '\0';
 
 	if (likely(strstr(path, "/app_process") == NULL &&
-		  strstr(path, "/adbd") == NULL)) {
+		   strstr(path, "/adbd") == NULL)) {
 		pr_info("hook_manager: unmark %d exec %s\n", current->pid,
 			path);
 		ksu_clear_task_tracepoint_flag_if_needed(current);
