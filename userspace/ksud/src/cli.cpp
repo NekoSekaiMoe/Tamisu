@@ -16,6 +16,10 @@
 #include "sepolicy/sepolicy.hpp"
 #include "utils.hpp"
 
+extern "C" {
+#include "uapi/yukizygisk.h"
+}
+
 #include <unistd.h>
 #include <algorithm>
 #include <cerrno>
@@ -220,6 +224,18 @@ int cmd_initrc(const std::vector<std::string>& args) {
 
     printf("Unknown initrc subcommand: %s\n", subcmd.c_str());
     return 1;
+}
+
+int cmd_yukizygisk(const std::vector<std::string>& args) {
+    if (args.empty() || args[0] != "reload") {
+        printf("Usage: ksud yukizygisk reload\n");
+        return 1;
+    }
+    // Fires KSU_IOCTL_YZ_RELOAD -> kernel multicasts YZ_EV_RELOAD -> zygiskd
+    // re-reads yzconfig.json. Applies on the next specialize, no reboot.
+    const int rc = ksud::ksuctl(KSU_IOCTL_YZ_RELOAD, nullptr);
+    printf(rc == 0 ? "yzconfig reload signalled\n" : "yzconfig reload failed\n");
+    return rc == 0 ? 0 : 1;
 }
 
 int cmd_feature(const std::vector<std::string>& args) {
@@ -691,6 +707,8 @@ int cli_run(int argc, char** argv) {
         return cmd_sepolicy(args);
     } else if (cmd == "feature") {
         return cmd_feature(args);
+    } else if (cmd == "yukizygisk") {
+        return cmd_yukizygisk(args);
     } else if (cmd == "initrc") {
         return cmd_initrc(args);
     } else if (cmd == "boot-patch") {
