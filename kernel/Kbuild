@@ -57,7 +57,7 @@ obj-$(CONFIG_TAMISU) += tamisu.o
 KDIR := $(KDIR)
 MDIR := $(realpath $(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 
-ccflags-y += -DKSU_VERSION="$(shell date)"
+ccflags-y += -DKSU_VERSION="$(shell date +%Y%m%d%H%M%S)"
 ccflags-y += -DKSU_VERSION_FULL=unknown
 
 KERNEL_VERSION := $(VERSION).$(PATCHLEVEL)
