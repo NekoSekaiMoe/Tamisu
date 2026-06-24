@@ -1,7 +1,7 @@
 package com.anatdx.yukisu
 
 import android.app.Application
-import android.os.Os
+import android.system.Os
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import coil.Coil

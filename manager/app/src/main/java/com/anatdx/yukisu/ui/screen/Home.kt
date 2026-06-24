@@ -847,7 +847,7 @@ private fun StatusCardPreview() {
 @Composable
 private fun IncompatibleKernelCard() {
     val currentKver = remember { Natives.version }
-    val threshold   = Natives.MINIMAL_NEW_IOCTL_KERNEL
+    val threshold   = Natives.MINIMAL_SUPPORTED_KERNEL
 
     val msg = stringResource(
         id = R.string.incompatible_kernel_msg,
