@@ -36,24 +36,19 @@ import com.maxkeppeker.sheets.core.models.base.IconSource
 import com.maxkeppeler.sheets.list.models.ListOption
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.LogViewerScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.UmountManagerScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.MoreSettingsScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.KasumiConfigScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.YukiZygiskScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.anatdx.yukisu.BuildConfig
 import com.anatdx.yukisu.Natives
-import com.anatdx.yukisu.magica.MagicaHelper
 import com.anatdx.yukisu.R
 import com.anatdx.yukisu.ui.component.*
 import com.anatdx.yukisu.ui.theme.CardConfig
 import com.anatdx.yukisu.ui.theme.CardConfig.cardAlpha
 import com.anatdx.yukisu.ui.theme.getCardColors
 import com.anatdx.yukisu.ui.theme.getCardElevation
-import com.anatdx.yukisu.ui.kasumi.util.KasumiManager
 import com.anatdx.yukisu.ui.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -77,14 +72,10 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     val snackBarHost = remember { SnackbarHostState() }
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    var isSuLogEnabled by remember { mutableStateOf(Natives.isSuLogEnabled()) }
     var selectedEngine by rememberSaveable {
         mutableStateOf(
             prefs.getString("webui_engine", "default") ?: "default"
         )
-    }
-    var autoJailbreak by rememberSaveable {
-        mutableStateOf(MagicaHelper.isAutoJailbreakEnabled(context))
     }
 
     Scaffold(
@@ -127,234 +118,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 SettingsGroupCard(
                     title = stringResource(R.string.configuration),
                     content = {
-                        SettingItem(
-                            icon = Icons.Filled.Fence,
-                            title = stringResource(R.string.settings_profile_template),
-                            summary = stringResource(R.string.settings_profile_template_summary),
-                            onClick = {
-                                navigator.navigate(AppProfileTemplateScreenDestination)
-                            }
-                        )
-
-                        // Kasumi 配置（模块挂载、Maps 伪装等）
-                        SettingItem(
-                            icon = Icons.Filled.Tune,
-                            title = stringResource(R.string.kasumi_title),
-                            summary = stringResource(R.string.kasumi_settings_summary),
-                            onClick = {
-                                navigator.navigate(KasumiConfigScreenDestination)
-                            }
-                        )
-
-                        // 不保存 SuperKey
-                        val superKeyPrefs = context.getSharedPreferences("superkey", Context.MODE_PRIVATE)
-                        var skipStoreSuperKey by remember {
-                            mutableStateOf(superKeyPrefs.getBoolean("skip_store_superkey", false))
-                        }
-                        SwitchItem(
-                            icon = Icons.Filled.Key,
-                            title = stringResource(R.string.settings_donot_store_superkey),
-                            summary = stringResource(R.string.settings_donot_store_superkey_summary),
-                            checked = skipStoreSuperKey,
-                            onCheckedChange = {
-                                skipStoreSuperKey = it
-                                superKeyPrefs.edit().putBoolean("skip_store_superkey", it).apply()
-                                if (it) {
-                                    // 如果开启了不保存，立即清除已保存的密钥
-                                    superKeyPrefs.edit().remove("saved_superkey").apply()
-                                }
-                            }
-                        )
-
-                        // 清除 SuperKey
-                        val clearKeyDialog = rememberConfirmDialog(onConfirm = {
-                            superKeyPrefs.edit().remove("saved_superkey").apply()
-                            scope.launch {
-                                snackBarHost.showSnackbar(context.getString(R.string.clear_super_key) + " ✓")
-                            }
-                        })
-                        val clearKeyDialogTitle = stringResource(R.string.clear_super_key)
-                        val clearKeyDialogContent = stringResource(R.string.settings_clear_super_key_dialog)
-                        SettingItem(
-                            icon = Icons.Filled.Key,
-                            title = stringResource(R.string.clear_super_key),
-                            onClick = {
-                                clearKeyDialog.showConfirm(
-                                    title = clearKeyDialogTitle,
-                                    content = clearKeyDialogContent,
-                                    markdown = false
-                                )
-                            }
-                        )
-
-                        var selinuxHideEnabled by remember {
-                            mutableStateOf(Natives.isSelinuxHideEnabled())
-                        }
-                        val selinuxHideStatus by produceState(initialValue = "") {
-                            value = getFeatureStatus("selinux_hide")
-                        }
-                        val selinuxHideSummary = when (selinuxHideStatus) {
-                            "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
-                            "managed" -> stringResource(id = R.string.feature_status_managed_summary)
-                            else -> stringResource(id = R.string.settings_selinux_hide_summary)
-                        }
-                        SwitchItem(
-                            icon = Icons.Filled.Security,
-                            title = stringResource(id = R.string.settings_selinux_hide),
-                            summary = selinuxHideSummary,
-                            checked = selinuxHideEnabled,
-                            enabled = selinuxHideStatus == "supported",
-                            onCheckedChange = { enabled ->
-                                val ok = Natives.setSelinuxHideEnabled(enabled)
-                                if (ok) {
-                                    execKsud("feature save", true)
-                                    selinuxHideEnabled = enabled
-                                }
-                                scope.launch {
-                                    snackBarHost.showSnackbar(
-                                        context.getString(
-                                            if (ok) R.string.setting_change_saved_reboot
-                                            else R.string.setting_change_failed
-                                        )
-                                    )
-                                }
-                            }
-                        )
-
-                        var suCompatDisabled by remember {
-                            mutableStateOf(!Natives.isSuEnabled())
-                        }
-                        val suStatus by produceState(initialValue = "") {
-                            value = getFeatureStatus("su_compat")
-                        }
-                        val suSummary = when (suStatus) {
-                            "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
-                            "managed" -> stringResource(id = R.string.feature_status_managed_summary)
-                            else -> stringResource(id = R.string.settings_disable_su_summary)
-                        }
-                        SwitchItem(
-                            icon = Icons.Rounded.RemoveModerator,
-                            title = stringResource(id = R.string.settings_disable_su),
-                            summary = suSummary,
-                            checked = suCompatDisabled,
-                            enabled = suStatus == "supported",
-                            onCheckedChange = { disabled ->
-                                if (Natives.setSuEnabled(!disabled)) {
-                                    execKsud("feature save", true)
-                                    suCompatDisabled = !Natives.isSuEnabled()
-                                }
-                            }
-                        )
-
-                        var kernelUmountDisabled by remember {
-                            mutableStateOf(!Natives.isKernelUmountEnabled())
-                        }
-                        val umountStatus by produceState(initialValue = "") {
-                            value = getFeatureStatus("kernel_umount")
-                        }
-                        val umountSummary = when (umountStatus) {
-                            "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
-                            "managed" -> stringResource(id = R.string.feature_status_managed_summary)
-                            else -> stringResource(id = R.string.settings_disable_kernel_umount_summary)
-                        }
-                        SwitchItem(
-                            icon = Icons.Rounded.RemoveCircle,
-                            title = stringResource(id = R.string.settings_disable_kernel_umount),
-                            summary = umountSummary,
-                            checked = kernelUmountDisabled,
-                            enabled = umountStatus == "supported",
-                            onCheckedChange = { disabled ->
-                                if (Natives.setKernelUmountEnabled(!disabled)) {
-                                    execKsud("feature save", true)
-                                    kernelUmountDisabled = !Natives.isKernelUmountEnabled()
-                                }
-                            }
-                        )
-
-                        var suLogEnabled by remember {
-                            mutableStateOf(Natives.isSuLogEnabled())
-                        }
-                        val suLogStatus by produceState(initialValue = "") {
-                            value = getFeatureStatus("sulog")
-                        }
-                        val suLogSummary = when (suLogStatus) {
-                            "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
-                            "managed" -> stringResource(id = R.string.feature_status_managed_summary)
-                            else -> stringResource(id = R.string.settings_disable_sulog_summary)
-                        }
-                        SwitchItem(
-                            icon = Icons.Filled.Visibility,
-                            title = stringResource(id = R.string.settings_disable_sulog),
-                            summary = suLogSummary,
-                            checked = suLogEnabled,
-                            enabled = suLogStatus == "supported",
-                            onCheckedChange = { enabled ->
-                                if (Natives.setSuLogEnabled(enabled)) {
-                                    execKsud("feature save", true)
-                                    suLogEnabled = Natives.isSuLogEnabled()
-                                    isSuLogEnabled = suLogEnabled
-                                }
-                            }
-                        )
-
-                        var adbRootEnabled by rememberSaveable {
-                            mutableStateOf(Natives.isAdbRootEnabled())
-                        }
-                        val adbRootStatus by produceState(initialValue = "") {
-                            value = getFeatureStatus("adb_root")
-                        }
-                        val adbRootSummary = when (adbRootStatus) {
-                            "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
-                            "managed" -> stringResource(id = R.string.feature_status_managed_summary)
-                            else -> stringResource(id = R.string.settings_adb_root_summary)
-                        }
-                        SwitchItem(
-                            icon = Icons.Filled.DeveloperMode,
-                            title = stringResource(id = R.string.settings_adb_root),
-                            summary = adbRootSummary,
-                            checked = adbRootEnabled,
-                            enabled = adbRootStatus == "supported",
-                            onCheckedChange = { enabled ->
-                                if (Natives.setAdbRootEnabled(enabled)) {
-                                    execKsud("feature save", true)
-                                    restartAdbd()
-                                    adbRootEnabled = enabled
-                                }
-                            }
-                        )
-
-                        // 卸载模块开关
-                        var umountChecked by rememberSaveable { mutableStateOf(Natives.isDefaultUmountModules()) }
-                        SwitchItem(
-                            icon = Icons.Rounded.FolderDelete,
-                            title = stringResource(id = R.string.settings_umount_modules_default),
-                            summary = stringResource(id = R.string.settings_umount_modules_default_summary),
-                            checked = umountChecked,
-                            onCheckedChange = {
-                                if (Natives.setDefaultUmountModules(it)) {
-                                    umountChecked = it
-                                }
-                            }
-                        )
-
-                        // app profile 防逃逸：全局默认 NO_NEW_PRIVS（含默认档/manager/shell）
-                        var defaultNnpChecked by rememberSaveable {
-                            mutableStateOf(Natives.isDefaultNoNewPrivsEnabled())
-                        }
-                        SwitchItem(
-                            icon = Icons.Filled.FrontHand,
-                            title = stringResource(id = R.string.settings_default_no_new_privs),
-                            summary = stringResource(id = R.string.settings_default_no_new_privs_summary),
-                            checked = defaultNnpChecked,
-                            onCheckedChange = {
-                                if (Natives.setDefaultNoNewPrivsEnabled(it)) {
-                                    execKsud("feature save", true)
-                                    defaultNnpChecked = it
-                                }
-                            }
-                        )
-
-                        // YukiZygisk：内核捕获 zygote、注入 zygisk 模块（接全局防逃逸之后）
                         var yukiZygiskEnabled by remember { mutableStateOf(false) }
                         val yukiZygiskStatus by produceState(initialValue = "") {
                             value = getFeatureStatus("yukizygisk")
@@ -374,7 +137,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             checked = yukiZygiskEnabled,
                             enabled = yukiZygiskStatus == "supported",
                             onCheckedChange = { enable ->
-                                // toggle UX：先翻到用户意图，再异步落地 + toast，失败回滚
                                 yukiZygiskEnabled = enable
                                 scope.launch {
                                     if (setFeatureValue("yukizygisk", enable)) {
@@ -393,33 +155,9 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 }
                             }
                         )
-
-                        // 内置 hymo 挂载开关
-                        var builtinMountEnabled by remember { mutableStateOf(true) }
-                        LaunchedEffect(Unit) {
-                            builtinMountEnabled = KasumiManager.isBuiltinMountEnabled()
-                        }
-                        SwitchItem(
-                            icon = Icons.Filled.Storage,
-                            title = stringResource(R.string.kasumi_builtin_mount),
-                            summary = stringResource(R.string.kasumi_builtin_mount_desc),
-                            checked = builtinMountEnabled,
-                            onCheckedChange = { enable ->
-                                scope.launch {
-                                    if (KasumiManager.setBuiltinMountEnabled(enable)) {
-                                        builtinMountEnabled = enable
-                                        val msgRes = if (enable) R.string.kasumi_toast_builtin_enabled else R.string.kasumi_toast_builtin_disabled
-                                        snackBarHost.showSnackbar(context.getString(msgRes))
-                                    } else {
-                                        snackBarHost.showSnackbar(context.getString(R.string.kasumi_toast_builtin_failed))
-                                    }
-                                }
-                            }
-                        )
                     }
                 )
             }
-
             SettingsGroupCard(
                 title = stringResource(R.string.app_settings),
                 content = {
@@ -462,17 +200,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         )
                     }
 
-                    SwitchItem(
-                        icon = Icons.Filled.ElectricalServices,
-                        title = stringResource(R.string.settings_auto_jailbreak),
-                        summary = stringResource(R.string.settings_auto_jailbreak_summary),
-                        checked = autoJailbreak,
-                        onCheckedChange = { enabled ->
-                            MagicaHelper.setAutoJailbreakEnabled(context, enabled)
-                            autoJailbreak = enabled
-                        }
-                    )
-
                     // YukiZygisk
                     SettingItem(
                         icon = Icons.Filled.Memory,
@@ -511,24 +238,12 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
                     // 查看使用日志
                     KsuIsValid {
-                        if (isSuLogEnabled) {
-                            SettingItem(
-                                icon = Icons.Filled.Visibility,
-                                title = stringResource(R.string.log_viewer_view_logs),
-                                summary = stringResource(R.string.log_viewer_view_logs_summary),
-                                onClick = {
-                                    navigator.navigate(LogViewerScreenDestination)
-                                }
-                            )
-                        }
-                    }
-                    KsuIsValid {
                         SettingItem(
-                            icon = Icons.Filled.FolderOff,
-                            title = stringResource(R.string.umount_path_manager),
-                            summary = stringResource(R.string.umount_path_manager_summary),
+                            icon = Icons.Filled.Visibility,
+                            title = stringResource(R.string.log_viewer_view_logs),
+                            summary = stringResource(R.string.log_viewer_view_logs_summary),
                             onClick = {
-                                navigator.navigate(UmountManagerScreenDestination)
+                                navigator.navigate(LogViewerScreenDestination)
                             }
                         )
                     }

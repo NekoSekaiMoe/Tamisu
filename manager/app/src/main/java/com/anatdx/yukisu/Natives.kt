@@ -93,114 +93,15 @@ object Natives {
     const val DYNAMIC_MANAGER_FLAG_PRESET = 1 shl 0
     const val DYNAMIC_MANAGER_FLAG_TRUSTED = 1 shl 1
 
-    /**
-     * Get the profile of the given package.
-     * @param key usually the package name
-     * @return return null if failed.
-     */
-    external fun getAppProfile(key: String?, uid: Int): Profile
-    external fun setAppProfile(profile: Profile?): Boolean
-
-    /**
-     * `su` compat mode can be disabled temporarily.
-     *  0: disabled
-     *  1: enabled
-     *  negative : error
-     */
-    external fun isSuEnabled(): Boolean
-    external fun setSuEnabled(enabled: Boolean): Boolean
-
-    external fun isMagiskCompatEnabled(): Boolean
-    external fun setMagiskCompatEnabled(enabled: Boolean): Boolean
-
-    /**
-     * Kernel module umount can be disabled temporarily.
-     *  0: disabled
-     *  1: enabled
-     *  negative : error
-     */
-    external fun isKernelUmountEnabled(): Boolean
-    external fun setKernelUmountEnabled(enabled: Boolean): Boolean
-
-    /**
-     * Enhanced security can be enabled/disabled.
-     *  0: disabled
-     *  1: enabled
-     *  negative : error
-     */
-    external fun isEnhancedSecurityEnabled(): Boolean
-    external fun setEnhancedSecurityEnabled(enabled: Boolean): Boolean
-
-    /**
-     * Su Log can be enabled/disabled.
-     *  0: disabled
-     *  1: enabled
-     *  negative : error
-     */
-    external fun isSuLogEnabled(): Boolean
-    external fun setSuLogEnabled(enabled: Boolean): Boolean
-
-    /**
-     * ADB Root can be enabled/disabled.
-     *  0: disabled
-     *  1: enabled
-     *  negative : error
-     */
-    external fun isAdbRootEnabled(): Boolean
-    external fun setAdbRootEnabled(enabled: Boolean): Boolean
-
-    /**
-     * SELinux Hide can be enabled/disabled.
-     *  0: disabled
-     *  1: enabled
-     *  negative : error
-     */
-    external fun isSelinuxHideEnabled(): Boolean
-    external fun setSelinuxHideEnabled(enabled: Boolean): Boolean
-
-    /**
-     * Global "app profile 防逃逸" default. When on, the default root profile
-     * (used by every profile that resolves to default, incl. the manager and
-     * shell) carries NO_NEW_PRIVS. Persisted via ksud's feature config.
-     */
-    external fun isDefaultNoNewPrivsEnabled(): Boolean
-    external fun setDefaultNoNewPrivsEnabled(enabled: Boolean): Boolean
-
     external fun getHookType(): String
 
     external fun getUserName(uid: Int): String?
 
     /**
-     * SuperKey authentication
-     * Authenticates the manager with the given SuperKey
-     * @param superKey the secret key to authenticate
-     * @return true if authentication successful, false otherwise
-     */
-    external fun authenticateSuperKey(superKey: String): Boolean
-    
-    /**
-     * Check if KSU driver is present (without authentication)
+     * Check if KSU driver is present.
      * @return true if driver fd can be found, false otherwise
      */
     external fun isKsuDriverPresent(): Boolean
-    
-    /**
-     * Check if SuperKey is configured in kernel
-     * @return true if SuperKey is configured, false otherwise
-     */
-    external fun isSuperKeyConfigured(): Boolean
-    
-    /**
-     * Check if already authenticated via SuperKey
-     * @return true if authenticated via SuperKey, false otherwise
-     */
-    external fun isSuperKeyAuthenticated(): Boolean
-    
-    /**
-     * Check if manager signature is considered OK by kernel.
-     * This reflects whether signature-based verification is in effect.
-     */
-    external fun isSignatureOk(): Boolean
 
     /**
      * YukiZygisk injection status as a JSON string, or null when the daemon is
@@ -214,71 +115,9 @@ object Natives {
      *    "yukilinker": Bool, "denylist_mode": Int, "dmesg_log": Bool }`.
      */
     external fun yzQueryStatus(): String?
-    
-    private const val NON_ROOT_DEFAULT_PROFILE_KEY = "$"
-    private const val NOBODY_UID = 9999
-
-    fun setDefaultUmountModules(umountModules: Boolean): Boolean {
-        Profile(
-            NON_ROOT_DEFAULT_PROFILE_KEY,
-            NOBODY_UID,
-            false,
-            umountModules = umountModules
-        ).let {
-            return setAppProfile(it)
-        }
-    }
-
-    fun isDefaultUmountModules(): Boolean {
-        getAppProfile(NON_ROOT_DEFAULT_PROFILE_KEY, NOBODY_UID).let {
-            return it.umountModules
-        }
-    }
 
     fun requireNewKernel(): Boolean {
         if (version != -1 && version < MINIMAL_SUPPORTED_KERNEL) return true
         return isVersionLessThan(getFullVersion(), MINIMAL_SUPPORTED_KERNEL_FULL)
-    }
-
-    @Immutable
-    @Parcelize
-    @Keep
-    data class Profile(
-        // and there is a default profile for root and non-root
-        val name: String,
-        // current uid for the package, this is convivent for kernel to check
-        // if the package name doesn't match uid, then it should be invalidated.
-        val currentUid: Int = 0,
-
-        // if this is true, kernel will grant root permission to this package
-        val allowSu: Boolean = false,
-
-        // these are used for root profile
-        val rootUseDefault: Boolean = true,
-        val rootTemplate: String? = null,
-        val uid: Int = ROOT_UID,
-        val gid: Int = ROOT_GID,
-        val groups: List<Int> = mutableListOf(),
-        val capabilities: List<Int> = mutableListOf(),
-        val context: String = KERNEL_SU_DOMAIN,
-        val namespace: Int = Namespace.INHERITED.ordinal,
-        // root_profile.flags bitmask. Neutral by default; the per-profile UI
-        // seeds the anti-escape toggle from the global default
-        // (isDefaultNoNewPrivsEnabled) when the profile still uses default.
-        val flags: Long = 0L,
-
-        val nonRootUseDefault: Boolean = true,
-        // Default to NOT unmounting modules for non-root apps.
-        // Apps without an explicit profile will keep module modifications applied.
-        val umountModules: Boolean = false,
-        var rules: String = "", // this field is save in ksud!!
-    ) : Parcelable {
-        enum class Namespace {
-            INHERITED,
-            GLOBAL,
-            INDIVIDUAL,
-        }
-
-        constructor() : this("")
     }
 }
