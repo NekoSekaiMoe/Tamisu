@@ -16,11 +16,6 @@
 #define EVENT_BOOT_COMPLETED 2
 #define EVENT_MODULE_MOUNTED 3
 
-// YukiSU kernel su version full strings
-#ifndef KSU_VERSION_FULL
-#define KSU_VERSION_FULL "v1.x-00000000@YukiSU"
-#endif // #ifndef KSU_VERSION_FULL
-
 extern struct cred *ksu_cred;
 extern bool ksu_late_loaded;
 extern bool ksu_no_custom_rc;
