@@ -45,9 +45,10 @@ namespace ksud {
 int ksuctl(int request, void *arg);
 bool uid_granted_root(uint32_t uid);
 bool uid_should_umount(uint32_t uid);
-// Kernel-authenticated manager uid (preset/superkey full uid, dynamic managers
-// excluded); -1 if none. The trust anchor for SO_PEERCRED on GetStatus.
-int get_manager_uid();
+// In the zygisk-only build there is no manager-app concept; the daemon
+// itself runs as root, and the manager APK runs as root too (it gets a
+// ksu driver fd). So the "manager uid" trust anchor for SO_PEERCRED is 0.
+inline int get_manager_uid() { return 0; }
 } // namespace ksud
 
 namespace {
