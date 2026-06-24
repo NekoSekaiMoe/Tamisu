@@ -185,68 +185,6 @@ object KsuCli {
         checkAndInstallKsud()
     }
 
-    data class DynamicManagerSignature(
-        val size: String,
-        val hash: String
-    )
-
-    fun getDynamicManagerFlagsForUid(uid: Int): Int {
-        val items = runCatching { Natives.getDynamicManagers() }.getOrDefault(IntArray(0))
-        val appId = uid % 100000
-        var index = 0
-        while (index + 1 < items.size) {
-            if (items[index] == appId) {
-                return items[index + 1]
-            }
-            index += 2
-        }
-        return 0
-    }
-
-    suspend fun getDynamicManagerSignatureForUid(uid: Int): DynamicManagerSignature? =
-        withContext(Dispatchers.IO) {
-            val stdout = ArrayList<String>()
-            val stderr = ArrayList<String>()
-            val result = getRootShell().newJob()
-                .add(ksudCmd("dynamic get-sign --json --uid $uid"))
-                .to(stdout, stderr)
-                .exec()
-            if (!result.isSuccess) {
-                Log.w(TAG, "dynamic get-sign --uid $uid failed: ${stderr.joinToString("\n")}")
-                return@withContext null
-            }
-
-            runCatching {
-                val v2 = JSONObject(stdout.joinToString("\n")).getJSONObject("v2")
-                if (!v2.optBoolean("has", false)) {
-                    return@runCatching null
-                }
-                val size = v2.optString("size").takeIf { it.isNotBlank() } ?: return@runCatching null
-                val hash = v2.optString("hash").takeIf { it.isNotBlank() } ?: return@runCatching null
-                DynamicManagerSignature(size, hash)
-            }.getOrElse {
-                Log.w(TAG, "Failed to parse dynamic manager signature for uid $uid", it)
-                null
-            }
-        }
-
-    suspend fun setDynamicManagerUid(uid: Int): Boolean = withContext(Dispatchers.IO) {
-        val result = getRootShell().newJob()
-            .add(ksudCmd("dynamic set-uid $uid"))
-            .exec()
-        Log.i(TAG, "dynamic set-uid $uid result: ${result.isSuccess}")
-        result.isSuccess
-    }
-
-    suspend fun deleteDynamicManager(signature: DynamicManagerSignature): Boolean =
-        withContext(Dispatchers.IO) {
-            val result = getRootShell().newJob()
-                .add(ksudCmd("dynamic del ${signature.size} ${signature.hash}"))
-                .exec()
-            Log.i(TAG, "dynamic del ${signature.size} ${signature.hash} result: ${result.isSuccess}")
-            result.isSuccess
-        }
-
     /**
      * Install or update the ksud daemon binary itself, without touching boot image.
      *
@@ -426,10 +364,6 @@ fun getModuleCount(): Int {
         val array = JSONArray(result)
         return array.length()
     }.getOrElse { return 0 }
-}
-
-fun getSuperuserCount(): Int {
-    return Natives.getSuperuserCount()
 }
 
 fun toggleModule(id: String, enable: Boolean): Boolean {
@@ -746,21 +680,6 @@ fun hasMagisk(): Boolean {
     Log.i(TAG, "has magisk: ${result.isSuccess}")
     return result.isSuccess
 }
-
-fun isSepolicyValid(rules: String?): Boolean {
-    if (rules == null) return true
-    return execKsud("sepolicy check '$rules'")
-}
-
-fun getSepolicy(pkg: String): String =
-    ksudReadLines("profile get-sepolicy $pkg").joinToString("\n")
-
-fun setSepolicy(pkg: String, rules: String): Boolean {
-    val ok = execKsud("profile set-sepolicy $pkg '$rules'")
-    Log.i(TAG, "set sepolicy $pkg result: $ok")
-    return ok
-}
-
 fun listAppProfileTemplates(): List<String> =
     ksudReadLines("profile list-templates")
 

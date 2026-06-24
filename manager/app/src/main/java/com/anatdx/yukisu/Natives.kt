@@ -1,10 +1,5 @@
 package com.anatdx.yukisu
 
-import android.os.Parcelable
-import androidx.annotation.Keep
-import androidx.compose.runtime.Immutable
-import kotlinx.parcelize.Parcelize
-
 /**
  * @author weishu
  * @date 2022/12/8.
@@ -19,18 +14,12 @@ object Natives {
     // 12143: breaking: new supercall impl
     const val MINIMAL_SUPPORTED_KERNEL = 10000
 
-    // 12040: Support disable sucompat mode
-    const val KERNEL_SU_DOMAIN = "u:r:su:s0"
-
     const val MINIMAL_SUPPORTED_KERNEL_FULL = "v1.0.0"
 
     const val MINIMAL_NEW_IOCTL_KERNEL = 10000
 
     const val ROOT_UID = 0
     const val ROOT_GID = 0
-
-    /** root_profile.flags: block re-escalation for this profile and its children. */
-    const val FLAG_KSU_NO_NEW_PRIVS = 1L
 
     external fun getFullVersion(): String
 
@@ -83,22 +72,6 @@ object Natives {
      *  is loaded and this process is root). */
     val isManager: Boolean
         get() = isKsuDriverPresent()
-
-    /** Returns total number of apps in allow list — always 0 (allowlist removed). */
-    fun getSuperuserCount(): Int = 0
-
-    /** Allow list — always empty (allowlist removed). */
-    val allowList: IntArray
-        get() = IntArray(0)
-
-    /** uidShouldUmount — always false (umount feature removed). */
-    fun uidShouldUmount(uid: Int): Boolean = false
-
-    /** Dynamic managers — always empty (manager detection removed). */
-    fun getDynamicManagers(): IntArray = IntArray(0)
-
-    const val DYNAMIC_MANAGER_FLAG_PRESET = 1 shl 0
-    const val DYNAMIC_MANAGER_FLAG_TRUSTED = 1 shl 1
 
     external fun getHookType(): String
 

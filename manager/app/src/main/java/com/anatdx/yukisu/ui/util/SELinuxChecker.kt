@@ -22,15 +22,6 @@ fun getSELinuxStatus(context: Context) = SuFile("/sys/fs/selinux/enforce").run {
  *  when the caller only wants a boolean and doesn't care about i18n labels. */
 fun isSELinuxEnforcing(): Boolean = readSELinuxEnforce() == 1
 
-/** Raw SELinux mode label (Enforcing / Permissive / Disabled / Unknown).
- *  Equivalent to `getenforce` but avoids spawning a shell. */
-fun getSELinuxLabel(): String = when (readSELinuxEnforce()) {
-    1 -> "Enforcing"
-    0 -> "Permissive"
-    -1 -> "Disabled"
-    else -> "Unknown"
-}
-
 /** Returns 1/0 from /sys/fs/selinux/enforce, -1 if missing, null if unreadable. */
 private fun readSELinuxEnforce(): Int? = SuFile("/sys/fs/selinux/enforce").run {
     if (!exists()) return@run -1

@@ -41,7 +41,6 @@ class HomeViewModel : ViewModel() {
         val deviceModel: String = "",
         val managerVersion: Pair<String, Long> = Pair("", 0L),
         val seLinuxStatus: String = "",
-        val superuserCount: Int = 0,
         val moduleCount: Int = 0,
         val zygiskImplement: String = "",
         val metaModuleImplement: String = "",
@@ -207,7 +206,6 @@ class HomeViewModel : ViewModel() {
                 if (!isSimpleMode) {
                     val moduleInfo = loadModuleInfo()
                     systemInfo = systemInfo.copy(
-                        superuserCount = moduleInfo.first,
                         moduleCount = moduleInfo.second,
                         zygiskImplement = moduleInfo.third,
                         metaModuleImplement = moduleInfo.fourth
@@ -361,12 +359,6 @@ class HomeViewModel : ViewModel() {
 
     private suspend fun loadModuleInfo(): Tuple4<Int, Int, String, String> {
         return withContext(Dispatchers.IO) {
-            val superuserCount = try {
-                getSuperuserCount()
-            } catch (_: Exception) {
-                0
-            }
-
             val moduleCount = try {
                 getModuleCount()
             } catch (_: Exception) {
@@ -385,7 +377,7 @@ class HomeViewModel : ViewModel() {
                 "None"
             }
 
-            Tuple4(superuserCount, moduleCount, zygiskImplement, metaModuleImplement)
+            Tuple4(0, moduleCount, zygiskImplement, metaModuleImplement)
         }
     }
 

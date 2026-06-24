@@ -34,7 +34,6 @@ fun BottomBar(navController: NavHostController) {
     val isHideOtherInfo = settings.isHideOtherInfo
 
     // 收集计数数据
-    val superuserCount by AppData.DataRefreshManager.superuserCount.collectAsState()
     val moduleCount by AppData.DataRefreshManager.moduleCount.collectAsState()
 
 
