@@ -527,4 +527,19 @@
     <string name="yukizygisk_log_dmesg_summary">将 YukiZygisk 日志输出到内核环形缓冲区（可通过 dmesg 查看）。关闭则保持安静。</string>
     <string name="yukizygisk_uid_fallback">uid %1$d</string>
     <string name="module_zygisk_loaded">已加载</string>
+
+    <!-- Install page: jailbreak (late-load trigger) and Kasumi integration.
+         These UIs are still wired up in Install.kt and must not be deleted. -->
+    <string name="home_click_to_install">点击安装</string>
+    <string name="jailbreak_timeout">越狱可能失败了，请检查日志</string>
+    <string name="install_jailbreak_title">越狱安装</string>
+    <string name="install_jailbreak_summary">在安装页直接触发 late-load。如果当前还没有 root shell，会改为使用 Magica 引导。</string>
+    <string name="install_jailbreak_requires_permissive">只有在 SELinux 为宽容模式时才能使用此功能。</string>
+    <string name="install_jailbreak_button">触发 late-load</string>
+    <string name="install_jailbreak_failed">触发 late-load 失败</string>
+    <string name="kasumi_in_cpio_title">实验：将 Kasumi 刷入 cpio</string>
+    <string name="kasumi_in_cpio_desc">开启后，修补时会加入 Kasumi LKM，开机时紧随 KernelSU 加载</string>
+    <string name="kasumi_custom_lkm_title">自定义 Kasumi LKM</string>
+    <string name="kasumi_custom_lkm_desc">点击选择自定义 .ko 文件（可选，未选择则使用内嵌）</string>
+    <string name="kasumi_use_embedded">清除并使用内嵌 Kasumi</string>
 </resources>

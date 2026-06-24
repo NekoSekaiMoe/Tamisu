@@ -528,4 +528,19 @@
     <string name="yukizygisk_log_dmesg_summary">Route YukiZygisk logs to the kernel ring buffer (visible via dmesg). Off keeps things quiet.</string>
     <string name="yukizygisk_uid_fallback">uid %1$d</string>
     <string name="module_zygisk_loaded">Loaded</string>
+
+    <!-- Install page: jailbreak (late-load trigger) and Kasumi integration.
+         These UIs are still wired up in Install.kt and must not be deleted. -->
+    <string name="home_click_to_install">Click to install</string>
+    <string name="jailbreak_timeout">Jailbreak may have failed, please check logs</string>
+    <string name="install_jailbreak_title">Jailbreak install</string>
+    <string name="install_jailbreak_summary">Trigger late-load from the install page on a permissive device. If no root shell is available yet, Magica bootstrap will be used instead.</string>
+    <string name="install_jailbreak_requires_permissive">This action is only available while SELinux is permissive.</string>
+    <string name="install_jailbreak_button">Trigger late-load</string>
+    <string name="install_jailbreak_failed">Failed to trigger late-load</string>
+    <string name="kasumi_in_cpio_title">Experimental: Embed Kasumi in cpio</string>
+    <string name="kasumi_in_cpio_desc">When enabled, Kasumi LKM will be added to cpio and loaded after KernelSU at boot</string>
+    <string name="kasumi_custom_lkm_title">Custom Kasumi LKM</string>
+    <string name="kasumi_custom_lkm_desc">Tap to select custom .ko file (optional, uses embedded if not set)</string>
+    <string name="kasumi_use_embedded">Clear and use embedded Kasumi</string>
 </resources>
