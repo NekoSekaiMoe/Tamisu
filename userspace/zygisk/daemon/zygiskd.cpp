@@ -31,6 +31,7 @@
 #include <cstring>
 #include <deque>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include <csignal>
@@ -97,7 +98,17 @@ struct Module {
 
 std::vector<Module> g_modules;
 
-/* enabled module = not disabled + ships a zygisk lib for our ABI */
+/* Per-module zygote grant list. When yzconfig.json contains a "zygote_modules"
+ * array, only modules whose id appears here are loaded into zygote. When the
+ * key is absent the filter is inactive (back-compat: load everything). The
+ * array can be empty (load nothing) which is the locked-down default once a
+ * user opts into the grant model. */
+std::unordered_set<std::string> g_granted_modules;
+bool g_grant_filter_active = false;
+
+/* enabled module = not disabled + ships a zygisk lib for our ABI. If the
+ * per-module grant filter is active (yzconfig.json had a "zygote_modules"
+ * array), only modules whose id is in g_granted_modules are loaded. */
 std::vector<Module> scan_modules() {
   std::vector<Module> mods;
   DIR *d = opendir(kModulesDir);
@@ -107,13 +118,17 @@ std::vector<Module> scan_modules() {
   while (dirent *e = readdir(d)) {
     if (e->d_name[0] == '.')
       continue;
-    std::string base = std::string(kModulesDir) + "/" + e->d_name;
+    std::string name = e->d_name;
+    if (g_grant_filter_active &&
+        g_granted_modules.find(name) == g_granted_modules.end())
+      continue;
+    std::string base = std::string(kModulesDir) + "/" + name;
     if (access((base + "/disable").c_str(), F_OK) == 0)
       continue;
     std::string lib = base + "/zygisk/" + kAbi + ".so";
     if (access(lib.c_str(), F_OK) != 0)
       continue;
-    mods.push_back(Module{e->d_name, std::move(lib)});
+    mods.push_back(Module{name, std::move(lib)});
   }
   closedir(d);
   return mods;
@@ -328,6 +343,8 @@ yz_config g_yz_config{};
 
 void read_yzconfig() {
   yz_config cfg{};
+  std::unordered_set<std::string> granted;
+  bool grant_active = false;
   int fd = open(ksud::YZCONFIG_PATH, O_RDONLY | O_CLOEXEC);
   if (fd >= 0) {
     std::string buf;
@@ -344,11 +361,26 @@ void read_yzconfig() {
             static_cast<__u8>(root.at("denylist_mode").as_number());
       if (root.contains("dmesg_log"))
         cfg.dmesg_log = root.at("dmesg_log").as_bool() ? 1 : 0;
+      /* per-module zygote grant list. Present => filter active (even if empty,
+       * which means "load nothing"). Absent => load all (back-compat). */
+      if (root.contains("zygote_modules")) {
+        grant_active = true;
+        const auto& arr = root.at("zygote_modules");
+        if (arr.type == json::Type::Array) {
+          for (const auto& v : arr.as_array()) {
+            if (v.type == json::Type::String)
+              granted.insert(v.s);
+          }
+        }
+      }
     }
   }
   g_yz_config = cfg;
-  DLOGI("yzconfig: yukilinker=%u denylist_mode=%u dmesg_log=%u", cfg.yukilinker,
-        cfg.denylist_mode, cfg.dmesg_log);
+  g_granted_modules = std::move(granted);
+  g_grant_filter_active = grant_active;
+  DLOGI("yzconfig: yukilinker=%u denylist_mode=%u dmesg_log=%u grant=%s(%zu)",
+        cfg.yukilinker, cfg.denylist_mode, cfg.dmesg_log,
+        grant_active ? "on" : "off", g_granted_modules.size());
 }
 
 /* ---- injection telemetry (manager status panel) ------------------------- *
@@ -638,8 +670,10 @@ void nl_drain(int fd) {
       record_injection(
           ev->appid); // telemetry: count + recent, even with 0 mods
       on_specialize(ev->pid, ev->appid);
-    } else if (ev->type == YZ_EV_RELOAD)
+    } else if (ev->type == YZ_EV_RELOAD) {
       read_yzconfig(); // manager changed yzconfig.json; re-read it now
+      g_modules = scan_modules(); // grant list may have changed -> rescan
+    }
   }
 }
 

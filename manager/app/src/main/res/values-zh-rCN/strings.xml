@@ -765,6 +765,10 @@
     <string name="yukizygisk_anon_loading_title">匿名加载（yukilinker）</string>
     <string name="yukizygisk_anon_loading_summary">通过自定义 linker 把模块加载进匿名内存：无模块 fd，maps 读出来像 ART JIT，从不接触 /data/adb/modules。躲开 fd 与 maps 检测。</string>
     <string name="yukizygisk_loaded_modules_count">已加载模块：%1$d</string>
+    <string name="yukizygisk_grant_title">Zygote 模块授权</string>
+    <string name="yukizygisk_grant_filter_title">逐模块授权过滤</string>
+    <string name="yukizygisk_grant_filter_summary">开启后，仅下方勾选的模块会被加载进 zygote；关闭时加载所有已启用的 zygisk 模块。</string>
+    <string name="yukizygisk_grant_empty">未安装任何 zygisk 模块。</string>
     <string name="yukizygisk_denylist_desc">如何处理拒绝名单中的应用。</string>
     <string name="yukizygisk_denylist_off">关闭</string>
     <string name="yukizygisk_denylist_force">强制</string>

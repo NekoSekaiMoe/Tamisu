@@ -766,6 +766,10 @@
     <string name="yukizygisk_anon_loading_title">Anonymous loading (yukilinker)</string>
     <string name="yukizygisk_anon_loading_summary">Load modules into anonymous memory via the custom linker: no module fd, maps read as ART JIT, never touches /data/adb/modules. Hides from fd &amp; maps detectors.</string>
     <string name="yukizygisk_loaded_modules_count">Loaded modules: %1$d</string>
+    <string name="yukizygisk_grant_title">Zygote module grants</string>
+    <string name="yukizygisk_grant_filter_title">Per-module grant filter</string>
+    <string name="yukizygisk_grant_filter_summary">When on, only the modules toggled below are loaded into zygote. When off, every enabled zygisk module is loaded.</string>
+    <string name="yukizygisk_grant_empty">No zygisk modules installed.</string>
     <string name="yukizygisk_denylist_desc">How denylisted apps are handled.</string>
     <string name="yukizygisk_denylist_off">Off</string>
     <string name="yukizygisk_denylist_force">Force</string>

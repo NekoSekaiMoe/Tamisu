@@ -29,6 +29,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Switch
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -39,6 +40,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -71,11 +73,16 @@ import ui.screen.moreSettings.component.SwitchSettingItem
 private const val YZCONFIG_DIR = "/data/adb/ksu/yukizygisk"
 private const val YZCONFIG_PATH = "$YZCONFIG_DIR/yzconfig.json"
 
-/** Mirrors uapi/yukizygisk.h yz_config + the yzconfig.json schema. */
+/** Mirrors uapi/yukizygisk.h yz_config + the yzconfig.json schema.
+ *  zygoteModules: when grantFilterActive is true, only modules whose id is in
+ *  this list are loaded into zygote. grantFilterActive=false (the
+ *  "zygote_modules" key absent) means load everything (back-compat). */
 data class YzConfig(
     val yukilinker: Boolean = false,
     val denylistMode: Int = 0, // 0=off, 1=force-umount+no-inject, 2=inject+umount
     val dmesgLog: Boolean = false,
+    val grantFilterActive: Boolean = false,
+    val zygoteModules: List<String> = emptyList(),
 )
 
 private suspend fun readYzConfig(): YzConfig = withContext(Dispatchers.IO) {
@@ -83,10 +90,18 @@ private suspend fun readYzConfig(): YzConfig = withContext(Dispatchers.IO) {
     if (raw.isNullOrBlank()) return@withContext YzConfig()
     try {
         val o = JSONObject(raw)
+        val hasGrant = o.has("zygote_modules")
+        val granted = if (hasGrant) {
+            o.optJSONArray("zygote_modules")?.let { a ->
+                (0 until a.length()).map { a.getString(it) }
+            } ?: emptyList()
+        } else emptyList()
         YzConfig(
             yukilinker = o.optBoolean("yukilinker", false),
             denylistMode = o.optInt("denylist_mode", 0),
             dmesgLog = o.optBoolean("dmesg_log", false),
+            grantFilterActive = hasGrant,
+            zygoteModules = granted,
         )
     } catch (_: Exception) {
         YzConfig()
@@ -99,6 +114,9 @@ private suspend fun writeYzConfig(cfg: YzConfig) = withContext(Dispatchers.IO) {
         put("yukilinker", cfg.yukilinker)
         put("denylist_mode", cfg.denylistMode)
         put("dmesg_log", cfg.dmesgLog)
+        if (cfg.grantFilterActive) {
+            put("zygote_modules", JSONArray(cfg.zygoteModules))
+        }
     }.toString(2)
     withNewRootShell {
         newJob().add("mkdir -p $YZCONFIG_DIR").exec()
@@ -299,6 +317,31 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
                 )
             }
 
+            // --- Per-module zygote grant ---
+            SettingsCard(title = stringResource(R.string.yukizygisk_grant_title)) {
+                SwitchSettingItem(
+                    icon = Icons.Filled.VerifiedUser,
+                    title = stringResource(R.string.yukizygisk_grant_filter_title),
+                    summary = stringResource(R.string.yukizygisk_grant_filter_summary),
+                    checked = config.grantFilterActive,
+                    onChange = { save(config.copy(grantFilterActive = it)) },
+                )
+                if (config.grantFilterActive) {
+                    val pm = context.packageManager
+                    ZygoteModuleGrantList(
+                        granted = config.zygoteModules.toSet(),
+                        onToggle = { id, on ->
+                            val next = if (on) {
+                                (config.zygoteModules + id).distinct()
+                            } else {
+                                config.zygoteModules - id
+                            }
+                            save(config.copy(zygoteModules = next))
+                        },
+                    )
+                }
+            }
+
             // --- Denylist behaviour ---
             SettingsCard(title = stringResource(R.string.yukizygisk_denylist_behaviour)) {
                 Text(
@@ -413,6 +456,55 @@ private fun DenylistModeSelector(
             ) {
                 Text(label)
             }
+        }
+    }
+}
+
+/** Lists every module under /data/adb/modules that ships a zygisk/<abi>.so,
+ *  with a per-module toggle that adds/removes its id from the grant set. */
+@Composable
+private fun ZygoteModuleGrantList(
+    granted: Set<String>,
+    onToggle: (id: String, on: Boolean) -> Unit,
+) {
+    val shell = getRootShell()
+    val modules by produceState(initialValue = emptyList<String>()) {
+        value = withContext(Dispatchers.IO) {
+            val out = ShellUtils.fastCmd(shell,
+                "for d in /data/adb/modules/*/zygisk/arm64.so /data/adb/modules/*/zygisk/x86_64.so /data/adb/modules/*/zygisk/armeabi-v7a.so; do [ -f \"\$d\" ] && echo \"\$d\"; done")
+            out?.lineSequence()?.mapNotNull { line ->
+                // /data/adb/modules/<id>/zygisk/<abi>.so -> <id>
+                val parts = line.trim().split('/')
+                if (parts.size >= 5) parts[3] else null
+            }?.distinct()?.toList() ?: emptyList()
+        }
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+    ) {
+        if (modules.isEmpty()) {
+            Text(
+                stringResource(R.string.yukizygisk_grant_empty),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(vertical = 8.dp),
+            )
+        }
+        modules.forEach { id ->
+            ListItem(
+                headlineContent = { Text(id) },
+                trailingContent = {
+                    Switch(
+                        checked = id in granted,
+                        onCheckedChange = { onToggle(id, it) },
+                    )
+                },
+                colors = ListItemDefaults.colors(
+                    containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                ),
+            )
         }
     }
 }
