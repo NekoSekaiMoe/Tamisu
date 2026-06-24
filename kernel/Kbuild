@@ -25,7 +25,6 @@ kernelsu-objs += runtime/boot_event.o
 kernelsu-objs += runtime/ksud_integration.o
 kernelsu-objs += infra/seccomp_cache.o
 kernelsu-objs += infra/file_wrapper.o
-kernelsu-objs += infra/event_queue.o
 
 kernelsu-objs += selinux/selinux.o
 kernelsu-objs += selinux/sepolicy.o
