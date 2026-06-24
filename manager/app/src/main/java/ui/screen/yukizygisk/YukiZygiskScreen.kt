@@ -321,7 +321,7 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
             // --- Per-module zygote grant ---
             SettingsCard(title = stringResource(R.string.yukizygisk_grant_title)) {
                 SwitchSettingItem(
-                    icon = Icons.Filled.Security,
+                    icon = Icons.Filled.Extension,
                     title = stringResource(R.string.yukizygisk_grant_filter_title),
                     summary = stringResource(R.string.yukizygisk_grant_filter_summary),
                     checked = config.grantFilterActive,
