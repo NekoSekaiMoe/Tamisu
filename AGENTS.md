@@ -1,15 +1,74 @@
 # AGENTS.md
 
-YukiSU / KernelSU fork: Android kernel-level root delivered as a loadable kernel module (LKM) + userspace daemon (`ksud`) + Manager APK. Built-in kernel (=y) is **not** supported — only `=m`.
+Tamisu: a **kernel-level Zygisk provider** (à la ZygiskNext), not a root
+provider. Built on the KernelSU LKM architecture + YukiSU's YukiZygisk
+injection. Designed to coexist with a separate root solution (KernelSU,
+Magisk, APatch) — Tamisu owns zygote injection, the root solution owns
+`su` / app profile / modules. Delivered as a loadable kernel module
+(LKM) + userspace daemon (`ksud`) + Manager APK. Built-in kernel (`=y`)
+is **not** supported — only `=m`.
+
+## Zygisk coexistence priority
+
+Only one provider may inject into zygote — two PLT-hook frameworks in
+one process crash. Tamisu auto-resolves the priority:
+
+1. **Magisk Zygisk** > Tamisu — if `magisk --sqlite ... zygisk=1`,
+   Tamisu's `zygiskd` does not start (see `is_magisk_zygisk_enabled()`
+   in `userspace/ksud/src/utils.cpp`, gated in
+   `init_event.cpp:ensure_zygiskd_running_if_enabled`).
+2. **Tamisu** > module zygisk daemons — when Tamisu is active, modules
+   `zygisksu` (ZygiskNext + NeoZygisk) and `rezygisk` (ReZygisk) are
+   force-skipped at stage-script / sepolicy / system.prop / zygisk
+   payload scan time (see `is_zygisk_impl_module()`).
+
+## Interface decoupling from KernelSU (plan B)
+
+Tamisu and upstream KernelSU can coexist on the same kernel because
+their wire formats are distinct:
+
+| Concern | KernelSU | Tamisu |
+|---|---|---|
+| Anonymous inode name | `[ksu_driver]` | `[tamisu]` |
+| Ioctl magic | `'K'` | `'T'` |
+| Reboot handshake magic | `0xDEADBEEF`/`0xCAFEBABE` | `0x7AB1C0DE`/`0xDEADF00D` |
+| Late-load detection | `/sys/module/kernelsu` | `/sys/module/tamisu` |
+| Netlink protocol | n/a | `YZ_NETLINK_PROTO=27` (private, 23..31 range) |
+
+Userspace (`ksud`, manager JNI) discovers the driver fd by scanning
+`readlink("/proc/self/fd/*")` for the literal `[tamisu]`. **Do not**
+revert any of these to the KernelSU values — they must stay in sync
+across `uapi/supercall.h`, `uapi/yukizygisk.h`,
+`kernel/supercall/supercall.c`, `userspace/ksud/src/core/ksucalls.cpp`,
+`userspace/ksud/src/late_load.cpp`, `manager/app/src/main/cpp/ksu.c`.
 
 ## Repo layout (what owns what)
 
-- `kernel/` — the `kernelsu.ko` LKM source (C). Built via DDK against a specific Android KMI (e.g. `android16-6.12`). `kernel/Kconfig` + `kernel/Kbuild` are the source of truth for which objects/CONFIG flags exist. `CONFIG_KSU=m` is mandatory.
-- `userspace/ksud/` — the daemon. Embeds assets (`.ko` modules, zygisk payloads) via `scripts/embed_assets.py` at configure time. Requires CMake + Ninja + Clang (no GCC — LTO/`-faddrsig` need Clang). Git submodules (`third_party/MagiskbootAlone`, `bootctlAlone`, `resetpropAlone`, `ndk-busybox`) are required: `git submodule update --init --recursive`.
-- `userspace/zygisk/{loader,core}/` — standalone CMake+Ninja projects. Each is built **separately**, then its binary is copied into `userspace/ksud/assets/` **before** ksud configures, so `embed_assets.py` picks it up. ksud does **not** compile zygisk itself.
-- `manager/` — Android app (Gradle 9.2, AGP 8.13, Kotlin 2.2, Compose, JDK 17). Packages `ksud` as `app/src/main/jniLibs/<abi>/libksud.so`. Version code/name derived from `git describe --tags`.
-- `uapi/` — shared UAPI headers; `kernel/include/uapi` mirrors these. If you change a supercall/profile struct here, update both sides.
-- `scripts/build.sh` — one-shot local build orchestrator (LKM → zygisk → ksud → Manager). See it for the exact stage order and asset-staging rules.
+- `kernel/` — the `tamisu.ko` LKM source (C). Built via DDK against a
+  specific Android KMI (e.g. `android16-6.12`). `kernel/Kconfig` +
+  `kernel/Kbuild` are the source of truth for which objects/CONFIG flags
+  exist. `CONFIG_TAMISU=m` is mandatory; `CONFIG_TAMISU_DEBUG=y` enables
+  verbose klog. **No `CONFIG_KSU` and no `CONFIG_KSU_SUPERKEY`** — those
+  are gone.
+- `userspace/ksud/` — the daemon. Embeds assets (`.ko` modules, zygisk
+  payloads) via `scripts/embed_assets.py` at configure time. Requires
+  CMake + Ninja + Clang (no GCC — LTO/`-faddrsig` need Clang). Git
+  submodules (`third_party/MagiskbootAlone`, `bootctlAlone`,
+  `resetpropAlone`, `ndk-busybox`) are required:
+  `git submodule update --init --recursive`.
+- `userspace/zygisk/{loader,core}/` — standalone CMake+Ninja projects.
+  Each is built **separately**, then its binary is copied into
+  `userspace/ksud/assets/` **before** ksud configures, so
+  `embed_assets.py` picks it up. ksud does **not** compile zygisk itself.
+- `manager/` — Android app (Gradle 9.2, AGP 8.13, Kotlin 2.2, Compose,
+  JDK 17). Packages `ksud` as `app/src/main/jniLibs/<abi>/libksud.so`.
+  Version code/name derived from `git describe --tags`.
+- `uapi/` — shared UAPI headers; `kernel/include/uapi` mirrors these. If
+  you change a supercall/profile struct here, update **both sides** plus
+  `manager/app/src/main/cpp/` which consumes the same headers.
+- `scripts/build.sh` — one-shot local build orchestrator (LKM → zygisk
+  → ksud → Manager). See it for the exact stage order and asset-staging
+  rules.
 
 ## Build & verify commands
 
@@ -19,7 +78,10 @@ Local full build (macOS/Linux, needs Docker for the DDK LKM step):
 ANDROID_NDK_HOME=... ./scripts/build.sh -k android16-6.12 -a arm64-v8a
 ```
 
-Flags: `--skip-lkm`, `--skip-kasumi` (Kasumi LKM is a separate external repo, default `/Volumes/Workspace/Kasumi`; override with `--kasumi-dir` or `KASUMI_DIR`), `-i` to `adb install` after. ABI ∈ {arm64-v8a, x86_64, armeabi-v7a}.
+Flags: `--skip-lkm`, `--skip-kasumi` (Kasumi LKM is a separate external
+repo, default `/Volumes/Workspace/Kasumi`; override with `--kasumi-dir`
+or `KASUMI_DIR`), `-i` to `adb install` after. ABI ∈ {arm64-v8a,
+x86_64, armeabi-v7a}.
 
 Manager APK only:
 
@@ -39,27 +101,65 @@ ninja
 Kernel LKM (inside DDK docker, `kernel/`):
 
 ```
-CONFIG_KSU=m CONFIG_KSU_SUPERKEY=y CC=clang make -j$(nproc)
+CONFIG_TAMISU=m CC=clang make -j$(nproc)
 ```
 
 ## Lint / format / checks (CI-enforced)
 
-- **C/C++ format** (kernel): `cd kernel && make check-format` (clang-format `--Werror`). Apply with `make format`. CI: `clang-format.yml`.
-- **clang-tidy** (ksud CMake): **on by default and `WarningsAsErrors: '*'`** — any tidy diagnostic fails the build. Driven by root `.clang-tidy`. Disable only with `-DKSUD_ENABLE_CLANG_TIDY=OFF` (do not do this casually). Only applies to ksud's own sources; `third_party/` and FetchContent are filtered out.
-- **ShellCheck** on all `.sh` except `gradlew` and `userspace/ksud/assets/installer.sh`.
-- **pre-commit hook** (`.githooks/pre-commit`): auto-runs `fix_endif_comments.py` then `clang-format -i` on staged C/C++ files and re-stages. Install with `git config core.hooksPath .githooks`. Note: the hook rewrites `#endif` lines to add matching comments — expect diffs on preprocessor blocks.
+- **C/C++ format** (kernel): `cd kernel && make check-format`
+  (clang-format `--Werror`). Apply with `make format`. CI:
+  `clang-format.yml`.
+- **clang-tidy** (ksud CMake): **on by default and
+  `WarningsAsErrors: '*'`** — any tidy diagnostic fails the build.
+  Driven by root `.clang-tidy`. Disable only with
+  `-DKSUD_ENABLE_CLANG_TIDY=OFF` (do not do this casually). Only applies
+  to ksud's own sources; `third_party/` and FetchContent are filtered
+  out.
+- **ShellCheck** on all `.sh` except `gradlew` and
+  `userspace/ksud/assets/installer.sh`.
+- **pre-commit hook** (`.githooks/pre-commit`): auto-runs
+  `fix_endif_comments.py` then `clang-format -i` on staged C/C++ files
+  and re-stages. Install with `git config core.hooksPath .githooks`.
+  Note: the hook rewrites `#endif` lines to add matching comments —
+  expect diffs on preprocessor blocks.
 - Manager: `lint { abortOnError = true }`.
 
 ## Conventions & gotchas
 
-- **Asset staging order matters.** `.ko` modules and zygisk payloads must exist in `userspace/ksud/assets/` before ksud CMake configure, or they won't be embedded. `scripts/build.sh` and the `ksud.yml` workflow enforce this; if you build ksud manually you must replicate it.
-- **KMI tagging.** Kasumi LKMs are named `<KMI>_<arch>_kasumi_lkm.ko` (e.g. `android16-6.12_arm64_kasumi_lkm.ko`); `lkm.cpp` and CI assert this exact form. ksud for arm64 fails CI if no KMI-tagged Kasumi asset is embedded.
-- **Sign via env, not files.** Manager signing reads `YUKISU_KEYSTORE`, `YUKISU_KEYSTORE_PASSWORD`, `YUKISU_KEY_ALIAS`, `YUKISU_KEY_PASSWORD` (mapped to gradle props by `app/build.gradle.kts`). Example config in `manager/sign.example.properties`. Never commit real keystore creds.
-- **Kasumi LKM = arm64-only** in DDK CI; `full_archs` only expands ksud to x86_64/armv7.
+- **Asset staging order matters.** `.ko` modules and zygisk payloads
+  must exist in `userspace/ksud/assets/` before ksud CMake configure, or
+  they won't be embedded. `scripts/build.sh` and the `ksud.yml` workflow
+  enforce this; if you build ksud manually you must replicate it.
+- **Build id, not version code.** Kbuild passes the build timestamp as
+  a string literal via `-DKSU_VERSION_STR='"$(date)"'` (note the
+  triple-nested quoting — both `make` and the shell strip quotes). The
+  `__u32 version` field in `ksu_get_info_cmd` is the fixed ABI code
+  (`KERNEL_SU_VERSION = 12000u`), **not** the timestamp; the full
+  timestamp is fetched separately via `KSU_IOCTL_GET_FULL_VERSION` and
+  exposed as `KSU_VERSION_STR` in `pr_info` / `version_full[]`.
+- **KMI tagging.** Kasumi LKMs are named
+  `<KMI>_<arch>_kasumi_lkm.ko` (e.g.
+  `android16-6.12_arm64_kasumi_lkm.ko`); `lkm.cpp` and CI assert this
+  exact form. ksud for arm64 fails CI if no KMI-tagged Kasumi asset is
+  embedded.
+- **Sign via env, not files.** Manager signing reads `YUKISU_KEYSTORE`,
+  `YUKISU_KEYSTORE_PASSWORD`, `YUKISU_KEY_ALIAS`,
+  `YUKISU_KEY_PASSWORD` (mapped to gradle props by
+  `app/build.gradle.kts`). Example config in
+  `manager/sign.example.properties`. Never commit real keystore creds.
+- **Kasumi LKM = arm64-only** in DDK CI; `full_archs` only expands ksud
+  to x86_64/armv7.
 - **NDK min API 28** for ksud (bionic symbols); Manager `minSdk` 26.
-- **No built-in support / no `=y`.** `kernel/setup.sh` integrates into an out-of-tree kernel source tree; it symlinks `kernel/` into `<kernel>/drivers/kernelsu`.
-- Branch `dev` exists alongside `main`; `feat/kasumi*` branches auto-select Kasumi `dev` ref in CI.
+- **No built-in support / no `=y`.** `kernel/setup.sh` integrates into
+  an out-of-tree kernel source tree; it symlinks `kernel/` into
+  `<kernel>/drivers/kernelsu` (path kept for upstream-compat; the
+  module itself is `tamisu.o`).
+- **Default branch is `edge`** on `NekoSekaiMoe/Tamisu` (not `main` /
+  `dev`). PRs target `edge`. Old `dev`/`main` references in tooling are
+  stale.
 
 ## Testing
 
-No unit-test suite. Verification = CI workflows building every KMI/arch matrix + `check-format` + `shellcheck` + clang-tidy. Treat a clean `scripts/build.sh` run + passing CI as the bar.
+No unit-test suite. Verification = CI workflows building every KMI/arch
+matrix + `check-format` + `shellcheck` + clang-tidy. Treat a clean
+`scripts/build.sh` run + passing CI as the bar.
