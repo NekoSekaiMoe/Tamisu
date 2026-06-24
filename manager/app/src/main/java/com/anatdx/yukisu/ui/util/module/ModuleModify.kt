@@ -63,7 +63,6 @@ object ModuleModify {
         }
     }
 
-    @Composable
     suspend fun backupModules(context: Context, snackBarHost: SnackbarHostState, uri: Uri) {
         withContext(Dispatchers.IO) {
             try {
@@ -217,8 +216,6 @@ object ModuleModify {
         }
     }
 
-    @Composable
-    @Composable
     fun createBackupIntent(): Intent {
         return Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
