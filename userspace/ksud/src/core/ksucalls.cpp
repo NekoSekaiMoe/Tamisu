@@ -5,7 +5,6 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
-#include <sys/prctl.h>
 #include <sys/syscall.h>
 #include <unistd.h>
 #include <array>
@@ -18,11 +17,6 @@
 namespace ksud {
 
 namespace {
-
-struct PrctlGetFdCmd {
-    int32_t result{};
-    int32_t fd{};
-};
 
 int g_driver_fd = -1;
 bool g_driver_fd_init = false;
@@ -83,15 +77,7 @@ auto init_driver_fd() -> int {
         return driver_fd;
     }
 
-    // Method 2: Try prctl to get fd (SECCOMP-safe)
-    PrctlGetFdCmd prctl_cmd = {-1, -1};
-    prctl(KSU_PRCTL_GET_FD, &prctl_cmd, 0, 0, 0);
-    if (prctl_cmd.result == 0 && prctl_cmd.fd >= 0) {
-        LOGD("Got driver fd via prctl: %d", prctl_cmd.fd);
-        return prctl_cmd.fd;
-    }
-
-    // Method 3: Fallback to reboot syscall (may be blocked by SECCOMP)
+    // Method 2: Fallback to reboot syscall (may be blocked by SECCOMP)
     int fd_reboot = -1;  // NOLINT(misc-const-correctness) written via pointer by syscall
     syscall(SYS_reboot, KSU_INSTALL_MAGIC1, KSU_INSTALL_MAGIC2, 0, &fd_reboot);
     if (fd_reboot >= 0) {

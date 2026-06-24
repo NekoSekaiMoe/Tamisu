@@ -24,12 +24,6 @@ extern "C" {
 #define KSU_INSTALL_MAGIC1 0xDEADBEEF
 #define KSU_INSTALL_MAGIC2 0xCAFEBABE
 
-// prctl command structures
-struct ksu_prctl_get_fd_cmd {
-  int result;
-  int fd;
-};
-
 #define EVENT_POST_FS_DATA 1
 #define EVENT_BOOT_COMPLETED 2
 #define EVENT_MODULE_MOUNTED 3

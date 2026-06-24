@@ -8,8 +8,6 @@
 #include "prelude.h"
 #include <stdint.h>
 #include <sys/ioctl.h>
-#include <sys/prctl.h>
-#include <sys/syscall.h>
 #include <sys/types.h>
 
 // --- Kernel UAPI headers (single source of truth) ---

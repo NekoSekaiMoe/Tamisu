@@ -60,26 +60,9 @@ static inline int scan_driver_fd() {
   return found;
 }
 
-static inline int request_driver_fd_via_prctl() {
-  struct ksu_prctl_get_fd_cmd cmd = {
-      .result = -1,
-      .fd = -1,
-  };
-
-  long ret = prctl(KSU_PRCTL_GET_FD, &cmd, 0, 0, 0);
-  (void)ret;
-  if (cmd.result == 0 && cmd.fd >= 0) {
-    return cmd.fd;
-  }
-  return -1;
-}
-
 static int ksuctl(unsigned long op, void *arg) {
   if (fd < 0) {
     fd = scan_driver_fd();
-    if (fd < 0) {
-      fd = request_driver_fd_via_prctl();
-    }
   }
   return ioctl(fd, op, arg);
 }
@@ -141,9 +124,6 @@ void get_hook_type(char *hook_type) {
 bool ksu_driver_present(void) {
   if (fd < 0) {
     fd = scan_driver_fd();
-    if (fd < 0) {
-      fd = request_driver_fd_via_prctl();
-    }
   }
   return fd >= 0;
 }
