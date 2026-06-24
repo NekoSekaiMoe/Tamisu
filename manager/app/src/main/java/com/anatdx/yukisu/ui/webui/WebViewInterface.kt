@@ -238,7 +238,7 @@ class WebViewInterface(
             val obj = JSONObject()
             obj.put("packageName", pkgName)
             if (pkg != null) {
-                val app = pkg.applicationInfo
+                val app = pkg.applicationInfo!!
                 obj.put("versionName", pkg.versionName ?: "")
                 obj.put("versionCode", PackageInfoCompat.getLongVersionCode(pkg))
                 obj.put("appLabel", pm.getApplicationLabel(app))

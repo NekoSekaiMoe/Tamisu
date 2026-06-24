@@ -66,6 +66,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import ui.screen.moreSettings.component.SettingsCard
 import ui.screen.moreSettings.component.SwitchSettingItem
@@ -320,7 +321,7 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
             // --- Per-module zygote grant ---
             SettingsCard(title = stringResource(R.string.yukizygisk_grant_title)) {
                 SwitchSettingItem(
-                    icon = Icons.Filled.VerifiedUser,
+                    icon = Icons.Filled.Security,
                     title = stringResource(R.string.yukizygisk_grant_filter_title),
                     summary = stringResource(R.string.yukizygisk_grant_filter_summary),
                     checked = config.grantFilterActive,

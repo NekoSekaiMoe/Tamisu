@@ -339,12 +339,6 @@ private fun AdvancedSettings(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val rebootMsg = stringResource(R.string.reboot_to_apply)
-    val enhancedStatus by produceState(initialValue = "") {
-        value = getFeatureStatus("enhanced_security")
-    }
-    val magiskCompatStatus by produceState(initialValue = "") {
-        value = getFeatureStatus("magisk_compat")
-    }
 
     SettingsCard(title = stringResource(R.string.advanced_settings)) {
 
@@ -369,46 +363,6 @@ private fun AdvancedSettings(
         )
 
         SettingsDivider()
-
-        SwitchSettingItem(
-            icon = Icons.Rounded.EnhancedEncryption,
-            title = stringResource(R.string.settings_enable_enhanced_security),
-            summary = when (enhancedStatus) {
-                "unsupported" -> stringResource(R.string.feature_status_unsupported_summary)
-                "managed" -> stringResource(R.string.feature_status_managed_summary)
-                else -> stringResource(R.string.settings_enable_enhanced_security_summary)
-            },
-            checked = state.enhancedSecurityEnabled,
-            enabled = enhancedStatus == "supported",
-            onChange = handlers::handleEnhancedSecurityChange,
-        )
-
-        SwitchSettingItem(
-            icon = Icons.Filled.AdminPanelSettings,
-            title = stringResource(R.string.allow_any_dynamic_manager),
-            summary = stringResource(R.string.allow_any_dynamic_manager_summary),
-            checked = state.allowAnyDynamicManager,
-            onChange = handlers::handleAllowAnyDynamicManagerChange
-        )
-
-        SwitchSettingItem(
-            icon = Icons.Filled.Security,
-            title = stringResource(R.string.magisk_compat_title),
-            summary = when (magiskCompatStatus) {
-                "unsupported" -> stringResource(R.string.feature_status_unsupported_summary)
-                "managed" -> stringResource(R.string.feature_status_managed_summary)
-                else -> stringResource(R.string.magisk_compat_summary)
-            },
-            checked = state.magiskCompatEnabled,
-            enabled = magiskCompatStatus == "supported",
-            onChange = { enabled ->
-                if (handlers.handleMagiskCompatChange(enabled) && enabled) {
-                    coroutineScope.launch {
-                        snackBarHost.showSnackbar(rebootMsg)
-                    }
-                }
-            },
-        )
 
         SettingsDivider()
 

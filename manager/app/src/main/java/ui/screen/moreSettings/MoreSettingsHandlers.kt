@@ -25,16 +25,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
-import com.anatdx.yukisu.Natives
 import com.anatdx.yukisu.R
 import com.anatdx.yukisu.ui.component.ConfirmResult
 import com.anatdx.yukisu.ui.component.rememberConfirmDialog
 import com.anatdx.yukisu.ui.screen.SettingItem
 import com.anatdx.yukisu.ui.screen.SwitchItem
 import com.anatdx.yukisu.ui.theme.*
-import com.anatdx.yukisu.ui.util.DynamicManagerSettings
-import com.anatdx.yukisu.ui.util.*
 import com.anatdx.yukisu.ui.util.execKsud
+import com.anatdx.yukisu.ui.util.*
 import com.anatdx.yukisu.ui.util.getRootShell
 import com.anatdx.yukisu.ui.util.isSELinuxEnforcing
 import com.anatdx.yukisu.ui.util.ksudReadString
@@ -91,8 +89,6 @@ class MoreSettingsHandlers(
 
         state.selinuxEnabled = isSELinuxEnforcing()
         state.hideBlEnabled = ksudReadString("feature hide-bl").contains("enabled")
-        state.enhancedSecurityEnabled = Natives.isEnhancedSecurityEnabled()
-        state.magiskCompatEnabled = Natives.isMagiskCompatEnabled()
     }
 
     fun handleThemeModeChange(index: Int) {
@@ -295,27 +291,6 @@ class MoreSettingsHandlers(
     fun handleWebUIXErudaChange(newValue: Boolean) {
         prefs.edit { putBoolean("use_webuix_eruda", newValue) }
         state.useWebUIXEruda = newValue
-    }
-
-    fun handleAllowAnyDynamicManagerChange(newValue: Boolean) {
-        DynamicManagerSettings.setAllowAnyApp(context, newValue)
-        state.allowAnyDynamicManager = newValue
-    }
-
-    fun handleEnhancedSecurityChange(enabled: Boolean) {
-        if (Natives.setEnhancedSecurityEnabled(enabled)) {
-            execKsud("feature save", true)
-            state.enhancedSecurityEnabled = Natives.isEnhancedSecurityEnabled()
-        }
-    }
-
-    fun handleMagiskCompatChange(enabled: Boolean): Boolean {
-        if (!Natives.setMagiskCompatEnabled(enabled)) return false
-        execKsud("feature save", true)
-        // Enabling defers the mount until boot; disabling tears it down now.
-        execKsud("magisk-compat apply", true)
-        state.magiskCompatEnabled = Natives.isMagiskCompatEnabled()
-        return true
     }
 
     fun handleSelinuxChange(enabled: Boolean) {

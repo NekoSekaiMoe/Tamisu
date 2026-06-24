@@ -14,7 +14,6 @@ import com.anatdx.yukisu.Natives
 import com.anatdx.yukisu.R
 import com.anatdx.yukisu.ui.theme.CardConfig
 import com.anatdx.yukisu.ui.theme.ThemeConfig
-import com.anatdx.yukisu.ui.util.DynamicManagerSettings
 
 @Stable
 class MoreSettingsState(
@@ -53,11 +52,6 @@ class MoreSettingsState(
     var enableWebDebugging by mutableStateOf(prefs.getBoolean("enable_web_debugging", false))
     var useWebUIXEruda by mutableStateOf(prefs.getBoolean("use_webuix_eruda", false))
     var webuiEngine by mutableStateOf(prefs.getString("webui_engine", "default") ?: "default")
-    var allowAnyDynamicManager by mutableStateOf(
-        prefs.getBoolean(DynamicManagerSettings.KEY_ALLOW_ANY_DYNAMIC_MANAGER, false)
-    )
-    var enhancedSecurityEnabled by mutableStateOf(Natives.isEnhancedSecurityEnabled())
-    var magiskCompatEnabled by mutableStateOf(Natives.isMagiskCompatEnabled())
 
     var selinuxEnabled by mutableStateOf(false)
 
