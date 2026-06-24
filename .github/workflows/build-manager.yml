@@ -262,23 +262,3 @@ jobs:
         with:
           name: Manager-${{ matrix.abi }}
           path: dist/
-
-      - name: Upload to telegram
-        if: matrix.abi == 'arm64-v8a' && steps.need_upload.outputs.UPLOAD == 'true' && steps.determine.outputs.SKIP != 'true'
-        env:
-          CHAT_ID: ${{ vars.CHAT_ID }}
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          MESSAGE_THREAD_ID: ${{ steps.determine.outputs.topicid }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-          COMMIT_URL: ${{ github.event.head_commit.url }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          TITLE: ${{ steps.determine.outputs.title }}
-          BRANCH: ${{ github.ref_name }}
-        run: |
-          if [ -n "$BOT_TOKEN" ]; then
-            export VERSION
-            VERSION=$(git rev-list --count HEAD)
-            mapfile -t APKS < <(find ./dist -name "*.apk")
-            pip3 install telethon
-            python3 "$GITHUB_WORKSPACE/scripts/ksubot.py" "${APKS[@]}"
-          fi
