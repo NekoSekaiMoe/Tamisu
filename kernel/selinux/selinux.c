@@ -212,24 +212,7 @@ bool is_zygote(const struct cred *cred)
 
 bool is_init(const struct cred *cred)
 {
-	return is_sid_match(cred, cached_init_sid, INIT_CONTEXT);
-}
-
-void escape_to_root_for_adb_root(void)
-{
-	struct cred *cred = prepare_creds();
-	if (!cred) {
-		pr_err("Failed to prepare adbd creds\n");
-		return;
-	}
-
-	if (transive_to_domain(KERNEL_SU_CONTEXT, cred, true)) {
-		pr_err("transive domain failed.\n");
-		abort_creds(cred);
-		return;
-	}
-
-	commit_creds(cred);
+ 	return is_sid_match(cred, cached_init_sid, INIT_CONTEXT);
 }
 
 u32 ksu_get_ksu_file_sid()
