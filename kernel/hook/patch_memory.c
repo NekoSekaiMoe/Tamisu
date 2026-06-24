@@ -88,10 +88,8 @@ fail:
 		unsigned long __end = __start + (sz);                          \
 		dcache_clean_inval_poc(__start, __end);                        \
 	})
-#define ksu_flush_icache(start, end) caches_clean_inval_pou
 #else
 #define ksu_flush_dcache(start, sz) __flush_dcache_area((void *)start, sz)
-#define ksu_flush_icache(start, end) __flush_icache_range
 #endif // #ifdef KSU_HAS_NEW_DCACHE_FLUSH
 
 struct patch_text_info {
@@ -129,8 +127,6 @@ static int ksu_patch_text_nosync(void *dst, void *src, size_t len, int flags)
 	clear_fixmap(FIX_TEXT_POKE0);
 
 	if (!ret) {
-		if (flags & KSU_PATCH_TEXT_FLUSH_ICACHE)
-			ksu_flush_icache((uintptr_t)dst, (uintptr_t)dst + len);
 		if (flags & KSU_PATCH_TEXT_FLUSH_DCACHE)
 			ksu_flush_dcache((unsigned long)dst, len);
 	}

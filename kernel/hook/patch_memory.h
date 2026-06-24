@@ -22,7 +22,6 @@
 #endif // #ifdef __aarch64__
 
 #define KSU_PATCH_TEXT_FLUSH_DCACHE 1
-#define KSU_PATCH_TEXT_FLUSH_ICACHE 2
 
 unsigned long phys_from_virt(unsigned long addr, int *err);
 int ksu_patch_text(void *dst, void *src, size_t len, int flags);

@@ -55,15 +55,6 @@ static int transive_to_domain(const char *domain, struct cred *cred,
 	return error;
 }
 
-void setup_selinux(const char *domain)
-{
-	if (transive_to_domain(domain, (struct cred *)__task_cred(current),
-			       false)) {
-		pr_err("transive domain failed.\n");
-		return;
-	}
-}
-
 void setup_ksu_cred(void)
 {
 	if (ksu_cred &&
@@ -198,11 +189,6 @@ bool is_sid_match(const struct cred *cred, u32 cached_sid,
 bool is_task_ksu_domain(const struct cred *cred)
 {
 	return is_sid_match(cred, cached_su_sid, KERNEL_SU_CONTEXT);
-}
-
-bool is_ksu_domain()
-{
-	return is_task_ksu_domain(current_cred());
 }
 
 bool is_zygote(const struct cred *cred)

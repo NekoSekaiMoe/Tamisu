@@ -9,7 +9,6 @@
 #include "runtime/ksud.h"
 #include "selinux/selinux.h"
 
-bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;
 
 void on_post_fs_data(void)
@@ -32,7 +31,6 @@ void on_post_fs_data(void)
 void on_module_mounted(void)
 {
 	pr_info("on_module_mounted!\n");
-	ksu_module_mounted = true;
 }
 
 void on_boot_completed(void)

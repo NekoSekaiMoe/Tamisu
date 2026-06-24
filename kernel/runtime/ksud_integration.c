@@ -138,19 +138,17 @@ fail:
 }
 
 /*
- * IMPORTANT NOTE: the TSR execve path still cannot rely on envp/flags on some
- * GKI kernels, so callers may legitimately pass NULL for those arguments.
+ * IMPORTANT NOTE: the TSR execve path still cannot rely on envp on some
+ * GKI kernels, so callers may legitimately pass NULL for that argument.
  */
 void ksu_handle_execveat_ksud(const char *filename, struct user_arg_ptr *argv,
-			      struct user_arg_ptr *envp, int *flags)
+			      struct user_arg_ptr *envp)
 {
 	static const char app_process[] = "/system/bin/app_process";
 	static bool first_zygote = true;
 	static const char system_bin_init[] = "/system/bin/init";
 	static const char old_system_init[] = "/init";
 	static bool init_second_stage_executed = false;
-
-	(void)flags;
 
 	if (!filename)
 		return;
@@ -264,7 +262,7 @@ void ksu_execve_hook_ksud(const struct pt_regs *regs)
 		return;
 	}
 
-	ksu_handle_execveat_ksud(path, &argv, NULL, NULL);
+	ksu_handle_execveat_ksud(path, &argv, NULL);
 }
 
 /*

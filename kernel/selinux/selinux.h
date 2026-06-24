@@ -15,15 +15,11 @@
 #define ZYGOTE_CONTEXT "u:r:zygote:s0"
 #define INIT_CONTEXT "u:r:init:s0"
 
-void setup_selinux(const char *);
-
 void setenforce(bool);
 
 bool getenforce(void);
 
 bool is_task_ksu_domain(const struct cred *cred);
-
-bool is_ksu_domain(void);
 
 bool is_zygote(const struct cred *cred);
 

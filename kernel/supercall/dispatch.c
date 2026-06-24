@@ -24,7 +24,6 @@
 #include "ksu.h"
 #include "runtime/ksud_boot.h"
 #include "runtime/ksud.h"
-#include "infra/seccomp_cache.h"
 #include "selinux/selinux.h"
 #include "supercall/supercall.h"
 #include "supercall/internal.h"

@@ -861,11 +861,6 @@ bool ksu_typeattribute(struct policydb *db, const char *type, const char *attr)
 	return add_typeattribute(db, type, attr);
 }
 
-bool ksu_exists(struct policydb *db, const char *type)
-{
-	return symtab_search(&db->p_types, type) != NULL;
-}
-
 // Access vector rules
 bool ksu_allow(struct policydb *db, const char *src, const char *tgt,
 	       const char *cls, const char *perm)

@@ -23,7 +23,6 @@ tamisu-objs += feature/zygote_ctl.o
 tamisu-objs += infra/symbol_resolver.o
 tamisu-objs += runtime/boot_event.o
 tamisu-objs += runtime/ksud_integration.o
-tamisu-objs += infra/seccomp_cache.o
 tamisu-objs += infra/file_wrapper.o
 
 tamisu-objs += selinux/selinux.o

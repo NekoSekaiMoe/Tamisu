@@ -30,7 +30,7 @@ struct user_arg_ptr {
 };
 
 void ksu_handle_execveat_ksud(const char *filename, struct user_arg_ptr *argv,
-			      struct user_arg_ptr *envp, int *flags);
+			      struct user_arg_ptr *envp);
 void ksu_execve_hook_ksud(const struct pt_regs *regs);
 void ksu_zygote_probe_execve(const struct pt_regs *regs);
 
