@@ -1,8 +1,8 @@
-menu "KernelSU"
+menu "Tamisu"
 
-config KSU
+config TAMISU
 	  tristate "KernelSU function support"
-	  depends on m
+	  depends on ARM64
 	  default m
 	  help
 		Enable kernel-level root privileges on Android System.
@@ -10,9 +10,9 @@ config KSU
 		Built-in (=y) is no longer supported.
 		The module will be called kernelsu.
 
-config KSU_DEBUG
-	  bool "KernelSU debug mode"
-	  depends on KSU
+config TAMISU_DEBUG
+	  bool "TAMISU debug mode"
+	  depends on TAMISU
 	  default n
 	  help
 		Enable KernelSU debug mode.

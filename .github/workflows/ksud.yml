@@ -35,7 +35,7 @@ jobs:
       run: |
         set -euo pipefail
         mkdir -p ./userspace/ksud/assets
-        cp android*-lkm/*_kernelsu.ko ./userspace/ksud/assets/ 2>/dev/null || true
+        cp android*-lkm/*.ko ./userspace/ksud/assets/ 2>/dev/null || true
         # Kasumi: copy only arch-matching .ko (arm64/armv7/x86_64)
         case "${{ inputs.target }}" in
           aarch64|aarch64-linux-android) arch_suffix="_arm64" ;;

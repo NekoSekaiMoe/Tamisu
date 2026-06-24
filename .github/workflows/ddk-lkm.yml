@@ -28,14 +28,14 @@ jobs:
     - name: Checkout source code
       uses: actions/checkout@v6
 
-    - name: Build kernelsu.ko
+    - name: Build ko
       run: |
         git config --global --add safe.directory /__w/YukiSU/YukiSU
         cd kernel
         test -f include/uapi/supercall.h
 
         echo "=== Building kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
-        CONFIG_KSU=m CONFIG_KSU_SUPERKEY=y CC=clang make
+        CONFIG_TAMISU=m CC=clang make
         
         echo "=== Build completed ==="
         # Create output directory in GitHub workspace

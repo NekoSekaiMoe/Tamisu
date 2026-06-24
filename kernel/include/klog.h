@@ -5,7 +5,7 @@
 
 #ifdef pr_fmt
 #undef pr_fmt
-#define pr_fmt(fmt) "KernelSU: " fmt
+#define pr_fmt(fmt) "Tamisu: " fmt
 #endif // #ifdef pr_fmt
 
 #endif // #ifndef __KSU_H_KLOG

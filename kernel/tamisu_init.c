@@ -14,13 +14,6 @@
 #include <linux/sched.h>
 #include <linux/version.h>
 
-#if defined(__x86_64__)
-#include <asm/cpufeature.h>
-#ifndef X86_FEATURE_INDIRECT_SAFE
-#error "FATAL: Your kernel is missing the indirect syscall bypass patches!"
-#endif // #ifndef X86_FEATURE_INDIRECT_SAFE
-#endif // #if defined(__x86_64__)
-
 // workaround for A12-5.10 kernels with mismatched stack protector toolchain
 #if defined(CONFIG_STACKPROTECTOR) &&                                          \
     (defined(CONFIG_ARM64) && !defined(CONFIG_STACKPROTECTOR_PER_TASK))
@@ -112,30 +105,6 @@ int __init kernelsu_init(void)
 {
 	pr_info("KernelSU LKM initializing, version: %u\n", KSU_VERSION);
 	ksu_late_loaded = (current->pid != 1);
-
-#if defined(__x86_64__)
-	if (!boot_cpu_has(X86_FEATURE_INDIRECT_SAFE)) {
-		pr_alert("*****************************************************"
-			 "********");
-		pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE "
-			 "NOTICE    **");
-		pr_alert("**                                                   "
-			 "      **");
-		pr_alert("**        X86_FEATURE_INDIRECT_SAFE is not enabled!  "
-			 "      **");
-		pr_alert("**      KernelSU will abort initialization to "
-			 "prevent      **");
-		pr_alert("**                     kernel panic.                 "
-			 "      **");
-		pr_alert("**                                                   "
-			 "      **");
-		pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE "
-			 "NOTICE    **");
-		pr_alert("*****************************************************"
-			 "********");
-		return -ENOSYS;
-	}
-#endif // #if defined(__x86_64__)
 
 #ifdef CONFIG_KSU_DEBUG
 	pr_alert(
@@ -235,7 +204,7 @@ module_exit(kernelsu_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("weishu");
-MODULE_DESCRIPTION("Android KernelSU");
+MODULE_DESCRIPTION("Android Tamisu core");
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
 MODULE_IMPORT_NS("VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver");
 #else

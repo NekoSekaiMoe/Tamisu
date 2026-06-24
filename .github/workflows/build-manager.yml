@@ -68,13 +68,8 @@ jobs:
     uses: ./.github/workflows/build-lkm.yml
     secrets: inherit
 
-  build-kasumi-lkm:
-    uses: ./.github/workflows/build-kasumi-lkm.yml
-    with:
-      full_archs: ${{ inputs.full_archs == true || github.event_name == 'pull_request' }}
-
   build-ksud:
-    needs: [build-lkm, build-kasumi-lkm]
+    needs: build-lkm
     strategy:
       matrix:
         include: ${{ (inputs.full_archs == true || github.event_name == 'pull_request') && fromJSON('[{"target":"aarch64-linux-android","os":"ubuntu-latest"},{"target":"x86_64-linux-android","os":"ubuntu-latest"},{"target":"armv7-linux-androideabi","os":"ubuntu-latest"}]') || fromJSON('[{"target":"aarch64-linux-android","os":"ubuntu-latest"}]') }}
