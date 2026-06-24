@@ -392,15 +392,6 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    data class Tuple6<T1, T2, T3, T4, T5, T6>(
-        val first: T1,
-        val second: T2,
-        val third: T3,
-        val fourth: T4,
-        val fifth: T5,
-        val sixth: T6
-    )
-
     data class Tuple5<T1, T2, T3, T4, T5>(
         val first: T1,
         val second: T2,

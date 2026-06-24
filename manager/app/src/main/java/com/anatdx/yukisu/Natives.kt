@@ -6,17 +6,8 @@ package com.anatdx.yukisu
  */
 object Natives {
     // minimal supported kernel version
-    // 10915: allowlist breaking change, add app profile
-    // 10931: app profile struct add 'version' field
-    // 10946: add capabilities
-    // 10977: change groups_count and groups to avoid overflow write
-    // 11071: Fix the issue of failing to set a custom SELinux type.
-    // 12143: breaking: new supercall impl
     const val MINIMAL_SUPPORTED_KERNEL = 10000
-
     const val MINIMAL_SUPPORTED_KERNEL_FULL = "v1.0.0"
-
-    const val MINIMAL_NEW_IOCTL_KERNEL = 10000
 
     const val ROOT_UID = 0
     const val ROOT_GID = 0
@@ -28,9 +19,6 @@ object Natives {
 
     /** UAPI contract version this manager binary was built against. */
     fun getManagerUapiVersion(): Int = 2
-
-    /** True when the kernel's UAPI version differs from the manager's (skew). */
-    fun checkUapiMismatch(): Boolean = getUapiVersion() != getManagerUapiVersion()
 
     fun isVersionLessThan(v1Full: String, v2Full: String): Boolean {
         fun extractVersionParts(version: String): List<Int> {
@@ -50,10 +38,6 @@ object Natives {
         return false
     }
 
-    fun getSimpleVersionFull(): String = getFullVersion().let { version ->
-        Regex("""v\d+(\.\d+)*""").find(version)?.value ?: version
-    }
-
     init {
         System.loadLibrary("kernelsu")
     }
@@ -64,9 +48,6 @@ object Natives {
     val isSafeMode: Boolean
         external get
 
-    val isLateLoadMode: Boolean
-        external get
-
     /** In the zygisk-only build there is no manager-app concept. "isManager"
      *  is true when the KSU driver fd is accessible (i.e. the kernel module
      *  is loaded and this process is root). */
@@ -74,8 +55,6 @@ object Natives {
         get() = isKsuDriverPresent()
 
     external fun getHookType(): String
-
-    external fun getUserName(uid: Int): String?
 
     /**
      * Check if KSU driver is present.

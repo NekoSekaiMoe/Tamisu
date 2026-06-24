@@ -99,11 +99,6 @@ class MainActivity : ComponentActivity() {
             super.onCreate(savedInstanceState)
             resetTaskDescriptionToAppName()
 
-            // Note: ksud installation moved to KsuCli.refreshShells()
-            // which is called after SuperKey authentication succeeds.
-            // In SuperKey mode, isManager is false until authentication,
-            // so we can't install ksud here.
-
             if (!isInitialized) {
                 initializeViewModels()
                 initializeData()

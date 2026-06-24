@@ -25,8 +25,6 @@ uint32_t get_version();
 uint32_t get_uapi_version();
 
 bool is_safe_mode();
-bool is_late_load_mode();
-
 void get_full_version(char *buff);
 void get_hook_type(char *hook_type);
 

@@ -95,14 +95,6 @@ bool is_safe_mode() {
   return false;
 }
 
-bool is_late_load_mode() {
-  auto info = get_info();
-  if (info.version > 0) {
-    return (info.flags & KSU_GET_INFO_FLAG_LATE_LOAD) != 0;
-  }
-  return false;
-}
-
 void get_full_version(char *buff) {
   struct ksu_get_full_version_cmd cmd = {};
   if (ksuctl(KSU_IOCTL_GET_FULL_VERSION, &cmd) == 0) {

@@ -4,7 +4,6 @@
 #include <android/log.h>
 #include <errno.h>
 #include <jni.h>
-#include <pwd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/prctl.h>
@@ -24,16 +23,6 @@ NativeBridgeNP(getFullVersion, jstring) {
 }
 
 NativeBridgeNP(isSafeMode, jboolean) { return is_safe_mode(); }
-
-NativeBridgeNP(isLateLoadMode, jboolean) { return is_late_load_mode(); }
-
-NativeBridge(getUserName, jstring, jint uid) {
-  struct passwd *pw = getpwuid((uid_t)uid);
-  if (pw && pw->pw_name && pw->pw_name[0] != '\0') {
-    return GetEnvironment()->NewStringUTF(env, pw->pw_name);
-  }
-  return NULL;
-}
 
 // Get HOOK type
 NativeBridgeNP(getHookType, jstring) {

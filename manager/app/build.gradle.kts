@@ -130,7 +130,6 @@ ksp {
 }
 
 dependencies {
-    implementation(libs.gson)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
 
@@ -141,7 +140,6 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.foundation)
-    implementation(libs.androidx.documentfile)
     implementation(libs.androidx.compose.foundation)
 
     debugImplementation(libs.androidx.compose.ui.test.manifest)
@@ -155,10 +153,7 @@ dependencies {
     ksp(libs.compose.destinations.ksp)
 
     implementation(libs.com.github.topjohnwu.libsu.core)
-    implementation(libs.com.github.topjohnwu.libsu.service)
     implementation(libs.com.github.topjohnwu.libsu.io)
-
-    implementation(libs.dev.rikka.rikkax.parcelablelist)
 
     implementation(libs.io.coil.kt.coil.compose)
 
@@ -175,13 +170,9 @@ dependencies {
 
     implementation(libs.lsposed.cxx)
 
-    implementation(libs.com.github.topjohnwu.libsu.core)
-
     implementation(libs.mmrl.platform)
     compileOnly(libs.mmrl.hidden.api)
     implementation(libs.mmrl.webui)
     implementation(libs.mmrl.ui)
-
-    implementation(libs.accompanist.drawablepainter)
 
 }

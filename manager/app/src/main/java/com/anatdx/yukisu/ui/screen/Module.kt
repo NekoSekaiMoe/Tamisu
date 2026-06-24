@@ -447,15 +447,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     navigator = navigator,
                     viewModel = viewModel,
                     listState = listState,
-                    onRefreshHymoModules = {
-                        scope.launch {
-                            withContext(Dispatchers.IO) {
-                                try {
-                                } catch (_: Exception) {
-                                }
-                            }
-                        }
-                    },
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                     boxModifier = Modifier.padding(innerPadding),
                     onInstallModule = {
@@ -911,7 +902,6 @@ private fun ModuleList(
     navigator: DestinationsNavigator,
     viewModel: ModuleViewModel,
     listState: LazyListState,
-    onRefreshHymoModules: () -> Unit = {},
     modifier: Modifier = Modifier,
     boxModifier: Modifier = Modifier,
     onInstallModule: (Uri) -> Unit,
@@ -1078,7 +1068,6 @@ private fun ModuleList(
         modifier = boxModifier,
         onRefresh = {
             viewModel.fetchModuleList()
-            onRefreshHymoModules()
         },
         isRefreshing = viewModel.isRefreshing
     ) {

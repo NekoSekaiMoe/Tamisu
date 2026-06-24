@@ -1,13 +1,10 @@
 package com.anatdx.yukisu.ui.util
 
-import android.content.ContentResolver
 import android.content.Context
-import android.database.Cursor
 import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
 import android.os.SystemClock
-import android.provider.OpenableColumns
 import android.system.Os
 import android.util.Log
 import com.topjohnwu.superuser.CallbackList
@@ -17,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import com.anatdx.yukisu.BuildConfig
-import com.anatdx.yukisu.Natives
 import com.anatdx.yukisu.ksu.KsuPaths
 import com.anatdx.yukisu.ksuApp
 import com.anatdx.yukisu.utils.AssetsUtil
@@ -48,54 +44,17 @@ object KsuCli {
         private set
     var GLOBAL_MNT_SHELL: Shell = createRootShell(true)
         private set
-    
-    /**
-     * Recreate shell instances after SuperKey authentication.
-     * This is necessary because the initial shells were created before
-     * the app had root permission.
-     * 
-     * Also checks and installs ksud if needed (SuperKey mode: manager authenticates first,
-     * then we can install ksud with proper permissions).
-     */
-    fun refreshShells() {
-        Log.d(TAG, "refreshShells: starting, old SHELL.isRoot=${SHELL.isRoot}")
-        try {
-            SHELL.close()
-        } catch (_: Exception) {}
-        try {
-            GLOBAL_MNT_SHELL.close()
-        } catch (_: Exception) {}
-        
-        // Check if we're now a manager before creating shells
-        val isManagerNow = try {
-            Natives.isManager
-        } catch (e: Exception) {
-            Log.e(TAG, "refreshShells: failed to check isManager", e)
-            false
-        }
-        Log.d(TAG, "refreshShells: Natives.isManager=$isManagerNow")
-        
-        SHELL = createRootShell()
-        GLOBAL_MNT_SHELL = createRootShell(true)
-        Log.d(TAG, "Shells refreshed, SHELL.isRoot=${SHELL.isRoot}, GLOBAL_MNT_SHELL.isRoot=${GLOBAL_MNT_SHELL.isRoot}")
-        
-        // After authentication, check if ksud needs to be installed/updated
-        if (isManagerNow && SHELL.isRoot) {
-            checkAndInstallKsud()
-        }
-    }
-    
+
     /**
      * Check if ksud needs to be installed or updated.
-     * Called after SuperKey authentication succeeds.
      */
     private fun checkAndInstallKsud() {
         try {
             val apkKsudVersion = getApkKsudVersion()
             val installedKsudVersion = getInstalledKsudVersion()
-            
+
             Log.i(TAG, "checkAndInstallKsud: apk=$apkKsudVersion, installed=$installedKsudVersion")
-            
+
             // Install if: ksud not installed, or version mismatch
             if (installedKsudVersion == null || apkKsudVersion != installedKsudVersion) {
                 Log.i(TAG, "Installing/updating ksud daemon only: apk=$apkKsudVersion, installed=$installedKsudVersion")
@@ -109,7 +68,7 @@ object KsuCli {
             installOrUpdateKsudDaemon()
         }
     }
-    
+
     /**
      * The APK-bundled ksud version is pinned at build time by
      * manager/build.gradle.kts (`computeKsudBundledVersion`), which mirrors
@@ -243,18 +202,6 @@ inline fun <T> withNewRootShell(
     return createRootShell(globalMnt).use(block)
 }
 
-fun Uri.getFileName(context: Context): String? {
-    var fileName: String? = null
-    val contentResolver: ContentResolver = context.contentResolver
-    val cursor: Cursor? = contentResolver.query(this, null, null, null, null)
-    cursor?.use {
-        if (it.moveToFirst()) {
-            fileName = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
-        }
-    }
-    return fileName
-}
-
 fun createRootShell(globalMnt: Boolean = false): Shell {
     Shell.enableVerboseLogging = BuildConfig.DEBUG
     val builder = Shell.Builder.create()
@@ -381,13 +328,6 @@ fun uninstallModule(id: String): Boolean {
     val cmd = "module uninstall $id"
     val result = execKsud(cmd, true)
     Log.i(TAG, "uninstall module $id result: $result")
-    return result
-}
-
-fun restoreModule(id: String): Boolean {
-    val cmd = "module restore $id"
-    val result = execKsud(cmd, true)
-    Log.i(TAG, "restore module $id result: $result")
     return result
 }
 
@@ -622,10 +562,6 @@ fun installBoot(
     return result.isSuccess
 }
 
-fun restartAdbd() {
-    ShellUtils.fastCmd(getRootShell(), "setprop ctl.restart adbd")
-}
-
 fun reboot(reason: String = "") {
     val shell = getRootShell()
     if (reason == "soft_reboot") {
@@ -680,41 +616,6 @@ fun hasMagisk(): Boolean {
     Log.i(TAG, "has magisk: ${result.isSuccess}")
     return result.isSuccess
 }
-fun listAppProfileTemplates(): List<String> =
-    ksudReadLines("profile list-templates")
-
-fun getAppProfileTemplate(id: String): String =
-    ksudReadLines("profile get-template '$id'").joinToString("\n")
-
-fun setAppProfileTemplate(id: String, template: String): Boolean {
-    val escapedTemplate = template.replace("\"", "\\\"")
-    return execKsud("""profile set-template "$id" "$escapedTemplate"""")
-}
-
-fun deleteAppProfileTemplate(id: String): Boolean =
-    execKsud("profile delete-template '$id'")
-
-fun forceStopApp(packageName: String) {
-    val shell = getRootShell()
-    val result = shell.newJob().add("am force-stop $packageName").exec()
-    Log.i(TAG, "force stop $packageName result: $result")
-}
-
-fun launchApp(packageName: String) {
-
-    val shell = getRootShell()
-    val result =
-        shell.newJob()
-            .add("cmd package resolve-activity --brief $packageName | tail -n 1 | xargs cmd activity start-activity -n")
-            .exec()
-    Log.i(TAG, "launch $packageName result: $result")
-}
-
-fun restartApp(packageName: String) {
-    forceStopApp(packageName)
-    launchApp(packageName)
-}
-
 
 fun runCmd(shell: Shell, cmd: String): String {
     return shell.newJob()
@@ -774,53 +675,3 @@ suspend fun getZygiskImplement(): String = withContext(Dispatchers.IO) {
     "None"
 }
 
-fun addUmountPath(path: String, flags: Int): Boolean {
-    val shell = getRootShell()
-    val flagsArg = if (flags >= 0) "--flags $flags" else ""
-    val cmd = ksudCmd("umount add $path $flagsArg")
-    val result = ShellUtils.fastCmdResult(shell, cmd)
-    Log.i(TAG, "add umount path $path result: $result")
-    return result
-}
-fun removeUmountPath(path: String): Boolean {
-    val shell = getRootShell()
-    val cmd = ksudCmd("umount remove $path")
-    val result = ShellUtils.fastCmdResult(shell, cmd)
-    Log.i(TAG, "remove umount path $path result: $result")
-    return result
-}
-
-fun listUmountPaths(): String {
-    val shell = getRootShell()
-    val cmd = ksudCmd("umount list")
-    return try {
-        runCmd(shell, cmd).trim()
-    } catch (e: Exception) {
-        Log.e(TAG, "Failed to list umount paths", e)
-        ""
-    }
-}
-
-fun clearCustomUmountPaths(): Boolean {
-    val shell = getRootShell()
-    val cmd = ksudCmd("umount clear-custom")
-    val result = ShellUtils.fastCmdResult(shell, cmd)
-    Log.i(TAG, "clear custom umount paths result: $result")
-    return result
-}
-
-fun saveUmountConfig(): Boolean {
-    val shell = getRootShell()
-    val cmd = ksudCmd("umount save")
-    val result = ShellUtils.fastCmdResult(shell, cmd)
-    Log.i(TAG, "save umount config result: $result")
-    return result
-}
-
-fun applyUmountConfigToKernel(): Boolean {
-    val shell = getRootShell()
-    val cmd = ksudCmd("umount apply")
-    val result = ShellUtils.fastCmdResult(shell, cmd)
-    Log.i(TAG, "apply umount config to kernel result: $result")
-    return result
-}
