@@ -155,8 +155,13 @@ int ksu_install_fd(void)
 		return fd;
 	}
 
-	// Create anonymous inode file
-	filp = anon_inode_getfile("[ksu_driver]", &anon_ksu_fops, NULL,
+	// Create anonymous inode file.
+	//
+	// The name is visible via readlink("/proc/<pid>/fd/<n>") and is what
+	// userspace (ksud, manager JNI) scans to discover the driver fd after
+	// the reboot-syscall handshake. The "[tamisu]" name keeps Tamisu
+	// distinct from KernelSU's "[ksu_driver]" so the two can coexist.
+	filp = anon_inode_getfile("[tamisu]", &anon_ksu_fops, NULL,
 				  O_RDWR | O_CLOEXEC);
 	if (IS_ERR(filp)) {
 		pr_err("ksu_install_fd: failed to create anon inode file\n");

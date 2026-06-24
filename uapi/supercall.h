@@ -20,9 +20,11 @@ extern "C" {
 
 #include "uapi/selinux.h"
 
-// Magic numbers for reboot hook (fd install handshake)
-#define KSU_INSTALL_MAGIC1 0xDEADBEEF
-#define KSU_INSTALL_MAGIC2 0xCAFEBABE
+// Magic numbers for reboot hook (fd install handshake).
+// Tamisu uses values distinct from KernelSU to allow coexistence on the
+// same reboot syscall kprobe without racing the handshake.
+#define KSU_INSTALL_MAGIC1 0x7AB1C0DE /* "tamisu" handshake magic 1 */
+#define KSU_INSTALL_MAGIC2 0xDEADF00D /* "tamisu" handshake magic 2 */
 
 #define EVENT_POST_FS_DATA 1
 #define EVENT_BOOT_COMPLETED 2
@@ -103,19 +105,21 @@ struct ksu_hook_type_cmd {
   char hook_type[32];
 };
 
-// IOCTL definitions (zygisk-only build: su/profile/manager ioctls removed)
-#define KSU_IOCTL_GET_INFO _IOC(_IOC_READ, 'K', 2, 0)
-#define KSU_IOCTL_REPORT_EVENT _IOC(_IOC_WRITE, 'K', 3, 0)
-#define KSU_IOCTL_SET_SEPOLICY _IOC(_IOC_READ | _IOC_WRITE, 'K', 4, 0)
-#define KSU_IOCTL_CHECK_SAFEMODE _IOC(_IOC_READ, 'K', 5, 0)
-#define KSU_IOCTL_GET_FEATURE _IOC(_IOC_READ | _IOC_WRITE, 'K', 13, 0)
-#define KSU_IOCTL_SET_FEATURE _IOC(_IOC_WRITE, 'K', 14, 0)
-#define KSU_IOCTL_GET_WRAPPER_FD _IOC(_IOC_WRITE, 'K', 15, 0)
-#define KSU_IOCTL_MANAGE_MARK _IOC(_IOC_READ | _IOC_WRITE, 'K', 16, 0)
-#define KSU_IOCTL_SET_INIT_PGRP _IO('K', 19)
-#define KSU_IOCTL_GET_UAPI_VERSION _IOR('K', 22, __u32)
-#define KSU_IOCTL_GET_FULL_VERSION _IOC(_IOC_READ, 'K', 100, 0)
-#define KSU_IOCTL_HOOK_TYPE _IOC(_IOC_READ, 'K', 101, 0)
+// IOCTL definitions (zygisk-only build: su/profile/manager ioctls removed).
+// Magic is 'T' for Tamisu, distinct from KernelSU's 'K' so the two drivers
+// can coexist on the same kernel without ioctl number collisions.
+#define KSU_IOCTL_GET_INFO _IOC(_IOC_READ, 'T', 2, 0)
+#define KSU_IOCTL_REPORT_EVENT _IOC(_IOC_WRITE, 'T', 3, 0)
+#define KSU_IOCTL_SET_SEPOLICY _IOC(_IOC_READ | _IOC_WRITE, 'T', 4, 0)
+#define KSU_IOCTL_CHECK_SAFEMODE _IOC(_IOC_READ, 'T', 5, 0)
+#define KSU_IOCTL_GET_FEATURE _IOC(_IOC_READ | _IOC_WRITE, 'T', 13, 0)
+#define KSU_IOCTL_SET_FEATURE _IOC(_IOC_WRITE, 'T', 14, 0)
+#define KSU_IOCTL_GET_WRAPPER_FD _IOC(_IOC_WRITE, 'T', 15, 0)
+#define KSU_IOCTL_MANAGE_MARK _IOC(_IOC_READ | _IOC_WRITE, 'T', 16, 0)
+#define KSU_IOCTL_SET_INIT_PGRP _IO('T', 19)
+#define KSU_IOCTL_GET_UAPI_VERSION _IOR('T', 22, __u32)
+#define KSU_IOCTL_GET_FULL_VERSION _IOC(_IOC_READ, 'T', 100, 0)
+#define KSU_IOCTL_HOOK_TYPE _IOC(_IOC_READ, 'T', 101, 0)
 
 #ifdef __cplusplus
 }

@@ -39,7 +39,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-// ksuctl() lives in the ksud core (same binary): it reaches the [ksu_driver] fd
+// ksuctl() lives in the ksud core (same binary): it reaches the [tamisu] fd
 // and issues an ioctl. We use it for the kernel reverse channel.
 namespace ksud {
 int ksuctl(int request, void *arg);
@@ -230,7 +230,7 @@ void *companion_thread(void *p) {
  * (1 = module has a companion entry) then serves client fds off ctrl. */
 [[noreturn]] void companion_main(const std::string &lib_path, int ctrl) {
   // Drop every fd inherited from the daemon except ctrl + stdio. Critically
-  // this releases the [ksu_driver] fd, the netlink socket and the @zygiskd
+  // this releases the [tamisu] fd, the netlink socket and the @zygiskd
   // listen socket: a forked process must not keep the KSU driver fd alive
   // (it disturbs kernel-side manager/driver bookkeeping) nor silently hold a
   // netlink socket the kernel keeps multicasting specialize events into.

@@ -18,7 +18,7 @@
 static int fd = -1;
 
 static inline int scan_driver_fd() {
-  const char *kName = "[ksu_driver]";
+  const char *kName = "[tamisu]";
   DIR *fd_dir = opendir("/proc/self/fd");
   if (!fd_dir) {
     return -1;

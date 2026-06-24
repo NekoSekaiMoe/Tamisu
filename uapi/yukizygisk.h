@@ -10,7 +10,14 @@
 #include <linux/ioctl.h>
 #include <linux/types.h>
 
-#define YZ_NETLINK_PROTO 27  /* custom netlink protocol number */
+/* Custom netlink protocol number.
+ *
+ * In-tree Linux consumers stop at NETLINK_SMC=22; protocol IDs in the
+ * 23..31 range are accepted by netlink_kernel_create() and effectively
+ * private (no central registry). 27 is chosen so Tamisu's zygote event
+ * channel does not collide with any mainline kernel netlink consumer.
+ */
+#define YZ_NETLINK_PROTO 27
 #define YZ_NL_GROUP_EVENTS 1 /* multicast group: lifecycle events */
 #define YZ_NL_MSG_EVENT 0x10 /* nlmsg_type for a yz_event */
 
@@ -30,7 +37,7 @@ struct yz_event {
 #define YZ_MAX_MODULE_FDS 8
 
 /* hand the kernel the module fds it should broker for a just-specialized app */
-#define KSU_IOCTL_YZ_HANDOFF _IOC(_IOC_WRITE, 'K', 50, 0)
+#define KSU_IOCTL_YZ_HANDOFF _IOC(_IOC_WRITE, 'T', 50, 0)
 
 struct yz_handoff_cmd {
   __u32 pid; /* target app process (tgid) */
@@ -44,7 +51,7 @@ struct yz_handoff_cmd {
  * the kernel resolves them per-zygote as AT_BASE + offset. The injected stub
  * dlopens the loader, then dlsym's and calls its entry (bionic won't run a
  * dlopen'd lib's constructor this early). */
-#define KSU_IOCTL_YZ_SET_DLOPEN _IOC(_IOC_WRITE, 'K', 51, 0)
+#define KSU_IOCTL_YZ_SET_DLOPEN _IOC(_IOC_WRITE, 'T', 51, 0)
 
 struct yz_dlopen_cmd {
   __u64 dlopen_offset;
@@ -55,7 +62,7 @@ struct yz_dlopen_cmd {
  * re-read yzconfig.json. The manager writes the JSON, then asks ksud to fire
  * this (via supercall) -- the config applies on the next specialize, no reboot.
  */
-#define KSU_IOCTL_YZ_RELOAD _IOC(_IOC_WRITE, 'K', 52, 0)
+#define KSU_IOCTL_YZ_RELOAD _IOC(_IOC_WRITE, 'T', 52, 0)
 
 /* ---- runtime config ---- */
 

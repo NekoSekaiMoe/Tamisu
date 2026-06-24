@@ -58,7 +58,7 @@ auto scan_driver_fd() -> int {
         const ssize_t len = readlink(link_path.data(), target.data(), target.size() - 1);
         if (len > 0 && static_cast<size_t>(len) < target.size()) {
             target[static_cast<size_t>(len)] = '\0';
-            if (strstr(target.data(), "[ksu_driver]") != nullptr) {
+            if (strstr(target.data(), "[tamisu]") != nullptr) {
                 found_fd = static_cast<int>(fd_num);
                 break;
             }

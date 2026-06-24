@@ -32,7 +32,12 @@ constexpr const char* kLateLoadTmpCandidates[] = {
 };
 
 bool is_kernelsu_loaded() {
-    return access("/sys/module/kernelsu", F_OK) == 0;
+    // The kernel module is named "tamisu" (see kernel/Kbuild:
+    // obj-$(CONFIG_TAMISU) += tamisu.o), so once loaded it appears as
+    // /sys/module/tamisu. We check this name rather than "kernelsu" so
+    // detection works regardless of whether upstream KernelSU is also
+    // loaded on the same kernel.
+    return access("/sys/module/tamisu", F_OK) == 0;
 }
 
 std::string get_kernelsu_load_params(bool allow_shell) {
