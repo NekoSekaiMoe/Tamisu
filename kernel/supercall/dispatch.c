@@ -297,7 +297,7 @@ static int do_get_full_version(void __user *arg)
 {
 	struct ksu_get_full_version_cmd cmd = {0};
 
-	strscpy(cmd.version_full, KSU_VERSION, sizeof(cmd.version_full));
+	strscpy(cmd.version_full, KSU_VERSION_STR, sizeof(cmd.version_full));
 
 	if (copy_to_user(arg, &cmd, sizeof(cmd))) {
 		pr_err("get_full_version: copy_to_user failed\n");

@@ -103,7 +103,7 @@ static void ksu_hook_exit(void)
 
 int __init kernelsu_init(void)
 {
-	pr_info("KernelSU LKM initializing, version: %u\n", KSU_VERSION);
+	pr_info("Tamisu LKM initializing, build: %s\n", KSU_VERSION_STR);
 	ksu_late_loaded = (current->pid != 1);
 
 #ifdef CONFIG_KSU_DEBUG

@@ -5,12 +5,16 @@
 #include <linux/types.h>
 #include <linux/version.h>
 
-// Fallback KSU_VERSION if not defined by Kbuild (e.g. when building as LKM)
-#ifndef KSU_VERSION
-#define KSU_VERSION 12000
-#endif // #ifndef KSU_VERSION
+// Build timestamp as a string literal (e.g. "20260624185506"), supplied by
+// Kbuild. Falls back to a constant for out-of-tree builds.
+#ifndef KSU_VERSION_STR
+#define KSU_VERSION_STR "12000"
+#endif // #ifndef KSU_VERSION_STR
 
-#define KERNEL_SU_VERSION KSU_VERSION
+// Numeric version code stored in the __u32 field of KSU_GET_INFO.
+// SELinux/KMI version semantics, not a build timestamp — the full timestamp
+// is delivered via the GET_FULL_VERSION ioctl as a string.
+#define KERNEL_SU_VERSION 12000u
 
 #define EVENT_POST_FS_DATA 1
 #define EVENT_BOOT_COMPLETED 2
