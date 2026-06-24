@@ -313,7 +313,7 @@ int cmd_debug(const std::vector<std::string>& args) {
     if (subcmd == "insmod" && args.size() > 1) {
         return debug_insmod(args[1], std::vector<std::string>(args.begin() + 2, args.end()));
     } else if (subcmd == "version") {
-        printf("Kernel Version: %d\n", get_version());
+        printf("Kernel Version: %d\n", debug_get_kernel_version());
         return 0;
     } else if (subcmd == "mark" && args.size() > 1) {
         return debug_mark(std::vector<std::string>(args.begin() + 1, args.end()));

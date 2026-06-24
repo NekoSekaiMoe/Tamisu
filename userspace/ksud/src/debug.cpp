@@ -30,7 +30,7 @@ int get_version_impl() {
 
 }  // namespace
 
-int get_version() {
+int debug_get_kernel_version() {
     return get_version_impl();
 }
 
