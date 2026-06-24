@@ -38,7 +38,7 @@ object Natives {
     external fun getUapiVersion(): Int
 
     /** UAPI contract version this manager binary was built against. */
-    external fun getManagerUapiVersion(): Int
+    fun getManagerUapiVersion(): Int = 2
 
     /** True when the kernel's UAPI version differs from the manager's (skew). */
     fun checkUapiMismatch(): Boolean = getUapiVersion() != getManagerUapiVersion()
@@ -72,23 +72,30 @@ object Natives {
     val version: Int
         external get
 
-    // get the uid list of allowed su processes.
-    val allowList: IntArray
-        external get
-
-    /** Returns total number of apps in allow list (count only, no full list fetch). */
-    external fun getSuperuserCount(): Int
-
     val isSafeMode: Boolean
         external get
 
     val isLateLoadMode: Boolean
         external get
-    val isManager: Boolean
-        external get
 
-    external fun uidShouldUmount(uid: Int): Boolean
-    external fun getDynamicManagers(): IntArray
+    /** In the zygisk-only build there is no manager-app concept. "isManager"
+     *  is true when the KSU driver fd is accessible (i.e. the kernel module
+     *  is loaded and this process is root). */
+    val isManager: Boolean
+        get() = isKsuDriverPresent()
+
+    /** Returns total number of apps in allow list — always 0 (allowlist removed). */
+    fun getSuperuserCount(): Int = 0
+
+    /** Allow list — always empty (allowlist removed). */
+    val allowList: IntArray
+        get() = IntArray(0)
+
+    /** uidShouldUmount — always false (umount feature removed). */
+    fun uidShouldUmount(uid: Int): Boolean = false
+
+    /** Dynamic managers — always empty (manager detection removed). */
+    fun getDynamicManagers(): IntArray = IntArray(0)
 
     const val DYNAMIC_MANAGER_FLAG_PRESET = 1 shl 0
     const val DYNAMIC_MANAGER_FLAG_TRUSTED = 1 shl 1
