@@ -3,13 +3,8 @@ package com.anatdx.yukisu
 import android.app.Application
 import android.os.Process
 import android.system.Os
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import com.anatdx.yukisu.ui.viewmodel.SuperUserViewModel
 import coil.Coil
 import coil.ImageLoader
 import com.dergoogler.mmrl.platform.Platform
@@ -35,12 +30,6 @@ class KernelSUApplication : Application(), ViewModelStoreOwner {
         if (Process.isIsolated()) {
             Os.setenv("TMPDIR", cacheDir.absolutePath, true)
             return
-        }
-
-        // For faster response when first entering superuser or webui activity
-        val superUserViewModel = ViewModelProvider(this)[SuperUserViewModel::class.java]
-        CoroutineScope(Dispatchers.Main).launch {
-            superUserViewModel.fetchAppList()
         }
 
         Platform.setHiddenApiExemptions()

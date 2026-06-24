@@ -38,12 +38,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.KasumiConfigScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.anatdx.yukisu.KernelVersion
 import com.anatdx.yukisu.Natives
 import com.anatdx.yukisu.R
-import com.anatdx.yukisu.magica.MagicaHelper
 import com.anatdx.yukisu.ui.component.KsuIsValid
 import com.anatdx.yukisu.ui.component.rememberConfirmDialog
 import com.anatdx.yukisu.ui.component.rememberLoadingDialog
@@ -56,13 +54,8 @@ import com.anatdx.yukisu.ui.util.checkNewVersion
 import com.anatdx.yukisu.ui.util.module.LatestVersionInfo
 import com.anatdx.yukisu.ui.util.reboot
 import com.anatdx.yukisu.ui.viewmodel.HomeViewModel
-import com.anatdx.yukisu.ui.component.SuperKeyDialog
-import com.anatdx.yukisu.ui.component.rememberSuperKeyDialog
-import com.anatdx.yukisu.ui.component.SuperKeyAuthResult
 import com.anatdx.yukisu.ui.util.KsuCli
 import com.anatdx.yukisu.ui.activity.util.AppData
-import com.anatdx.yukisu.ui.kasumi.util.KasumiManager
-import com.anatdx.yukisu.ui.kasumi.util.KasumiManager.KasumiStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -134,218 +127,22 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                     .padding(top = 12.dp, start = 16.dp, end = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // SuperKey 对话框
-                val superKeyDialog = rememberSuperKeyDialog()
-                var superKeyAuthSuccess by remember { mutableStateOf(false) }
                 val snackbarHostState = remember { SnackbarHostState() }
-                
-                // 检查内核是否配置了 SuperKey / 签名（异步，避免阻塞主线程）
-                val isSuperKeyConfigured by produceState(initialValue = false) {
-                    value = withContext(Dispatchers.IO) { Natives.isSuperKeyConfigured() }
-                }
-                val isSignatureOk by produceState(initialValue = false) {
-                    value = withContext(Dispatchers.IO) { Natives.isSignatureOk() }
-                }
-                val isLateLoadMode by produceState(
-                    initialValue = false,
-                    key1 = viewModel.systemStatus.ksuVersion
-                ) {
-                    value = withContext(Dispatchers.IO) {
-                        if (viewModel.systemStatus.ksuVersion == null) {
-                            false
-                        } else {
-                            runCatching { Natives.isLateLoadMode }.getOrDefault(false)
-                        }
-                    }
-                }
-                val kasumiStatus by produceState(initialValue = KasumiStatus.NOT_PRESENT) {
-                    value = KasumiManager.getStatus()
-                }
-                var showKernelSpoofDialog by remember { mutableStateOf(false) }
-                
-                val superKeyPrefs = context.getSharedPreferences("superkey", Context.MODE_PRIVATE)
-                
-                SuperKeyDialog(
-                    state = superKeyDialog,
-                    onAuthenticate = { superKey ->
-                        // 在 IO 线程执行 Native 调用，避免阻塞主线程
-                        try {
-                            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                                val success = Natives.authenticateSuperKey(superKey)
-                                if (success) {
-                                    val skipStore = superKeyPrefs.getBoolean("skip_store_superkey", false)
-                                    if (!skipStore) {
-                                        superKeyPrefs.edit().putString("saved_superkey", superKey).apply()
-                                    }
-                                }
-                                success
-                            }
-                        } catch (e: Exception) {
-                            android.util.Log.e("SuperKey", "Authentication error", e)
-                            false
-                        }
-                    },
-                    onResult = { result ->
-                        when (result) {
-                            is SuperKeyAuthResult.Success -> {
-                                superKeyAuthSuccess = true
-                                // 强制刷新状态 - 认证成功后需要重新创建 Shell
-                                coroutineScope.launch {
-                                    // 等待内核状态更新
-                                    delay(100)
-                                    // 重新创建 Shell（之前的 Shell 没有 root 权限）
-                                    withContext(Dispatchers.IO) {
-                                        KsuCli.refreshShells()
-                                    }
-                                    // 强制刷新数据
-                                    viewModel.refreshData(context, forceRefresh = true)
-                                    withContext(Dispatchers.IO) {
-                                        AppData.DataRefreshManager.refreshData()
-                                    }
-                                }
-                            }
-                            is SuperKeyAuthResult.Error -> {
-                                coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(result.message)
-                                }
-                            }
-                            SuperKeyAuthResult.Canceled -> {}
-                        }
-                    }
-                )
-                
-                // 自动尝试用保存的 SuperKey 认证
-                LaunchedEffect(viewModel.isCoreDataLoaded) {
-                    if (viewModel.isCoreDataLoaded && !viewModel.systemStatus.isManager) {
-                        val savedKey = superKeyPrefs.getString("saved_superkey", null)
-                        if (!savedKey.isNullOrBlank()) {
-                            try {
-                                // 在 IO 线程执行 Native 调用和 Shell 刷新
-                                val success = withContext(Dispatchers.IO) {
-                                    val authSuccess = Natives.authenticateSuperKey(savedKey)
-                                    if (authSuccess) {
-                                        // 重新创建 Shell（之前的 Shell 没有 root 权限）
-                                        KsuCli.refreshShells()
-                                    }
-                                    authSuccess
-                                }
-                                if (success) {
-                                    superKeyAuthSuccess = true
-                                    // 强制刷新数据
-                                    viewModel.refreshData(context, forceRefresh = true)
-                                    withContext(Dispatchers.IO) {
-                                        AppData.DataRefreshManager.refreshData()
-                                    }
-                                }
-                            } catch (e: Exception) {
-                                android.util.Log.e("SuperKey", "Auto-auth error", e)
-                            }
-                        }
-                    }
-                }
 
                 // 状态卡片
                 if (viewModel.isCoreDataLoaded) {
-                    val isNotManager = !viewModel.systemStatus.isManager
-                    val needsSuperKeyAuth = isNotManager && !superKeyAuthSuccess && viewModel.systemStatus.ksuVersion == null
-                    
                     StatusCard(
                         systemStatus = viewModel.systemStatus,
-                        // SuperKey 模式用于表示「主要依赖 SuperKey」，
-                        // 显示规则交给 StatusCard 内部根据 isSuperKeyMode + isSignatureOk 决定徽章组合。
-                        isSuperKeyMode = isSuperKeyConfigured || superKeyAuthSuccess,
-                        needsSuperKeyAuth = needsSuperKeyAuth,
                         onClickInstall = {
                             navigator.navigate(InstallScreenDestination())
                         },
-                        onSuperKeyAuth = {
-                            superKeyDialog.show()
-                        },
-                        isSignatureOk = isSignatureOk,
                         isLateLoadMode = isLateLoadMode,
-                        canJailbreak = viewModel.systemStatus.ksuVersion == null &&
-                            viewModel.systemInfo.seLinuxStatus == stringResource(R.string.selinux_status_permissive),
-                        onJailbreak = {
-                            loadingDialog.show()
-                            if (!MagicaHelper.launch(context)) {
-                                loadingDialog.hide()
-                                Toast.makeText(context, R.string.home_jailbreak_failed, Toast.LENGTH_LONG).show()
-                            } else {
-                                coroutineScope.launch {
-                                    delay(30_000)
-                                    loadingDialog.hide()
-                                    Toast.makeText(context, R.string.jailbreak_timeout, Toast.LENGTH_LONG).show()
-                                }
-                            }
-                        }
-                    )
-
-                    // 警告信息
-                    if (viewModel.systemStatus.requireNewKernel) {
-                        WarningCard(
-                            stringResource(id = R.string.require_kernel_version).format(
-                                Natives.getSimpleVersionFull(),
-                                Natives.MINIMAL_SUPPORTED_KERNEL_FULL
-                            )
-                        )
-                    }
-
-                    // UAPI 版本不匹配（管理器与内核 ABI 不同步）
-                    if (viewModel.systemStatus.isManager &&
-                        viewModel.systemStatus.ksuVersion != null &&
-                        viewModel.systemStatus.kernelUapiVersion != viewModel.systemStatus.managerUapiVersion
-                    ) {
-                        WarningCard(
-                            stringResource(
-                                id = R.string.uapi_mismatch,
-                                viewModel.systemStatus.managerUapiVersion,
-                                viewModel.systemStatus.kernelUapiVersion
-                            )
-                        )
-                    }
-
-                    if (viewModel.systemStatus.ksuVersion != null && !viewModel.systemStatus.isRootAvailable) {
-                        WarningCard(
-                            stringResource(id = R.string.grant_root_failed)
-                        )
-                    }
-
-                    // 只有在没有其他警告信息时才显示不兼容内核警告
-                    val shouldShowWarnings = viewModel.systemStatus.requireNewKernel ||
-                            (viewModel.systemStatus.ksuVersion != null && !viewModel.systemStatus.isRootAvailable)
-                }
-
-                if (viewModel.isExtendedDataLoaded) {
-                    val checkUpdate = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-                        .getBoolean("check_update", true)
-                    if (checkUpdate) {
-                        UpdateCard()
-                    }
-
-                    // 信息卡片
-                    InfoCard(
-                        systemInfo = viewModel.systemInfo,
-                        isSimpleMode = viewModel.isSimpleMode,
-                        isHideZygiskImplement = viewModel.isHideZygiskImplement,
-                        isHideMetaModuleImplement = viewModel.isHideMetaModuleImplement,
-                        isHideSeccompStatus = viewModel.isHideSeccompStatus,
-                        kasumiAvailable = kasumiStatus == KasumiStatus.AVAILABLE,
-                        onKernelClick = { showKernelSpoofDialog = true },
                     )
 
                     // 链接卡片
                     if (!viewModel.isSimpleMode && !viewModel.isHideLinkCard) {
                         ContributionCard()
                         DonateCard()
-                    }
-
-                    if (showKernelSpoofDialog) {
-                        KernelSpoofDialog(
-                            onDismiss = { showKernelSpoofDialog = false },
-                            onSaved = {
-                                viewModel.refreshData(context, forceRefresh = true)
-                            }
-                        )
                     }
                 }
 
@@ -452,11 +249,6 @@ private fun TopBar(
             if (isDataLoaded) {
                 // Kasumi 配置按钮
                 IconButton(onClick = {
-                    navigator.navigate(KasumiConfigScreenDestination)
-                }) {
-                    Icon(
-                        imageVector = Icons.Filled.Tune,
-                        contentDescription = stringResource(R.string.kasumi_title)
                     )
                 }
 
@@ -500,20 +292,13 @@ private fun TopBar(
 @Composable
 private fun StatusCard(
     systemStatus: HomeViewModel.SystemStatus,
-    isSuperKeyMode: Boolean = false,
-    needsSuperKeyAuth: Boolean = false,
-    isSignatureOk: Boolean = false,
     isLateLoadMode: Boolean = false,
-    canJailbreak: Boolean = false,
     onClickInstall: () -> Unit = {},
-    onSuperKeyAuth: () -> Unit = {},
-    onJailbreak: () -> Unit = {}
 ) {
     ElevatedCard(
         colors = getCardColors(
             when {
                 systemStatus.ksuVersion != null -> MaterialTheme.colorScheme.secondaryContainer
-                needsSuperKeyAuth -> MaterialTheme.colorScheme.tertiaryContainer
                 else -> MaterialTheme.colorScheme.errorContainer
             }
         ),
@@ -557,72 +342,6 @@ private fun StatusCard(
                             )
 
                             Spacer(Modifier.width(8.dp))
-
-                            // 认证模式标签：根据签名/SuperKey 状态组合显示
-                            when {
-                                // 签名 OK 且 SuperKey 已通过：两个徽章
-                                isSignatureOk && isSuperKeyMode -> {
-                                    Surface(
-                                        shape = RoundedCornerShape(4.dp),
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        modifier = Modifier
-                                    ) {
-                                        Text(
-                                            text = stringResource(id = R.string.home_auth_signature_tag),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                            color = MaterialTheme.colorScheme.onSecondary
-                                        )
-                                    }
-                                    Spacer(Modifier.width(6.dp))
-                                    Surface(
-                                        shape = RoundedCornerShape(4.dp),
-                                        color = MaterialTheme.colorScheme.tertiary,
-                                        modifier = Modifier
-                                    ) {
-                                        Text(
-                                            text = stringResource(id = R.string.home_auth_superkey_tag),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                            color = MaterialTheme.colorScheme.onTertiary
-                                        )
-                                    }
-                                    Spacer(Modifier.width(6.dp))
-                                }
-                                // 只有签名：仅 Signature 徽章
-                                isSignatureOk && !isSuperKeyMode -> {
-                                    Surface(
-                                        shape = RoundedCornerShape(4.dp),
-                                        color = MaterialTheme.colorScheme.secondary,
-                                        modifier = Modifier
-                                    ) {
-                                        Text(
-                                            text = stringResource(id = R.string.home_auth_signature_tag),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                            color = MaterialTheme.colorScheme.onSecondary
-                                        )
-                                    }
-                                    Spacer(Modifier.width(6.dp))
-                                }
-                                // 签名未启用 / 失败，但 SuperKey 模式：仅 SuperKey 徽章
-                                !isSignatureOk && isSuperKeyMode -> {
-                                    Surface(
-                                        shape = RoundedCornerShape(4.dp),
-                                        color = MaterialTheme.colorScheme.tertiary,
-                                        modifier = Modifier
-                                    ) {
-                                        Text(
-                                            text = stringResource(id = R.string.home_auth_superkey_tag),
-                                            style = MaterialTheme.typography.labelMedium,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                            color = MaterialTheme.colorScheme.onTertiary
-                                        )
-                                    }
-                                    Spacer(Modifier.width(6.dp))
-                                }
-                                // 其它情况（例如都没有）：不显示认证徽章
-                            }
 
                             if (isLateLoadMode) {
                                 Surface(
@@ -688,45 +407,6 @@ private fun StatusCard(
                                 )
                             }
                         }
-                    }
-                }
-
-                // 需要 SuperKey 认证（未安装或未认证）
-                needsSuperKeyAuth -> {
-                    Icon(
-                        Icons.Outlined.Warning,
-                        contentDescription = stringResource(R.string.home_not_installed),
-                        tint = MaterialTheme.colorScheme.error,
-                        modifier = Modifier
-                            .size(28.dp)
-                            .padding(horizontal = 4.dp),
-                    )
-
-                    Column(Modifier.padding(start = 20.dp).weight(1f)) {
-                        Text(
-                            text = stringResource(R.string.home_not_installed),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.error
-                        )
-
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(R.string.home_click_to_install),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                    }
-                    
-                    // 超级密钥认证按钮
-                    IconButton(
-                        onClick = onSuperKeyAuth,
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Key,
-                            contentDescription = stringResource(R.string.superkey_auth_title),
-                            tint = MaterialTheme.colorScheme.tertiary
-                        )
                     }
                 }
 
@@ -879,7 +559,6 @@ private fun InfoCard(
     isHideZygiskImplement: Boolean,
     isHideMetaModuleImplement: Boolean,
     isHideSeccompStatus: Boolean = false,
-    kasumiAvailable: Boolean = false,
     onKernelClick: () -> Unit = {},
 ) {
     var showKsudDialog by remember { mutableStateOf(false) }
@@ -961,7 +640,7 @@ private fun InfoCard(
                 stringResource(R.string.home_kernel),
                 systemInfo.kernelRelease,
                 icon = Icons.Default.Memory,
-                onClick = if (kasumiAvailable) onKernelClick else null,
+                onClick = onKernelClick,
             )
 
             if (!isSimpleMode) {
@@ -1145,180 +824,6 @@ private fun KsudVersionDialog(
                         stringResource(id = R.string.home_ksud_daemon_syncing)
                     else
                         stringResource(id = R.string.home_ksud_daemon_sync)
-                )
-            }
-        }
-    )
-}
-
-@Composable
-private fun KernelSpoofDialog(
-    onDismiss: () -> Unit,
-    onSaved: () -> Unit = {},
-) {
-    val scope = rememberCoroutineScope()
-    val context = LocalContext.current
-
-    var unameRelease by remember { mutableStateOf("") }
-    var unameVersion by remember { mutableStateOf("") }
-    var unameMode by remember { mutableStateOf("scoped") }
-    var loading by remember { mutableStateOf(true) }
-    var saving by remember { mutableStateOf(false) }
-    var restoring by remember { mutableStateOf(false) }
-    var loadFromSysfsTrigger by remember { mutableStateOf(0) }
-
-    LaunchedEffect(Unit) {
-        loading = true
-        val config = KasumiManager.loadConfig()
-        unameRelease = config.unameRelease
-        unameVersion = config.unameVersion
-        unameMode = config.unameMode.ifBlank { "scoped" }
-        loading = false
-    }
-
-    LaunchedEffect(loadFromSysfsTrigger) {
-        if (loadFromSysfsTrigger > 0) {
-            val (r, v) = KasumiManager.readKernelUnameFromSysfs()
-            unameRelease = r
-            unameVersion = v
-        }
-    }
-
-    AlertDialog(
-        onDismissRequest = { if (!saving) onDismiss() },
-        title = { Text(stringResource(R.string.kasumi_uname_title)) },
-        text = {
-            if (loading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 24.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    OutlinedTextField(
-                        value = unameRelease,
-                        onValueChange = { unameRelease = it },
-                        label = { Text(stringResource(R.string.kasumi_uname_release)) },
-                        supportingText = { Text(stringResource(R.string.kasumi_uname_release_desc)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                    )
-                    OutlinedTextField(
-                        value = unameVersion,
-                        onValueChange = { unameVersion = it },
-                        label = { Text(stringResource(R.string.kasumi_uname_version)) },
-                        supportingText = { Text(stringResource(R.string.kasumi_uname_version_desc)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                    )
-                    FilledTonalButton(
-                        onClick = { loadFromSysfsTrigger++ },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.kasumi_uname_use_current))
-                    }
-
-                    Text(
-                        text = stringResource(R.string.kasumi_uname_mode),
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                        SegmentedButton(
-                            selected = unameMode == "scoped",
-                            onClick = { unameMode = "scoped" },
-                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                        ) { Text(stringResource(R.string.kasumi_uname_mode_scoped)) }
-                        SegmentedButton(
-                            selected = unameMode == "global",
-                            onClick = { unameMode = "global" },
-                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                        ) { Text(stringResource(R.string.kasumi_uname_mode_global)) }
-                    }
-                    Text(
-                        text = stringResource(
-                            if (unameMode == "global") R.string.kasumi_uname_mode_global_desc
-                            else R.string.kasumi_uname_mode_scoped_desc
-                        ),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-
-                    if (unameMode == "global") {
-                        OutlinedButton(
-                            onClick = {
-                                if (restoring || saving) return@OutlinedButton
-                                restoring = true
-                                scope.launch {
-                                    val ok = KasumiManager.restoreUnameGlobal()
-                                    restoring = false
-                                    android.widget.Toast.makeText(
-                                        context,
-                                        context.getString(
-                                            if (ok) R.string.kasumi_uname_restored
-                                            else R.string.kasumi_uname_restore_failed
-                                        ),
-                                        android.widget.Toast.LENGTH_SHORT
-                                    ).show()
-                                }
-                            },
-                            enabled = !saving && !restoring,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(stringResource(R.string.kasumi_uname_restore))
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { if (!saving) onDismiss() }) {
-                Text(stringResource(R.string.close))
-            }
-        },
-        dismissButton = {
-            TextButton(
-                enabled = !loading && !saving,
-                onClick = {
-                    if (loading || saving) return@TextButton
-                    saving = true
-                    scope.launch {
-                        val config = KasumiManager.loadConfig()
-                        val updated = config.copy(
-                            unameRelease = unameRelease.trim(),
-                            unameVersion = unameVersion.trim(),
-                            unameMode = unameMode,
-                        )
-                        val ok = KasumiManager.saveConfig(updated)
-                        if (ok && unameRelease.isNotBlank() && unameVersion.isNotBlank()) {
-                            KasumiManager.setUname(
-                                unameRelease.trim(),
-                                unameVersion.trim(),
-                                unameMode,
-                            )
-                        }
-                        saving = false
-                        if (ok) {
-                            onSaved()
-                            onDismiss()
-                        } else {
-                            android.widget.Toast.makeText(
-                                context,
-                                context.getString(R.string.kasumi_toast_settings_failed),
-                                android.widget.Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-                }
-            ) {
-                Text(
-                    text = if (saving) stringResource(R.string.kasumi_saving) else stringResource(R.string.app_profile_template_save)
                 )
             }
         }

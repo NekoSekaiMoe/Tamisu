@@ -61,15 +61,12 @@ import com.anatdx.yukisu.ui.util.LocalSnackbarHost
 import com.anatdx.yukisu.ui.util.install
 import com.anatdx.yukisu.ui.util.resetTaskDescriptionToAppName
 import com.anatdx.yukisu.ui.viewmodel.HomeViewModel
-import com.anatdx.yukisu.ui.viewmodel.SuperUserViewModel
 import com.anatdx.yukisu.ui.webui.WebUIActivity
-import com.anatdx.yukisu.ui.webui.initPlatform
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import ui.screen.moreSettings.util.LocaleHelper
 
 class MainActivity : ComponentActivity() {
-    private lateinit var superUserViewModel: SuperUserViewModel
     private lateinit var homeViewModel: HomeViewModel
     internal val settingsStateFlow = MutableStateFlow(SettingsState())
     private val intentState = MutableStateFlow(0)
@@ -211,7 +208,6 @@ class MainActivity : ComponentActivity() {
                     }
 
                     LaunchedEffect(Unit) {
-                        initPlatform()
                         if (getSharedPreferences("settings", MODE_PRIVATE)
                                 .getBoolean("auto_update_ksud", false)
                         ) {
@@ -288,21 +284,12 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun initializeViewModels() {
-        superUserViewModel = SuperUserViewModel()
         homeViewModel = HomeViewModel()
 
         themeChangeObserver = ThemeUtils.registerThemeChangeObserver(this)
     }
 
     private fun initializeData() {
-        lifecycleScope.launch {
-            try {
-                superUserViewModel.fetchAppList()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-
         DataRefreshUtils.startDataRefreshCoroutine(lifecycleScope)
         DataRefreshUtils.startSettingsMonitorCoroutine(lifecycleScope, this, settingsStateFlow)
 
@@ -326,7 +313,6 @@ class MainActivity : ComponentActivity() {
     private fun refreshData() {
         lifecycleScope.launch {
             try {
-                superUserViewModel.fetchAppList()
                 DataRefreshUtils.refreshData(lifecycleScope)
             } catch (e: Exception) {
                 e.printStackTrace()

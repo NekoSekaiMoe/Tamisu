@@ -25,6 +25,9 @@ namespace fs = std::filesystem;
 
 namespace ksud {
 
+// Forward declaration — defined near get_current_kmi() at the bottom of this file.
+std::string read_kernel_release_from_sysfs();
+
 // Arch suffix for Kasumi LKM asset name (must match lkm.cpp)
 #if defined(__aarch64__)
 #define KASUMI_ARCH_SUFFIX "_arm64"
@@ -1240,7 +1243,7 @@ int boot_restore(const std::vector<std::string>& args) {
 
 // Read real kernel release from sysfs. Not spoofed by Kasumi uname hiding (uname(2) is).
 // Prefer this for KMI so LKM selection uses the actual kernel, not spoofed version.
-static std::string read_kernel_release_from_sysfs() {
+std::string read_kernel_release_from_sysfs() {
     std::ifstream f("/proc/sys/kernel/osrelease");
     std::string line;
     if (std::getline(f, line))
