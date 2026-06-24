@@ -1179,6 +1179,15 @@ int exec_stage_script(const std::string& stage, bool block) {
         if (!metamodule_id.empty() && module_id == metamodule_id)
             continue;
 
+        // Skip independent zygisk daemons: Tamisu is the zygisk provider when
+        // active, and a second loader in the same zygote crashes the process.
+        // Priority: Tamisu > {ZygiskNext, NeoZygisk, ReZygisk}.
+        if (is_zygisk_impl_module(module_id)) {
+            LOGW("Skipping stage script for %s: Tamisu takes over zygisk",
+                 module_id.c_str());
+            continue;
+        }
+
         const std::string module_path = std::string(MODULE_DIR) + module_id;
 
         // Skip disabled modules
@@ -1238,6 +1247,10 @@ int load_sepolicy_rule() {
 
         const std::string module_path = std::string(MODULE_DIR) + entry->d_name;
 
+        // Skip independent zygisk daemons (see exec_stage_script).
+        if (is_zygisk_impl_module(entry->d_name))
+            continue;
+
         // Skip disabled modules
         if (file_exists(module_path + "/" + DISABLE_FILE_NAME))
             continue;
@@ -1290,6 +1303,10 @@ int load_system_prop() {
             continue;
 
         const std::string module_path = std::string(MODULE_DIR) + entry->d_name;
+
+        // Skip independent zygisk daemons (see exec_stage_script).
+        if (is_zygisk_impl_module(entry->d_name))
+            continue;
 
         // Skip disabled modules
         if (file_exists(module_path + "/" + DISABLE_FILE_NAME))

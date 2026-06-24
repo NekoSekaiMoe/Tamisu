@@ -26,6 +26,27 @@ void umask(mode_t mask);
 // Magisk detection
 bool has_magisk();
 
+// Zygisk conflict detection.
+//
+// Tamisu has its own zygisk injection. To avoid double-injecting zygote
+// (which crashes the process), it yields to higher-priority zygisk
+// implementations and force-disables lower-priority ones.
+//
+// Priority order (highest first):
+//   1. Magisk Zygisk (built-in, userspace native-bridge injection)
+//   2. Tamisu (kernel-level zygote hook)
+//   3. ZygiskNext / NeoZygisk / ReZygisk (module-based zygisk daemons)
+//
+// Returns true if Magisk is installed AND its Zygisk toggle is enabled in
+// magisk.db. When true, Tamisu zygiskd must not start -- the two loaders
+// in one zygote process corrupt each other.
+bool is_magisk_zygisk_enabled();
+
+// Module ids that ship an independent zygisk daemon. When Tamisu is active,
+// these must be skipped at module-scan time (stage scripts, sepolicy,
+// system.prop, zygisk payload) so their injection does not race ours.
+bool is_zygisk_impl_module(const std::string& module_id);
+
 // Install/Uninstall
 int install(const std::optional<std::string>& magiskboot_path,
             const std::optional<std::string>& libadbroot_path = std::nullopt);

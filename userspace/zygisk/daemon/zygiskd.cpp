@@ -107,6 +107,15 @@ std::vector<Module> g_modules;
 std::unordered_set<std::string> g_granted_modules;
 bool g_grant_filter_active = false;
 
+/* Module ids that ship an independent zygisk daemon. When Tamisu is active,
+ * their payload must never be loaded into zygote -- two PLT-hook frameworks
+ * in one process corrupt each other. Priority: Tamisu > module zygisk impls.
+ * Kept in sync with ksud's is_zygisk_impl_module() and the manager's
+ * ZYGISK_IMPL_MODULE_IDS. */
+static bool is_zygisk_impl_module(const std::string &id) {
+  return id == "zygisksu" || id == "rezygisk";
+}
+
 /* enabled module = not disabled + ships a zygisk lib for our ABI. If the
  * per-module grant filter is active (yzconfig.json had a "zygote_modules"
  * array), only modules whose id is in g_granted_modules are loaded. */
@@ -120,6 +129,8 @@ std::vector<Module> scan_modules() {
     if (e->d_name[0] == '.')
       continue;
     std::string name = e->d_name;
+    if (is_zygisk_impl_module(name))
+      continue;
     if (g_grant_filter_active &&
         g_granted_modules.find(name) == g_granted_modules.end())
       continue;

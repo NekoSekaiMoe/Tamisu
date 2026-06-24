@@ -163,6 +163,14 @@ void ensure_zygiskd_running_if_enabled() {
     if (!supported || value == 0) {
         return;
     }
+    // Yield to Magisk Zygisk if it is enabled. Magisk injects via the native
+    // bridge and reaches zygote earlier than we do; running both loaders in
+    // one zygote process corrupts PLT hooks and crashes the process.
+    // Priority: Magisk Zygisk > Tamisu > {ZygiskNext, NeoZygisk, ReZygisk}.
+    if (is_magisk_zygisk_enabled()) {
+        LOGW("YukiZygisk disabled: Magisk Zygisk has higher priority");
+        return;
+    }
     LOGI("YukiZygisk feature on -- launching zygiskd");
     spawn_zygiskd();
 }

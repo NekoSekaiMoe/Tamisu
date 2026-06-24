@@ -246,6 +246,61 @@ bool has_magisk() {
     return false;
 }
 
+bool is_magisk_zygisk_enabled() {
+    // Preferred path: ask the magisk CLI. This is reliable because Tamisu's
+    // post-fs-data hook runs after magisk_pfsd has populated the daemon state.
+    // The query reads the same setting the magisk daemon consults at boot.
+    //
+    // We try the binary from PATH first (matches has_magisk's view), then
+    // fall back to the canonical install location.
+    std::vector<std::string> candidates;
+    if (const char* path_env = getenv("PATH")) {
+        std::stringstream ss(path_env);
+        std::string dir;
+        while (std::getline(ss, dir, ':')) {
+            candidates.push_back(dir + "/magisk");
+        }
+    }
+    candidates.push_back("/data/adb/magisk/magisk");
+
+    for (const auto& bin : candidates) {
+        if (access(bin.c_str(), X_OK) != 0)
+            continue;
+        auto result = exec_command({bin, "--sqlite",
+                                    "SELECT value FROM settings WHERE key='zygisk'"});
+        if (result.exit_code != 0)
+            continue;
+        // sqlite CLI prints "value=1" when zygisk is enabled.
+        if (result.stdout_str.find("value=1") != std::string::npos) {
+            LOGW("Magisk Zygisk is enabled -- yielding (priority 1 > Tamisu)");
+            return true;
+        }
+        // Any other value (value=0 or empty result) means disabled.
+        // Treat a successful query as authoritative and stop probing.
+        return false;
+    }
+
+    // magisk binary not reachable; assume zygisk off (we cannot tell, and
+    // blocking Tamisu on every boot out of caution would defeat the purpose
+    // of coexistence with a Magisk that the user may have left installed
+    // with Zygisk off).
+    return false;
+}
+
+bool is_zygisk_impl_module(const std::string& module_id) {
+    // Module ids that ship an independent zygisk daemon. Kept in sync with
+    // manager/app/.../ui/util/KsuCli.kt:ZYGISK_IMPL_MODULE_IDS.
+    //
+    //   zygisksu  -- ZygiskNext and NeoZygisk (they share this id)
+    //   rezygisk  -- ReZygisk (by mywalki)
+    static constexpr const char* kIds[] = {"zygisksu", "rezygisk"};
+    for (const char* id : kIds) {
+        if (module_id == id)
+            return true;
+    }
+    return false;
+}
+
 std::string trim(const std::string& str) {
     const size_t start = str.find_first_not_of(" \t\n\r");
     if (start == std::string::npos)
