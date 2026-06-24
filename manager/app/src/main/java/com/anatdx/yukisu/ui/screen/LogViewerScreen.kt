@@ -53,7 +53,9 @@ private const val DEFAULT_LOG_PATH = ""
 
 /** Stub types for the removed sulog feature. The log viewer still uses them
  *  internally for its source-selection UI; these no-ops keep it compiling. */
-data class SulogLogSource(val path: String, val displayName: String)
+data class SulogLogSource(val path: String, val displayName: String) {
+    val name: String get() = path
+}
 
 enum class SulogLogSourceCleanAction { None, Clear, Delete }
 
@@ -68,6 +70,52 @@ fun resolveSelectedSulogSource(
     activeLogPath: String,
     previousActivePath: String? = null
 ): SulogLogSource? = logSources.firstOrNull { it.path == currentLogPath }
+
+/** Stubs for the removed sulog log-source helpers. These provide minimal
+ *  no-op / empty implementations so the log viewer compiles and runs; the
+ *  real implementations were in deleted sulog source files. */
+
+private const val SULOG_LOG_DIR = "/data/adb/ksu/log"
+
+@Suppress("UNUSED_PARAMETER")
+fun listSulogSources(shell: com.topjohnwu.superuser.Shell): List<SulogLogSource> {
+    val files = listOf("ksu.log", "ksud.log")
+    return files.map { SulogLogSource("$SULOG_LOG_DIR/$it", it) }
+}
+
+@Suppress("UNUSED_PARAMETER")
+fun readActiveSulogPath(shell: com.topjohnwu.superuser.Shell): String = ""
+
+@Suppress("UNUSED_PARAMETER")
+fun buildVisibleSulogSourceSignature(
+    shell: com.topjohnwu.superuser.Shell,
+    sources: List<SulogLogSource>,
+    selected: SulogLogSource?,
+    activePath: String
+): String = "${selected?.path ?: ""}|${activePath}"
+
+@Suppress("UNUSED_PARAMETER")
+fun readSulogSourceStat(shell: com.topjohnwu.superuser.Shell, path: String): String {
+    return "0 0"
+}
+
+fun shellQuote(s: String): String = "'${s.replace("'", "'\\''")}'"
+
+fun parseSulogEntries(content: String, useCurrentClockFallback: Boolean): List<LogEntry> {
+    if (content.isBlank()) return emptyList()
+    return content.lineSequence().filter { it.isNotBlank() }.map { line ->
+        val parts = line.split(Regex("\\s+"), limit = 6)
+        LogEntry(
+            timestamp = parts.getOrNull(0) ?: "",
+            type = LogType.INFO,
+            uid = parts.getOrNull(1) ?: "",
+            comm = parts.getOrNull(2) ?: "",
+            details = parts.getOrNull(3) ?: "",
+            pid = parts.getOrNull(4) ?: "",
+            rawLine = line.trim(),
+        )
+    }.toList()
+}
 
 data class LogEntry(
     val timestamp: String,
@@ -296,6 +344,7 @@ fun LogViewerScreen(navigator: DestinationsNavigator) {
                         if (result == ConfirmResult.Confirmed) {
                             loadingDialog.withLoading {
                                 when (currentCleanAction) {
+                                    SulogLogSourceCleanAction.None -> {}
                                     SulogLogSourceCleanAction.Clear -> clearLogs(currentLogPath)
                                     SulogLogSourceCleanAction.Delete -> deleteLogs(currentLogPath)
                                 }

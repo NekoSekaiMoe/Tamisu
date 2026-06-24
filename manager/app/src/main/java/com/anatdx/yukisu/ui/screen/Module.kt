@@ -559,10 +559,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 )
             }
         }
-                }
-            }
-        )
-    }
 
     // 快捷方式类型选择对话框
     if (showShortcutTypeDialog) {
