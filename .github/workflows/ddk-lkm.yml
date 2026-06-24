@@ -42,7 +42,7 @@ jobs:
         mkdir -p /github/workspace/out
         # Copy with KMI-specific naming
         OUTPUT_NAME="${{ inputs.kmi }}_kernelsu.ko"
-        cp kernelsu.ko "/github/workspace/out/$OUTPUT_NAME"
+        cp *.ko "/github/workspace/out/$OUTPUT_NAME"
         
         echo "Copied to: /github/workspace/out/$OUTPUT_NAME"
         ls -la "/github/workspace/out/$OUTPUT_NAME"
