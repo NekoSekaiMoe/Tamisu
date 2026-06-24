@@ -1,8 +1,7 @@
 package com.anatdx.yukisu
 
 import android.app.Application
-import android.os.Process
-import android.system.Os
+import android.os.Os
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import coil.Coil
@@ -25,12 +24,6 @@ class KernelSUApplication : Application(), ViewModelStoreOwner {
     override fun onCreate() {
         super.onCreate()
         ksuApp = this
-
-        // Isolated Magica processes only need TMPDIR for the bundled ksud bootstrap.
-        if (Process.isIsolated()) {
-            Os.setenv("TMPDIR", cacheDir.absolutePath, true)
-            return
-        }
 
         Platform.setHiddenApiExemptions()
 
