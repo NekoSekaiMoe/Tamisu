@@ -2,8 +2,6 @@ name: ClangFormat check
 
 on:
   push:
-    branches:
-      - 'main'
     paths:
       - '.github/workflows/clang-format.yml'
       - 'kernel/**/*.c'

@@ -2,6 +2,7 @@ name: Build LKM for KernelSU
 on:
   workflow_call:
   workflow_dispatch:
+  push:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
