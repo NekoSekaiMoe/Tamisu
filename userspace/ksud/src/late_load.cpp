@@ -41,8 +41,12 @@ bool is_kernelsu_loaded() {
 }
 
 std::string get_kernelsu_load_params(bool allow_shell) {
-    if (allow_shell || access("/ksu_allow_shell", F_OK) == 0) {
-        LOGW("late-load: loading kernelsu.ko with allow_shell=1");
+    // allow_shell is the module_param consumed directly by tamisu.ko via the
+    // insmod/modprobe cmdline (e.g. "allow_shell=1"). The legacy
+    // /ksu_allow_shell ramdisk marker file is an upstream KernelSU convention
+    // we do not implement, so we only honour the explicit parameter here.
+    if (allow_shell) {
+        LOGW("late-load: loading tamisu.ko with allow_shell=1");
         return "allow_shell=1";
     }
 
