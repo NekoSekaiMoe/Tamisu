@@ -51,6 +51,24 @@ private const val MAX_TOTAL_LOGS = 100000
 
 private const val DEFAULT_LOG_PATH = ""
 
+/** Stub types for the removed sulog feature. The log viewer still uses them
+ *  internally for its source-selection UI; these no-ops keep it compiling. */
+data class SulogLogSource(val path: String, val displayName: String)
+
+enum class SulogLogSourceCleanAction { None, Clear, Delete }
+
+fun resolveSulogSourceCleanAction(
+    currentLogPath: String,
+    activeLogPath: String
+): SulogLogSourceCleanAction = SulogLogSourceCleanAction.Clear
+
+fun resolveSelectedSulogSource(
+    logSources: List<SulogLogSource>,
+    currentLogPath: String,
+    activeLogPath: String,
+    previousActivePath: String? = null
+): SulogLogSource? = logSources.firstOrNull { it.path == currentLogPath }
+
 data class LogEntry(
     val timestamp: String,
     val type: LogType,

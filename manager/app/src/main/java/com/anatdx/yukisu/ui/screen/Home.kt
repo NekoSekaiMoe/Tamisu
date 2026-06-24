@@ -136,7 +136,6 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                         onClickInstall = {
                             navigator.navigate(InstallScreenDestination())
                         },
-                        isLateLoadMode = isLateLoadMode,
                     )
 
                     // 链接卡片
@@ -247,11 +246,6 @@ private fun TopBar(
         ),
         actions = {
             if (isDataLoaded) {
-                // Kasumi 配置按钮
-                IconButton(onClick = {
-                    )
-                }
-
                 // 重启按钮
                 var showDropdown by remember { mutableStateOf(false) }
                 KsuIsValid {
@@ -292,7 +286,6 @@ private fun TopBar(
 @Composable
 private fun StatusCard(
     systemStatus: HomeViewModel.SystemStatus,
-    isLateLoadMode: Boolean = false,
     onClickInstall: () -> Unit = {},
 ) {
     ElevatedCard(
@@ -342,22 +335,6 @@ private fun StatusCard(
                             )
 
                             Spacer(Modifier.width(8.dp))
-
-                            if (isLateLoadMode) {
-                                Surface(
-                                    shape = RoundedCornerShape(4.dp),
-                                    color = MaterialTheme.colorScheme.tertiary,
-                                    modifier = Modifier
-                                ) {
-                                    Text(
-                                        text = stringResource(id = R.string.jailbreak_mode),
-                                        style = MaterialTheme.typography.labelMedium,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        color = MaterialTheme.colorScheme.onTertiary
-                                    )
-                                }
-                                Spacer(Modifier.width(6.dp))
-                            }
 
                             // 架构标签（缓存避免重复 syscall）
                             val machine = remember { Os.uname().machine }
@@ -441,17 +418,6 @@ private fun StatusCard(
                         )
                     }
 
-                    if (canJailbreak) {
-                        Button(
-                            onClick = onJailbreak,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error,
-                                contentColor = MaterialTheme.colorScheme.onError
-                            )
-                        ) {
-                            Text(stringResource(R.string.home_jailbreak))
-                        }
-                    }
                 }
 
             }

@@ -55,7 +55,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import com.anatdx.yukisu.Natives
 import com.anatdx.yukisu.R
-import com.anatdx.yukisu.magica.MagicaHelper
+import com.anatdx.yukisu.ui.component.KsuIsValid
 import com.anatdx.yukisu.ui.component.DialogHandle
 import com.anatdx.yukisu.ui.component.SuperDropdown
 import com.anatdx.yukisu.ui.component.rememberConfirmDialog
@@ -114,18 +114,13 @@ fun InstallScreen(
     val onJailbreakInstall: () -> Unit = {
         loadingDialog.show()
         coroutineScope.launch {
-            val launched = if (isRootShellAvailable) {
-                withContext(Dispatchers.IO) {
-                    execKsud("late-load", true)
-                }
-            } else {
-                MagicaHelper.launch(context, "install-manual")
-            }
-
-            if (!launched) {
+            if (!isRootShellAvailable) {
                 loadingDialog.hide()
                 Toast.makeText(context, R.string.install_jailbreak_failed, Toast.LENGTH_LONG).show()
                 return@launch
+            }
+            withContext(Dispatchers.IO) {
+                execKsud("late-load", true)
             }
 
             delay(30_000)
