@@ -39,7 +39,6 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.LogViewerScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.MoreSettingsScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.YukiZygiskScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.anatdx.yukisu.BuildConfig
 import com.anatdx.yukisu.Natives
@@ -199,16 +198,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             }
                         )
                     }
-
-                    // YukiZygisk
-                    SettingItem(
-                        icon = Icons.Filled.Memory,
-                        title = "YukiZygisk",
-                        summary = "Zygisk injection & module loading",
-                        onClick = {
-                            navigator.navigate(YukiZygiskScreenDestination)
-                        }
-                    )
 
                     // 更多设置
                     SettingItem(

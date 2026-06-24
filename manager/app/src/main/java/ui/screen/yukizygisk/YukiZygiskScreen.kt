@@ -231,14 +231,6 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
                         style = MaterialTheme.typography.titleLarge,
                     )
                 },
-                navigationIcon = {
-                    IconButton(onClick = { navigator.popBackStack() }) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back),
-                        )
-                    }
-                },
                 windowInsets = WindowInsets.safeDrawing.only(
                     WindowInsetsSides.Top + WindowInsetsSides.Horizontal
                 ),
