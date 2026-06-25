@@ -83,6 +83,8 @@ class SulogLogSource(
 
 internal const val DMESG_PATH = "__dmesg__"
 
+private const val SULOG_LOG_DIR = "/data/adb/ksu/log"
+
 enum class SulogLogSourceCleanAction { None, Clear, Delete }
 
 fun resolveSulogSourceCleanAction(
@@ -1278,7 +1280,7 @@ private suspend fun loadLogsWithPagination(
                 if (startOffsetInclusive >= endOffsetExclusive) {
                     emptyList()
                 } else {
-                    retained.subList(startOffsetInclusive, endOffsetInclusive)
+                    retained.subList(startOffsetInclusive, endOffsetExclusive)
                 }
             } else {
                 val retainedStartLine = totalLines - effectiveTotal + 1
