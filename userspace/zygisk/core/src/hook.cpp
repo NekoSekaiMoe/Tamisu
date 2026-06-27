@@ -283,7 +283,8 @@ std::array<JNINativeMethod, 5> g_zygote_methods = {{
                     allowlisted_data_info, mount_data_dirs, mount_storage_dirs);
            if (run_modules)
              zygisk_run_app_post(&args);
-           if (decision == 2)
+            // A child zygote keeps the core resident; see upstream 457bf6d.
+           if (decision == 2 && !is_child_zygote)
              zygisk_self_destruct(env); // mode 1: unhook + kernel munmap core
            else if (decision == 1)
              zygisk_revert_mounts(); // mode 2: revert mounts only (core stays)
@@ -353,7 +354,8 @@ std::array<JNINativeMethod, 5> g_zygote_methods = {{
                            mount_storage_dirs, mount_sysprop_overrides);
            if (run_modules)
              zygisk_run_app_post(&args);
-           if (decision == 2)
+            // A child zygote keeps the core resident; see upstream 457bf6d.
+           if (decision == 2 && !is_child_zygote)
              zygisk_self_destruct(env); // mode 1: unhook + kernel munmap core
            else if (decision == 1)
              zygisk_revert_mounts(); // mode 2: revert mounts only (core stays)
@@ -408,7 +410,8 @@ std::array<JNINativeMethod, 5> g_zygote_methods = {{
                allowlisted_data_info, mount_data_dirs, mount_storage_dirs);
            if (run_modules)
              zygisk_run_app_post(&args);
-           if (decision == 2)
+            // A child zygote keeps the core resident; see upstream 457bf6d.
+           if (decision == 2 && !is_child_zygote)
              zygisk_self_destruct(env); // mode 1: unhook + kernel munmap core
            else if (decision == 1)
              zygisk_revert_mounts(); // mode 2: revert mounts only (core stays)
@@ -455,7 +458,8 @@ std::array<JNINativeMethod, 5> g_zygote_methods = {{
                mount_sysprop_overrides);
            if (run_modules)
              zygisk_run_app_post(&args);
-           if (decision == 2)
+            // A child zygote keeps the core resident; see upstream 457bf6d.
+           if (decision == 2 && !is_child_zygote)
              zygisk_self_destruct(env); // mode 1: unhook + kernel munmap core
            else if (decision == 1)
              zygisk_revert_mounts(); // mode 2: revert mounts only (core stays)
