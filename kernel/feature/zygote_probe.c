@@ -28,6 +28,7 @@
 #include <linux/fdtable.h>
 #include <linux/file.h>
 #include <linux/proc_fs.h>
+#include <linux/random.h>
 #include <linux/shmem_fs.h>
 #include <linux/syscalls.h>
 #include <linux/version.h>
@@ -162,11 +163,13 @@ static bool zp_argv1_is_xzygote(struct mm_struct *mm)
  */
 #define ZP_LOADER_PATH "/data/adb/ksu/lib/yukizygisk/libyukilinker.so"
 #define ZP_CORE_PATH "/data/adb/ksu/lib/yukizygisk/libzygisk.so"
-/* Names shown for the staged memfds in the target's /proc/pid/maps. Kept
- * innocuous (NOT libzygisk/libzloader) to dodge string-match detectors; full
- * maps anonymisation is a separate, later step. */
-#define ZP_LOADER_VMA_NAME "jit-cache"
-#define ZP_CORE_VMA_NAME "jit-cache"
+/* The staged shmem images use an ART data-code-cache marker. They are mapped
+ * file-backed by android_dlopen_ext(USE_LIBRARY_FD), so the name is visible in
+ * /proc/pid/maps while the core remains resident. Avoid the primary JIT cache
+ * marker: multiple executable mappings with distinct inodes are easy to
+ * separate from a normal single app runtime cache. */
+#define ZP_VMA_NAME "memfd:data-code-cache"
+#define ZP_VMA_NAME_LEN sizeof(ZP_VMA_NAME)
 #define ZP_LOADER_MAX_SZ (8u << 20) /* sanity cap on a payload image */
 #define ZP_DLEXT_USE_LIBRARY_FD 0x10 /* android_dlextinfo.flags bit */
 
@@ -189,6 +192,19 @@ static void zp_close_current_fd(int fd)
 #else
 	close_fd(fd);
 #endif // #if LINUX_VERSION_CODE < KERNEL_VERSION...
+}
+
+/* shmem_file_setup() shows the name verbatim in /proc/pid/maps, unlike
+ * memfd_create() which prepends "memfd:" itself. */
+static void zp_cache_name(char *buf, size_t len)
+{
+	size_t i;
+
+	if (!len)
+		return;
+	for (i = 0; i + 1 < len && i < sizeof(ZP_VMA_NAME) - 1; i++)
+		buf[i] = ZP_VMA_NAME[i];
+	buf[i] = '\0';
 }
 
 /*
@@ -481,6 +497,7 @@ static void zp_inject_tw_func(struct callback_head *cb)
 		bool yuki;
 		const char *lib_str, *entry_str;
 		size_t lib_len, entry_len;
+		char loader_name[ZP_VMA_NAME_LEN], core_name[ZP_VMA_NAME_LEN];
 
 		if (!at_base || !zp_dlopen_off || !zp_dlsym_off) {
 			pr_info("zygote_probe: [2c-3b] pid=%d no dlopen/dlsym "
@@ -496,9 +513,10 @@ static void zp_inject_tw_func(struct callback_head *cb)
 		 * to the loader entry, which dlopens the core and closes that
 		 * fd. */
 		yuki = zp_yukilinker_enabled;
-		loader_fd =
-		    zp_stage_fd(yuki ? ZP_LOADER_PATH : ZP_CORE_PATH,
-				yuki ? ZP_LOADER_VMA_NAME : ZP_CORE_VMA_NAME);
+		zp_cache_name(loader_name, sizeof(loader_name));
+		zp_cache_name(core_name, sizeof(core_name));
+		loader_fd = zp_stage_fd(yuki ? ZP_LOADER_PATH : ZP_CORE_PATH,
+					yuki ? loader_name : core_name);
 		if (loader_fd < 0) {
 			pr_info("zygote_probe: [2c-3b] pid=%d stage loader "
 				"failed: %d, skipping\n",
@@ -506,7 +524,7 @@ static void zp_inject_tw_func(struct callback_head *cb)
 			goto out;
 		}
 		if (yuki) {
-			core_fd = zp_stage_fd(ZP_CORE_PATH, ZP_CORE_VMA_NAME);
+			core_fd = zp_stage_fd(ZP_CORE_PATH, core_name);
 		} else {
 			core_fd = loader_fd; /* dlopen the core directly */
 		}

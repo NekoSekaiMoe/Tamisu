@@ -116,6 +116,14 @@ int forked_decision(bool is_child, int uid) {
   return zygisk_inject_decision(uid);
 }
 
+void finish_restore_only_child(JNIEnv *env, bool is_child_zygote) {
+  zygisk_revert_mounts();
+  if (is_child_zygote)
+    return;
+  zygisk_self_unhook(env);
+  yz_drop_runtime_header_pages();
+}
+
 /* the fork() the native specialize code calls: once we've forked in
  * ctx_fork_pre, it's a no-op returning the already-forked pid. */
 int new_fork() {
@@ -305,7 +313,7 @@ std::array<JNINativeMethod, 5> g_zygote_methods = {{
             if (decision == 2 && !is_child_zygote)
               zygisk_self_destruct(env, is_isolated(uid)); // mode 1 / isolated
            else if (decision == 1)
-             zygisk_revert_mounts(); // mode 2: revert mounts only (core stays)
+             finish_restore_only_child(env, is_child_zygote); // mode 2
            // A child zygote keeps forking apps via forkRepeatedly, whose native
            // FileDescriptorTable::Restat aborts on any /data/adb/modules fd.
            // The modules' hooks are already mapped in memory, so the leftover
@@ -376,7 +384,7 @@ std::array<JNINativeMethod, 5> g_zygote_methods = {{
             if (decision == 2 && !is_child_zygote)
               zygisk_self_destruct(env, is_isolated(uid)); // mode 1 / isolated
            else if (decision == 1)
-             zygisk_revert_mounts(); // mode 2: revert mounts only (core stays)
+             finish_restore_only_child(env, is_child_zygote); // mode 2
            // A child zygote keeps forking apps via forkRepeatedly, whose native
            // FileDescriptorTable::Restat aborts on any /data/adb/modules fd.
            // The modules' hooks are already mapped in memory, so the leftover
@@ -432,7 +440,7 @@ std::array<JNINativeMethod, 5> g_zygote_methods = {{
             if (decision == 2 && !is_child_zygote)
               zygisk_self_destruct(env, is_isolated(uid)); // mode 1 / isolated
            else if (decision == 1)
-             zygisk_revert_mounts(); // mode 2: revert mounts only (core stays)
+             finish_restore_only_child(env, is_child_zygote); // mode 2
          })},
     {"nativeSpecializeAppProcess",
      "(II[II[[IILjava/lang/String;Ljava/lang/String;ZLjava/lang/String;"
@@ -480,7 +488,7 @@ std::array<JNINativeMethod, 5> g_zygote_methods = {{
             if (decision == 2 && !is_child_zygote)
               zygisk_self_destruct(env, is_isolated(uid)); // mode 1 / isolated
            else if (decision == 1)
-             zygisk_revert_mounts(); // mode 2: revert mounts only (core stays)
+             finish_restore_only_child(env, is_child_zygote); // mode 2
          })},
     /* system_server fork: ServerSpecializeArgs; like fork-app, post runs in
      * the forked child (pid==0). */
@@ -805,8 +813,8 @@ void zygisk_self_unhook(JNIEnv *env) {
     ZLOGI("self-destruct: closed %d leaked module fd", nc);
 }
 
-/* Collect every segment whose maps path contains `substr` (a file-backed name
- * like the kernel-staged "/jit-cache"). EXACT per-segment -- never coalesced
+/* Collect every segment whose maps path contains `substr` (a file-backed
+ * staged code-cache name). EXACT per-segment -- never coalesced
  * with anon neighbours. The previous "contiguous private" walk mis-merged a
  * single 10KB loader segment with ~630KB of adjacent app heap and munmap'd it,
  * crashing the app. Path match avoids that entirely. */
