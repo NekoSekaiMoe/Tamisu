@@ -22,3 +22,8 @@ bool always_allow(void)
 {
 	return true; // No permission check
 }
+bool injected_app(void)
+{
+	return is_appuid(current_uid().val);
+	
+}

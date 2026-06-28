@@ -64,6 +64,39 @@ struct yz_dlopen_cmd {
  */
 #define KSU_IOCTL_YZ_RELOAD _IOC(_IOC_WRITE, 'T', 52, 0)
 
+#define KSU_IOCTL_YZ_SET_YUKILINKER _IOC(_IOC_WRITE, 'T', 53, 0)
+
+struct yz_yukilinker_cmd {
+  __u32 enabled; /* 0 = off (stub loads core directly), 1 = on */
+};
+
+#define KSU_IOCTL_YZ_UMOUNT_PID _IOC(_IOC_WRITE, 'T', 54, 0)
+
+struct yz_umount_pid_cmd {
+  __u32 pid; /* target app process to revert mounts for */
+};
+
+#define KSU_IOCTL_YZ_UNMAP_PID _IOC(_IOC_WRITE, 'T', 55, 0)
+
+#define YZ_MAX_UNMAP_SEGS 8
+
+struct yz_unmap_pid_cmd {
+  __u32 pid; /* target app process */
+  __u32 n_segs; /* valid entries in addr[]/size[] */
+  __u64 addr[YZ_MAX_UNMAP_SEGS];
+  __u64 size[YZ_MAX_UNMAP_SEGS];
+};
+
+#define KSU_IOCTL_YZ_UNMAP_SELF _IOC(_IOC_WRITE, 'T', 56, 0)
+
+struct yz_unmap_self_cmd {
+  __u32 n_segs; /* valid entries in addr[]/size[] */
+  __u32 reserved;
+  __u64 addr[YZ_MAX_UNMAP_SEGS];
+  __u64 size[YZ_MAX_UNMAP_SEGS];
+  
+};
+
 /* ---- runtime config ---- */
 
 /* Mirrors /data/adb/ksu/yukizygisk/yzconfig.json. zygiskd parses the JSON and
