@@ -118,10 +118,10 @@ private suspend fun writeYzConfig(cfg: YzConfig) = withContext(Dispatchers.IO) {
         if (cfg.grantFilterActive) {
             put("zygote_modules", JSONArray(cfg.zygoteModules))
         }
-    }.toString(2)
+    }.toString()
     withNewRootShell {
         newJob().add("mkdir -p $YZCONFIG_DIR").exec()
-        newJob().add("cat > $YZCONFIG_PATH <<'YZEOF'\n$json\nYZEOF").exec()
+        newJob().add("echo '$json' > $YZCONFIG_PATH").exec()
     }
     // Fires KSU_IOCTL_YZ_RELOAD -> kernel multicasts YZ_EV_RELOAD -> zygiskd
     // re-reads the file; takes effect on the next specialize, no reboot.
