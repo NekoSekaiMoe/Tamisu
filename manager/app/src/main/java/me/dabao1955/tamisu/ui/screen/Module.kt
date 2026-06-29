@@ -208,8 +208,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 
     LaunchedEffect(Unit) {
         if (viewModel.moduleList.isEmpty() || viewModel.isNeedRefresh) {
-            viewModel.sortEnabledFirst = prefs.getBoolean("module_sort_enabled_first", false)
-            viewModel.sortActionFirst = prefs.getBoolean("module_sort_action_first", false)
             viewModel.fetchModuleList()
         }
     }
@@ -431,63 +429,6 @@ private fun ModuleBottomSheetContent(
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)
         )
-
-        Column(
-            modifier = Modifier.padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // 优先显示有操作的模块
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.module_sort_action_first),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Switch(
-                    checked = viewModel.sortActionFirst,
-                    onCheckedChange = { checked ->
-                        viewModel.sortActionFirst = checked
-                        prefs.edit {
-                            putBoolean("module_sort_action_first", checked)
-                        }
-                        scope.launch {
-                            viewModel.fetchModuleList()
-                            bottomSheetState.hide()
-                            onDismiss()
-                        }
-                    }
-                )
-            }
-
-            // 优先显示已启用的模块
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.module_sort_enabled_first),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Switch(
-                    checked = viewModel.sortEnabledFirst,
-                    onCheckedChange = { checked ->
-                        viewModel.sortEnabledFirst = checked
-                        prefs.edit {
-                            putBoolean("module_sort_enabled_first", checked)
-                        }
-                        scope.launch {
-                            viewModel.fetchModuleList()
-                            bottomSheetState.hide()
-                            onDismiss()
-                        }
-                    }
-                )
-            }
-        }
     }
 }
 

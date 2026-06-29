@@ -18,8 +18,6 @@
     <string name="module_failed_to_disable">Moduldeaktivierung fehlgeschlagen: %s</string>
     <string name="module_empty">Keine Modul installiert</string>
     <string name="module">Modul</string>
-    <string name="module_sort_action_first">Sortiere zuerst (Aktion)</string>
-    <string name="module_sort_enabled_first">Sortieren (zuerst aktiviert)</string>
     <string name="uninstall">Deinstallieren</string>
     <string name="module_install">Installieren</string>
     <string name="install">Installieren</string>

@@ -18,8 +18,6 @@
     <string name="module_failed_to_disable">모듈 비활성화 실패: %s</string>
     <string name="module_empty">설치된 모듈 없음</string>
     <string name="module">모듈</string>
-    <string name="module_sort_action_first">정렬 (동작이 있는 것 우선)</string>
-    <string name="module_sort_enabled_first">정렬 (활성화됨 우선)</string>
     <string name="uninstall">삭제</string>
     <string name="module_install">설치</string>
     <string name="install">설치</string>

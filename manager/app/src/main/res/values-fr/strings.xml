@@ -18,8 +18,6 @@
     <string name="module_failed_to_disable">Échec de la désactivation du module : %s</string>
     <string name="module_empty">Aucun module installé</string>
     <string name="module">Modules</string>
-    <string name="module_sort_action_first">Trier par action</string>
-    <string name="module_sort_enabled_first">Trier par activé</string>
     <string name="uninstall">Désinstaller</string>
     <string name="module_install">Installer</string>
     <string name="install">Installer</string>

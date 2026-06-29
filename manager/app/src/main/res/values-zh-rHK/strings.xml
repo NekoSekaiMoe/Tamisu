@@ -18,8 +18,6 @@
     <string name="module_failed_to_disable">無法禁用模組：%s</string>
     <string name="module_empty">冇安裝模組</string>
     <string name="module">模組</string>
-    <string name="module_sort_action_first">排序（可執行優先）</string>
-    <string name="module_sort_enabled_first">排序（已啟用優先）</string>
     <string name="uninstall">卸載</string>
     <string name="module_install">安裝</string>
     <string name="install">安裝</string>

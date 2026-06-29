@@ -18,8 +18,6 @@
     <string name="module_failed_to_disable">Error al desactivar el módulo: %s</string>
     <string name="module_empty">Ningún módulo instalado</string>
     <string name="module">Módulo</string>
-    <string name="module_sort_action_first">Ordenar (Acción primero)</string>
-    <string name="module_sort_enabled_first">Ordenar (Activado primero)</string>
     <string name="uninstall">Desinstalar</string>
     <string name="module_install">Instalar</string>
     <string name="install">Instalar</string>
