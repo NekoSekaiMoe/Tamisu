@@ -26,11 +26,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavBackStackEntry
@@ -68,7 +65,6 @@ import ui.screen.moreSettings.util.LocaleHelper
 class MainActivity : ComponentActivity() {
     private lateinit var homeViewModel: HomeViewModel
     internal val settingsStateFlow = MutableStateFlow(SettingsState())
-    private val intentState = MutableStateFlow(0)
 
     data class SettingsState(
         val isHideOtherInfo: Boolean = false
@@ -148,11 +144,6 @@ class MainActivity : ComponentActivity() {
                     }
 
                     val navigator = navController.rememberDestinationsNavigator()
-
-                    ShortcutIntentHandler(
-                        intentState = intentState,
-                        navigator = navigator
-                    )
 
                     BackHandler(currentDestination != null && currentDestination.route != HomeScreenDestination.route) {
                         navigator.navigate(HomeScreenDestination) {
@@ -335,30 +326,6 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        intentState.value++
     }
 }
 
-@androidx.compose.runtime.Composable
-private fun ShortcutIntentHandler(
-    intentState: MutableStateFlow<Int>,
-    navigator: com.ramcosta.composedestinations.navigation.DestinationsNavigator
-) {
-    val activity = androidx.activity.compose.LocalActivity.current ?: return
-    val context = LocalContext.current
-    val intentStateValue by intentState.collectAsState()
-    LaunchedEffect(intentStateValue) {
-        val intent = activity.intent
-        val type = intent?.getStringExtra("shortcut_type") ?: return@LaunchedEffect
-        when (type) {
-            "module_action" -> {
-                val moduleId = intent.getStringExtra("module_id") ?: return@LaunchedEffect
-                navigator.navigate(ExecuteModuleActionScreenDestination(moduleId)) {
-                    launchSingleTop = true
-                }
-            }
-
-            else -> return@LaunchedEffect
-        }
-    }
-}

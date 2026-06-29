@@ -2,9 +2,7 @@ package me.dabao1955.tamisu.ui.screen
 
 import android.annotation.SuppressLint
 import android.os.Environment
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -42,15 +40,9 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
     var tempText : String
     val logContent = remember { StringBuilder() }
     val snackBarHost = LocalSnackbarHost.current
-    val activity = LocalActivity.current
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     var isActionRunning by rememberSaveable { mutableStateOf(true) }
-
-    val fromShortcut = remember(activity) {
-        val intent = activity?.intent
-        intent?.getStringExtra("shortcut_type") == "module_action"
-    }
 
     BackHandler(enabled = isActionRunning) {
         // Disable back button if action is running
@@ -78,16 +70,6 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
             )
         }
         isActionRunning = false
-        if (fromShortcut) {
-            activity?.let { act ->
-                Toast.makeText(
-                    act,
-                    act.getString(R.string.module_action_success),
-                    Toast.LENGTH_SHORT
-                ).show()
-                act.finish()
-            }
-        }
     }
 
     Scaffold(
@@ -116,11 +98,7 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                     text = { Text(text = stringResource(R.string.close)) },
                     icon = { Icon(Icons.Filled.Close, contentDescription = null) },
                     onClick = {
-                        if (fromShortcut && activity != null) {
-                            activity.finish()
-                        } else {
-                            navigator.popBackStack()
-                        }
+                        navigator.popBackStack()
                     }
                 )
             }
