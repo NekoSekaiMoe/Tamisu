@@ -1,12 +1,5 @@
 package me.dabao1955.tamisu.ksu
 
-/**
- * Canonical on-device paths used by Tamisu's bundled ksud.
- *
- * Tamisu's ksud keeps the /data/adb/ksu/* layout for KernelSU/Magisk
- * ecosystem compatibility (boot scripts, init lookup paths). These
- * constants centralize the few paths the manager needs to stage ksud.
- */
 object KsuPaths {
     const val DATA_ADB = "/data/adb"
     const val KSU_ROOT = "$DATA_ADB/ksu"
