@@ -161,10 +161,6 @@ dependencies {
 
     implementation(libs.me.zhanghai.android.appiconloader.coil)
 
-    implementation(libs.sheet.compose.dialogs.core)
-    implementation(libs.sheet.compose.dialogs.list)
-    implementation(libs.sheet.compose.dialogs.input)
-
     implementation(libs.markdown)
     implementation(libs.androidx.webkit)
 

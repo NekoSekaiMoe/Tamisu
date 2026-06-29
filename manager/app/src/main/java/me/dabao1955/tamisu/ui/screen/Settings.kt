@@ -32,8 +32,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.core.content.edit
-import com.maxkeppeker.sheets.core.models.base.IconSource
-import com.maxkeppeler.sheets.list.models.ListOption
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
@@ -550,131 +548,107 @@ fun rememberUninstallDialog(onSelected: (UninstallType) -> Unit): DialogHandle {
             UninstallType.PERMANENT,
             UninstallType.RESTORE_STOCK_IMAGE
         )
-        val listOptions = options.map {
-            ListOption(
-                titleText = stringResource(it.title),
-                subtitleText = if (it.message != 0) stringResource(it.message) else null,
-                icon = IconSource(it.icon)
-            )
-        }
 
         var selectedOption by remember { mutableStateOf<UninstallType?>(null) }
 
-        MaterialTheme(
-            colorScheme = MaterialTheme.colorScheme.copy(
-                surface = MaterialTheme.colorScheme.surfaceContainerHigh
-            )
-        ) {
-            AlertDialog(
-                onDismissRequest = {
-                    dismiss()
-                },
-                title = {
-                    Text(
-                        text = stringResource(R.string.settings_uninstall),
-                        style = MaterialTheme.typography.headlineSmall,
-                    )
-                },
-                text = {
-                    Column(
-                        modifier = Modifier.padding(vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        options.forEachIndexed { index, option ->
-                            val isSelected = selectedOption == option
-                            val backgroundColor = if (isSelected)
-                                MaterialTheme.colorScheme.primaryContainer
-                            else
-                                Color.Transparent
-                            val contentColor = if (isSelected)
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            else
-                                MaterialTheme.colorScheme.onSurface
+        AlertDialog(
+            onDismissRequest = {
+                dismiss()
+            },
+            title = {
+                Text(
+                    text = stringResource(R.string.settings_uninstall),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    options.forEach { option ->
+                        val isSelected = selectedOption == option
+                        val backgroundColor = if (isSelected)
+                            MaterialTheme.colorScheme.primaryContainer
+                        else
+                            Color.Transparent
+                        val contentColor = if (isSelected)
+                            MaterialTheme.colorScheme.onPrimaryContainer
+                        else
+                            MaterialTheme.colorScheme.onSurface
 
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(MaterialTheme.shapes.medium)
-                                    .background(backgroundColor)
-                                    .clickable {
-                                        selectedOption = option
-                                    }
-                                    .padding(vertical = 12.dp, horizontal = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = option.icon,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier
-                                        .padding(end = 16.dp)
-                                        .size(24.dp)
-                                )
-                                Column(
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text(
-                                        text = listOptions[index].titleText,
-                                        style = MaterialTheme.typography.titleMedium,
-                                    )
-                                    listOptions[index].subtitleText?.let {
-                                        Text(
-                                            text = it,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = if (isSelected)
-                                                contentColor.copy(alpha = 0.8f)
-                                            else
-                                                MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.medium)
+                                .background(backgroundColor)
+                                .clickable {
+                                    selectedOption = option
                                 }
-                                if (isSelected) {
-                                    Icon(
-                                        imageVector = Icons.Default.RadioButtonChecked,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                } else {
-                                    Icon(
-                                        imageVector = Icons.Default.RadioButtonUnchecked,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.size(24.dp)
+                                .padding(vertical = 12.dp, horizontal = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = option.icon,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .padding(end = 16.dp)
+                                    .size(24.dp)
+                            )
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = stringResource(option.title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                )
+                                if (option.message != 0) {
+                                    Text(
+                                        text = stringResource(option.message),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = if (isSelected)
+                                            contentColor.copy(alpha = 0.8f)
+                                        else
+                                            MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
                             }
+                            RadioButton(
+                                selected = isSelected,
+                                onClick = null
+                            )
                         }
                     }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            selectedOption?.let { onSelected(it) }
-                            dismiss()
-                        },
-                        enabled = selectedOption != null,
-                    ) {
-                        Text(
-                            text = stringResource(android.R.string.ok)
-                        )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        selectedOption?.let { onSelected(it) }
+                        dismiss()
+                    },
+                    enabled = selectedOption != null,
+                ) {
+                    Text(
+                        text = stringResource(android.R.string.ok)
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        dismiss()
                     }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            dismiss()
-                        }
-                    ) {
-                        Text(
-                            text = stringResource(android.R.string.cancel),
-                        )
-                    }
-                },
-                shape = MaterialTheme.shapes.extraLarge,
-                tonalElevation = 4.dp
-            )
-        }
+                ) {
+                    Text(
+                        text = stringResource(android.R.string.cancel),
+                    )
+                }
+            },
+            shape = MaterialTheme.shapes.extraLarge,
+            tonalElevation = 4.dp
+        )
     }
 }
 

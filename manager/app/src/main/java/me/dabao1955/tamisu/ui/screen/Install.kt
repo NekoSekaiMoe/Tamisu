@@ -41,11 +41,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import com.maxkeppeker.sheets.core.models.base.Header
-import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
-import com.maxkeppeler.sheets.list.ListDialog
-import com.maxkeppeler.sheets.list.models.ListOption
-import com.maxkeppeler.sheets.list.models.ListSelection
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
@@ -825,32 +820,54 @@ fun rememberSelectKmiDialog(onSelected: (String?) -> Unit): DialogHandle {
         val supportedKmi by produceState(initialValue = emptyList()) {
             value = getSupportedKmis()
         }
-        val options = supportedKmi.map { value ->
-            ListOption(
-                titleText = value
-            )
-        }
 
         var selection by remember { mutableStateOf<String?>(null) }
 
-        MaterialTheme(
-            colorScheme = MaterialTheme.colorScheme.copy(
-                surface = MaterialTheme.colorScheme.surfaceContainerHigh
-            )
-        ) {
-            ListDialog(state = rememberUseCaseState(visible = true, onFinishedRequest = {
-                onSelected(selection)
-            }, onCloseRequest = {
+        AlertDialog(
+            onDismissRequest = {
+                onSelected(null)
                 dismiss()
-            }), header = Header.Default(
-                title = stringResource(R.string.select_kmi),
-            ), selection = ListSelection.Single(
-                showRadioButtons = true,
-                options = options,
-            ) { _, option ->
-                selection = option.titleText
-            })
-        }
+            },
+            title = { Text(stringResource(R.string.select_kmi)) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    supportedKmi.forEach { value ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    selection = value
+                                }
+                                .padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = selection == value,
+                                onClick = null
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(value)
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onSelected(selection)
+                    dismiss()
+                }) {
+                    Text(stringResource(R.string.confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    onSelected(null)
+                    dismiss()
+                }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
     }
 }
 

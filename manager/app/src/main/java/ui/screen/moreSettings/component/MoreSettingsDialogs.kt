@@ -5,18 +5,12 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
-import com.maxkeppeker.sheets.core.models.base.Header
-import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
-import com.maxkeppeler.sheets.list.ListDialog
-import com.maxkeppeler.sheets.list.models.ListOption
-import com.maxkeppeler.sheets.list.models.ListSelection
 import ui.screen.moreSettings.util.LocaleHelper
 import me.dabao1955.tamisu.R
 import ui.screen.moreSettings.MoreSettingsHandlers
@@ -225,40 +219,38 @@ fun LanguageSelectionDialog(
         }
 
         val currentLocale = prefs.getString("app_locale", "system") ?: "system"
-        val options = allOptions.map { (tag, displayName) ->
-            ListOption(
-                titleText = displayName,
-                selected = currentLocale == tag
-            )
-        }
 
-        var selectedIndex by remember {
-            mutableIntStateOf(allOptions.indexOfFirst { (tag, _) -> currentLocale == tag })
-        }
-
-        ListDialog(
-            state = rememberUseCaseState(
-                visible = true,
-                onFinishedRequest = {
-                    if (selectedIndex >= 0 && selectedIndex < allOptions.size) {
-                        val newLocale = allOptions[selectedIndex].first
-                        prefs.edit { putString("app_locale", newLocale) }
-                        onLanguageSelected(newLocale)
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(stringResource(R.string.settings_language)) },
+            text = {
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    allOptions.forEachIndexed { index, (tag, displayName) ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    prefs.edit { putString("app_locale", tag) }
+                                    onLanguageSelected(tag)
+                                    onDismiss()
+                                }
+                                .padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            RadioButton(
+                                selected = currentLocale == tag,
+                                onClick = null
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(displayName)
+                        }
                     }
-                    onDismiss()
-                },
-                onCloseRequest = {
-                    onDismiss()
                 }
-            ),
-            header = Header.Default(
-                title = stringResource(R.string.settings_language),
-            ),
-            selection = ListSelection.Single(
-                showRadioButtons = true,
-                options = options
-            ) { index, _ ->
-                selectedIndex = index
+            },
+            confirmButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.cancel))
+                }
             }
         )
     }
