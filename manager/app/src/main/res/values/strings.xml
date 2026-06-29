@@ -56,11 +56,11 @@
     <string name="dynamic_manager_del_failed">Failed to remove %s from dynamic managers</string>
     <string name="dynamic_manager_signature_unavailable">Unable to extract dynamic manager signature for %s</string>
     <string name="uapi_mismatch">The manager (UAPI %1$d) and kernel (UAPI %2$d) are out of sync. Please update both the kernel and the manager to matching versions.</string>
-    <string name="settings_zygisk">Zygisk</string>
-    <string name="settings_zygisk_summary">Capture zygote and inject Zygisk modules. Takes effect after a reboot. Off by default.</string>
-    <string name="settings_zygisk_toast_on">Zygisk enabled — reboot to apply</string>
-    <string name="settings_zygisk_toast_off">Zygisk disabled — reboot to apply</string>
-    <string name="settings_zygisk_toast_failed">Failed to toggle Zygisk</string>
+    <string name="settings_yukizygisk">YukiZygisk</string>
+    <string name="settings_yukizygisk_summary">Capture zygote and inject Zygisk modules. Takes effect after a reboot. Off by default.</string>
+    <string name="settings_yukizygisk_toast_on">YukiZygisk enabled — reboot to apply</string>
+    <string name="settings_yukizygisk_toast_off">YukiZygisk disabled — reboot to apply</string>
+    <string name="settings_yukizygisk_toast_failed">Failed to toggle YukiZygisk</string>
     <string name="profile_selinux_domain">Domain</string>
     <string name="profile_selinux_rules">Rules</string>
     <string name="module_update">Update</string>
@@ -384,38 +384,38 @@
     <string name="su_request_deny">Deny</string>
     <string name="su_request_deny_hide">Deny &amp; hide</string>
 
-    <!-- Zygisk panel -->
-    <string name="zygisk_injection_status">Injection status</string>
-    <string name="zygisk_kernel_injection">Kernel injection</string>
-    <string name="zygisk_status_active">Active</string>
-    <string name="zygisk_status_off">Off</string>
-    <string name="zygisk_module_loader">Module loader</string>
-    <string name="zygisk_loader_anon">yukilinker (anonymous)</string>
-    <string name="zygisk_loader_system">System dlopen</string>
-    <string name="zygisk_denylist_behaviour">Denylist behaviour</string>
-    <string name="zygisk_denylist_force_long">Force unmount + no inject</string>
-    <string name="zygisk_denylist_restore_long">Inject + unmount only</string>
-    <string name="zygisk_injections_session">Injections this session</string>
-    <string name="zygisk_injected_zygotes">Injected zygotes</string>
-    <string name="zygisk_no_zygotes">No zygote has reported injection yet.</string>
-    <string name="zygisk_zygote_detail">%1$s · pid %2$d</string>
-    <string name="zygisk_recent_injections">Recent injections</string>
-    <string name="zygisk_no_injections">Nothing injected yet.</string>
-    <string name="zygisk_module_loading">Module loading</string>
-    <string name="zygisk_anon_loading_title">Anonymous loading (yukilinker)</string>
-    <string name="zygisk_anon_loading_summary">Load modules into anonymous memory via the custom linker: no module fd, maps read as ART JIT, never touches /data/adb/modules. Hides from fd &amp; maps detectors.</string>
-    <string name="zygisk_loaded_modules_count">Loaded modules: %1$d</string>
-    <string name="zygisk_grant_title">Zygote module grants</string>
-    <string name="zygisk_grant_filter_title">Per-module grant filter</string>
-    <string name="zygisk_grant_filter_summary">When on, only the modules toggled below are loaded into zygote. When off, every enabled zygisk module is loaded.</string>
-    <string name="zygisk_grant_empty">No zygisk modules installed.</string>
-    <string name="zygisk_denylist_desc">How denylisted apps are handled.</string>
-    <string name="zygisk_denylist_off">Off</string>
-    <string name="zygisk_denylist_force">Force</string>
-    <string name="zygisk_denylist_restore">Restore</string>
-    <string name="zygisk_log_dmesg_title">Log to dmesg</string>
-    <string name="zygisk_log_dmesg_summary">Route Zygisk logs to the kernel ring buffer (visible via dmesg). Off keeps things quiet.</string>
-    <string name="zygisk_uid_fallback">uid %1$d</string>
+    <!-- YukiZygisk panel -->
+    <string name="yukizygisk_injection_status">Injection status</string>
+    <string name="yukizygisk_kernel_injection">Kernel injection</string>
+    <string name="yukizygisk_status_active">Active</string>
+    <string name="yukizygisk_status_off">Off</string>
+    <string name="yukizygisk_module_loader">Module loader</string>
+    <string name="yukizygisk_loader_anon">yukilinker (anonymous)</string>
+    <string name="yukizygisk_loader_system">System dlopen</string>
+    <string name="yukizygisk_denylist_behaviour">Denylist behaviour</string>
+    <string name="yukizygisk_denylist_force_long">Force unmount + no inject</string>
+    <string name="yukizygisk_denylist_restore_long">Inject + unmount only</string>
+    <string name="yukizygisk_injections_session">Injections this session</string>
+    <string name="yukizygisk_injected_zygotes">Injected zygotes</string>
+    <string name="yukizygisk_no_zygotes">No zygote has reported injection yet.</string>
+    <string name="yukizygisk_zygote_detail">%1$s · pid %2$d</string>
+    <string name="yukizygisk_recent_injections">Recent injections</string>
+    <string name="yukizygisk_no_injections">Nothing injected yet.</string>
+    <string name="yukizygisk_module_loading">Module loading</string>
+    <string name="yukizygisk_anon_loading_title">Anonymous loading (yukilinker)</string>
+    <string name="yukizygisk_anon_loading_summary">Load modules into anonymous memory via the custom linker: no module fd, maps read as ART JIT, never touches /data/adb/modules. Hides from fd &amp; maps detectors.</string>
+    <string name="yukizygisk_loaded_modules_count">Loaded modules: %1$d</string>
+    <string name="yukizygisk_grant_title">Zygote module grants</string>
+    <string name="yukizygisk_grant_filter_title">Per-module grant filter</string>
+    <string name="yukizygisk_grant_filter_summary">When on, only the modules toggled below are loaded into zygote. When off, every enabled zygisk module is loaded.</string>
+    <string name="yukizygisk_grant_empty">No zygisk modules installed.</string>
+    <string name="yukizygisk_denylist_desc">How denylisted apps are handled.</string>
+    <string name="yukizygisk_denylist_off">Off</string>
+    <string name="yukizygisk_denylist_force">Force</string>
+    <string name="yukizygisk_denylist_restore">Restore</string>
+    <string name="yukizygisk_log_dmesg_title">Log to dmesg</string>
+    <string name="yukizygisk_log_dmesg_summary">Route YukiZygisk logs to the kernel ring buffer (visible via dmesg). Off keeps things quiet.</string>
+    <string name="yukizygisk_uid_fallback">uid %1$d</string>
 
     <!-- Install page: jailbreak (late-load trigger) and Kasumi integration.
          These UIs are still wired up in Install.kt and must not be deleted. -->
