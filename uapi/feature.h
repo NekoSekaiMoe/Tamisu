@@ -6,8 +6,8 @@ extern "C" {
 #endif // #ifdef __cplusplus
 
 enum ksu_feature_id {
-  // YukiSU zygisk-only build: the sole feature is the YukiZygisk master switch.
-  KSU_FEATURE_YUKIZYGISK = 103,
+  // YukiSU zygisk-only build: the sole feature is the Tamisu (zygisk) master switch.
+  KSU_FEATURE_TAMISU = 103,
 
   KSU_FEATURE_MAX
 };
