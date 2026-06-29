@@ -24,10 +24,3 @@ add_library(tamisu
 find_library(log-lib log)
 
 target_link_libraries(tamisu ${log-lib})
-
-add_library(adbroot
-        SHARED
-        adbroot.cpp
-)
-
-target_link_libraries(adbroot ${log-lib})

@@ -633,15 +633,12 @@ int cli_run(int argc, char** argv) {
         return 0;
     } else if (cmd == "install") {
         std::optional<std::string> magiskboot;
-        std::optional<std::string> libadbroot;
         for (size_t i = 0; i < args.size(); i++) {
             if (args[i] == "--magiskboot" && i + 1 < args.size()) {
                 magiskboot = args[i + 1];
-            } else if (args[i] == "--libadbroot" && i + 1 < args.size()) {
-                libadbroot = args[i + 1];
             }
         }
-        return install(magiskboot, libadbroot);
+        return install(magiskboot);
     } else if (cmd == "uninstall") {
         std::optional<std::string> magiskboot;
         for (size_t i = 0; i < args.size(); i++) {

@@ -48,8 +48,7 @@ bool is_magisk_zygisk_enabled();
 bool is_zygisk_impl_module(const std::string& module_id);
 
 // Install/Uninstall
-int install(const std::optional<std::string>& magiskboot_path,
-            const std::optional<std::string>& libadbroot_path = std::nullopt);
+int install(const std::optional<std::string>& magiskboot_path);
 int uninstall(const std::optional<std::string>& magiskboot_path);
 
 // Zip utilities

@@ -274,11 +274,9 @@ suspend fun setFeatureValue(feature: String, enabled: Boolean): Boolean =
 fun install() {
     val start = SystemClock.elapsedRealtime()
     val ksudPath = getKsuDaemonPath()
-    val libadbrootPath =
-        tamisuApp.applicationInfo.nativeLibraryDir + File.separator + "libadbroot.so"
     // magiskboot is built into ksud (multi-call binary); pass ksud path so it can exec itself as magiskboot
     Log.i(TAG, "install: ksud=$ksudPath")
-    val result = execKsud("install --magiskboot $ksudPath --libadbroot $libadbrootPath", true)
+    val result = execKsud("install --magiskboot $ksudPath", true)
     Log.w(TAG, "install result: $result, cost: ${SystemClock.elapsedRealtime() - start}ms")
 }
 

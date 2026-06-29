@@ -21,7 +21,6 @@ extern const char* const VERSION_NAME;
 constexpr const char* ADB_DIR = "/data/adb/";
 constexpr const char* WORKING_DIR = "/data/adb/ksu/";
 constexpr const char* BINARY_DIR = "/data/adb/ksu/bin/";
-constexpr const char* LIBRARY_DIR = "/data/adb/ksu/lib/";
 constexpr const char* LOG_DIR = "/data/adb/ksu/log/";
 
 // Binary tool paths
@@ -32,7 +31,6 @@ constexpr const char* BOOTCTL_PATH = "/data/adb/ksu/bin/bootctl";
 constexpr const char* KSURC_PATH = "/data/adb/ksu/.ksurc";
 constexpr const char* DAEMON_PATH = "/data/adb/ksud";
 constexpr const char* MAGISKBOOT_PATH = "/data/adb/ksu/bin/magiskboot";
-constexpr const char* LIBADBROOT_PATH = "/data/adb/ksu/lib/libadbroot.so";
 
 // YukiZygisk runtime payload: ksud stages these at post-fs-data; the kernel
 // reads libzloader.so (as ksu_cred) and hands it to the zygote via a memfd, so

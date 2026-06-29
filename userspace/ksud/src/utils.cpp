@@ -642,8 +642,7 @@ bool copy_optional_file(const std::optional<std::string>& src_path, const char* 
 
 }  // namespace
 
-int install(const std::optional<std::string>& magiskboot_path,
-            const std::optional<std::string>& libadbroot_path) {
+int install(const std::optional<std::string>& magiskboot_path) {
     if (!ensure_dir_exists(ADB_DIR)) {
         LOGE("Failed to create %s", ADB_DIR);
         return 1;
@@ -697,19 +696,6 @@ int install(const std::optional<std::string>& magiskboot_path,
         if (!copy_optional_file(magiskboot_path, MAGISKBOOT_PATH, 0755)) {
             return 1;
         }
-    }
-
-    if (libadbroot_path) {
-        if (!ensure_dir_exists(LIBRARY_DIR)) {
-            LOGE("Failed to create %s", LIBRARY_DIR);
-            return 1;
-        }
-
-        if (!copy_optional_file(libadbroot_path, LIBADBROOT_PATH, 0644)) {
-            return 1;
-        }
-
-        (void)restorecon(std::filesystem::path(LIBRARY_DIR), false);
     }
 
     return 0;
