@@ -291,8 +291,8 @@
     <string name="reboot_complete_msg">Apakah ingin restart sekarang?</string>
     <string name="yes">Iya</string>
     <string name="no">Tidak</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU Visi</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU adalah cabang KSU yang sangat agresif dan independen, namun kami tetap berterima kasih kepada proyek resmi KernelSU, SukiSU, Magisk, APatch, dan lainnya atas kontribusinya.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu Visi</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu adalah cabang KSU yang sangat agresif dan independen, namun kami tetap berterima kasih kepada proyek resmi KernelSU, SukiSU, Magisk, APatch, dan lainnya atas kontribusinya.</string>
     <string name="custom_settings">Pengaturan kostum</string>
     <string name="theme_color">Warna Tema</string>
     <string name="image_editor_hint">Gunakan dua jari untuk memperbesar gambar, dan satu jari untuk menggeser mengatur posisi</string>
@@ -390,7 +390,7 @@
     <string name="show_more_module_info">Tampilkan info modul lainnya</string>
     <string name="show_more_module_info_summary">Pajang info modul tambahan seperti URL pembaruan JSON</string>
     <string name="kernel_simple_kernel">Mode Ringkas Versi Kernel</string>
-    <string name="kernel_simple_kernel_summary">Aktifkan atau nonaktifkan mode bersih yang ditampilkan oleh versi kernel YukiSU</string>
+    <string name="kernel_simple_kernel_summary">Aktifkan atau nonaktifkan mode bersih yang ditampilkan oleh versi kernel Tamisu</string>
     <string name="home_zygisk_implement">Implementasi Zygisk</string>
     <string name="home_meta_module_implement">Implementasi metamodul</string>
     <string name="home_hook_type">Jenis hook</string>

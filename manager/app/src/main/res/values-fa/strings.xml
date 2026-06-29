@@ -289,8 +289,8 @@
     <string name="reboot_complete_msg">بلافاصله راه‌اندازی مجدد شود؟</string>
     <string name="yes">بله</string>
     <string name="no">خیر</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU بینایی</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU یک شاخه KSU بسیار تهاجمی و مستقل است، اما ما همچنان از پروژه رسمی KernelSU، SukiSU، Magisk، APatch، و دیگران به خاطر مشارکتشان تشکر می کنیم.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu بینایی</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu یک شاخه KSU بسیار تهاجمی و مستقل است، اما ما همچنان از پروژه رسمی KernelSU، SukiSU، Magisk، APatch، و دیگران به خاطر مشارکتشان تشکر می کنیم.</string>
     <string name="custom_settings">تنظیمات سفارشی</string>
     <string name="theme_color">رنگ پوسته</string>
     <string name="image_editor_hint">برای بزرگ‌نمایی تصویر از دو انگشت و برای کشیدن آن جهت تنظیم موقعیت از یک انگشت استفاده کنید</string>
@@ -388,7 +388,7 @@
     <string name="show_more_module_info">نمایش اطلاعات بیشتر ماژول</string>
     <string name="show_more_module_info_summary">نمایش اطلاعات اضافی ماژول مانند نشانی‌های Update JSON</string>
     <string name="kernel_simple_kernel">حالت مختصر نسخه کرنل</string>
-    <string name="kernel_simple_kernel_summary">حالت تمیز نمایش‌داده‌شده توسط نسخه کرنل YukiSU را فعال یا غیرفعال کنید</string>
+    <string name="kernel_simple_kernel_summary">حالت تمیز نمایش‌داده‌شده توسط نسخه کرنل Tamisu را فعال یا غیرفعال کنید</string>
     <string name="home_zygisk_implement">پیاده‌سازی Zygisk</string>
     <string name="home_meta_module_implement">پیاده‌سازی Meta Module</string>
     <string name="home_hook_type">نوع Hook</string>

@@ -2,9 +2,9 @@ package ui.screen.partition
 
 import android.content.Context
 import android.util.Log
-import com.anatdx.yukisu.ui.util.getRootShell
-import com.anatdx.yukisu.ui.util.ksudCmd
-import com.anatdx.yukisu.ui.util.ksudReadLines
+import me.dabao1955.tamisu.ui.util.getRootShell
+import me.dabao1955.tamisu.ui.util.ksudCmd
+import me.dabao1955.tamisu.ui.util.ksudReadLines
 import com.topjohnwu.superuser.CallbackList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

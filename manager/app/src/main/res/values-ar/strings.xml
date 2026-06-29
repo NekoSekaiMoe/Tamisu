@@ -291,8 +291,8 @@
     <string name="reboot_complete_msg">هل تريد إعادة التشغيل فوراً؟</string>
     <string name="yes">نعم</string>
     <string name="no">لايوجد</string>
-    <string name="home_ContributionCard_kernelsu">رؤية YukiSU</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU فرع KSU شديد الجرأة ومستقل، ومع ذلك نشكر مشروع KernelSU الرسمي وSukiSU وMagisk وAPatch وغيرهم على مساهماتهم.</string>
+    <string name="home_ContributionCard_kernelsu">رؤية Tamisu</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu فرع KSU شديد الجرأة ومستقل، ومع ذلك نشكر مشروع KernelSU الرسمي وSukiSU وMagisk وAPatch وغيرهم على مساهماتهم.</string>
     <string name="custom_settings">الإعدادات المُخصصة</string>
     <string name="theme_color">ألوان المظهر</string>
     <string name="image_editor_hint">استخدم إصبعين لتكبير الصورة، وأصبع واحد لسحبها لضبط الموضع</string>
@@ -390,7 +390,7 @@
     <string name="show_more_module_info">إظهار مزيد من معلومات الوحدة</string>
     <string name="show_more_module_info_summary">إظهار معلومات إضافية عن الوحدة مثل روابط Update JSON</string>
     <string name="kernel_simple_kernel">الوضع المختصر لإصدار النواة</string>
-    <string name="kernel_simple_kernel_summary">تفعيل أو تعطيل الوضع المختصر لعرض إصدار نواة YukiSU</string>
+    <string name="kernel_simple_kernel_summary">تفعيل أو تعطيل الوضع المختصر لعرض إصدار نواة Tamisu</string>
     <string name="home_zygisk_implement">تنفيذ Zygisk</string>
     <string name="home_meta_module_implement">تنفيذ الوحدة الفوقية</string>
     <string name="home_hook_type">نوع الـ Hook</string>

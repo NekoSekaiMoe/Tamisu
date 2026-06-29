@@ -10,10 +10,10 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import ui.screen.moreSettings.util.LocaleHelper
-import com.anatdx.yukisu.Natives
-import com.anatdx.yukisu.R
-import com.anatdx.yukisu.ui.theme.CardConfig
-import com.anatdx.yukisu.ui.theme.ThemeConfig
+import me.dabao1955.tamisu.Natives
+import me.dabao1955.tamisu.R
+import me.dabao1955.tamisu.ui.theme.CardConfig
+import me.dabao1955.tamisu.ui.theme.ThemeConfig
 
 @Stable
 class MoreSettingsState(

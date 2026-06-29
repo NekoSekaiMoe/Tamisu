@@ -142,9 +142,9 @@ CONFIG_TAMISU=m CC=clang make -j$(nproc)
   `android16-6.12_arm64_kasumi_lkm.ko`); `lkm.cpp` and CI assert this
   exact form. ksud for arm64 fails CI if no KMI-tagged Kasumi asset is
   embedded.
-- **Sign via env, not files.** Manager signing reads `YUKISU_KEYSTORE`,
-  `YUKISU_KEYSTORE_PASSWORD`, `YUKISU_KEY_ALIAS`,
-  `YUKISU_KEY_PASSWORD` (mapped to gradle props by
+- **Sign via env, not files.** Manager signing reads `TAMISU_KEYSTORE`,
+  `TAMISU_KEYSTORE_PASSWORD`, `TAMISU_KEY_ALIAS`,
+  `TAMISU_KEY_PASSWORD` (mapped to gradle props by
   `app/build.gradle.kts`). Example config in
   `manager/sign.example.properties`. Never commit real keystore creds.
 - **Kasumi LKM = arm64-only** in DDK CI; `full_archs` only expands ksud

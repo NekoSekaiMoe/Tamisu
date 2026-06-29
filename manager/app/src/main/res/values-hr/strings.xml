@@ -289,8 +289,8 @@
     <string name="reboot_complete_msg">Ponovno pokrenuti odmah?</string>
     <string name="yes">Da</string>
     <string name="no">Ne</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU Vid</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU je izuzetno agresivna i neovisna grana KSU, ali ipak zahvaljujemo službenom projektu KernelSU, SukiSU, Magisk, APatch i drugima na njihovim doprinosima.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu Vid</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu je izuzetno agresivna i neovisna grana KSU, ali ipak zahvaljujemo službenom projektu KernelSU, SukiSU, Magisk, APatch i drugima na njihovim doprinosima.</string>
     <string name="custom_settings">Prilagođene postavke</string>
     <string name="theme_color">Boja teme</string>
     <string name="image_editor_hint">Koristite dva prsta za povećavanje slike i jedan prst za povlačenje i prilagodbu položaja</string>
@@ -388,7 +388,7 @@
     <string name="show_more_module_info">Prikaži više informacija o modulu</string>
     <string name="show_more_module_info_summary">Prikaži dodatne informacije o modulu, poput URL-ova Update JSON</string>
     <string name="kernel_simple_kernel">Sažeti način verzije jezgre</string>
-    <string name="kernel_simple_kernel_summary">Omogući ili onemogući sažeti način prikaza verzije jezgre YukiSU</string>
+    <string name="kernel_simple_kernel_summary">Omogući ili onemogući sažeti način prikaza verzije jezgre Tamisu</string>
     <string name="home_zygisk_implement">Implementacija Zygisk</string>
     <string name="home_meta_module_implement">Implementacija metamodula</string>
     <string name="home_hook_type">Vrsta hooka</string>

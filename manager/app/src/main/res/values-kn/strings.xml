@@ -289,8 +289,8 @@
     <string name="reboot_complete_msg">ತಕ್ಷಣ ರೀಬೂಟ್ ಮಾಡಬೇಕೆ?</string>
     <string name="yes">ಹೌದು</string>
     <string name="no">ಇಲ್ಲ</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU ದೃಷ್ಟಿ</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU ಅತ್ಯಂತ ಆಕ್ರಮಣಕಾರಿ ಮತ್ತು ಸ್ವತಂತ್ರ KSU ಶಾಖೆಯಾಗಿದೆ, ಆದರೆ ನಾವು ಇನ್ನೂ ಅಧಿಕೃತ KernelSU ಯೋಜನೆ, SukiSU, Magisk, APatch, ಮತ್ತು ಅವರ ಕೊಡುಗೆಗಳಿಗಾಗಿ ಧನ್ಯವಾದಗಳನ್ನು ನೀಡುತ್ತೇವೆ.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu ದೃಷ್ಟಿ</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu ಅತ್ಯಂತ ಆಕ್ರಮಣಕಾರಿ ಮತ್ತು ಸ್ವತಂತ್ರ KSU ಶಾಖೆಯಾಗಿದೆ, ಆದರೆ ನಾವು ಇನ್ನೂ ಅಧಿಕೃತ KernelSU ಯೋಜನೆ, SukiSU, Magisk, APatch, ಮತ್ತು ಅವರ ಕೊಡುಗೆಗಳಿಗಾಗಿ ಧನ್ಯವಾದಗಳನ್ನು ನೀಡುತ್ತೇವೆ.</string>
     <string name="custom_settings">ಕಸ್ಟಮ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</string>
     <string name="theme_color">ಥೀಮ್ ಬಣ್ಣ</string>
     <string name="image_editor_hint">ಚಿತ್ರವನ್ನು ಜೂಮ್ ಮಾಡಲು ಎರಡು ಬೆರಳುಗಳನ್ನು ಬಳಸಿ, ಮತ್ತು ಸ್ಥಾನ ಸರಿಹೊಂದಿಸಲು ಅದನ್ನು ಎಳೆಯಲು ಒಂದು ಬೆರಳನ್ನು ಬಳಸಿ</string>
@@ -388,7 +388,7 @@
     <string name="show_more_module_info">ಹೆಚ್ಚಿನ ಮಾಡ್ಯೂಲ್ ಮಾಹಿತಿ ತೋರಿಸಿ</string>
     <string name="show_more_module_info_summary">ಅಪ್‌ಡೇಟ್ JSON URL ನಂತಹ ಹೆಚ್ಚುವರಿ ಮಾಡ್ಯೂಲ್ ಮಾಹಿತಿಯನ್ನು ಪ್ರದರ್ಶಿಸಿ</string>
     <string name="kernel_simple_kernel">ಕರ್ನಲ್ ಆವೃತ್ತಿ ಸಂಕ್ಷಿಪ್ತ ಮೋಡ್</string>
-    <string name="kernel_simple_kernel_summary">YukiSU ಕರ್ನಲ್ ಆವೃತ್ತಿಯಿಂದ ಪ್ರದರ್ಶಿಸಲಾದ ಸ್ವಚ್ಛ ಮೋಡ್ ಅನ್ನು ಸಕ್ರಿಯ ಅಥವಾ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</string>
+    <string name="kernel_simple_kernel_summary">Tamisu ಕರ್ನಲ್ ಆವೃತ್ತಿಯಿಂದ ಪ್ರದರ್ಶಿಸಲಾದ ಸ್ವಚ್ಛ ಮೋಡ್ ಅನ್ನು ಸಕ್ರಿಯ ಅಥವಾ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</string>
     <string name="home_zygisk_implement">Zygisk ಅನುಷ್ಠಾನ</string>
     <string name="home_meta_module_implement">Meta Module ಅನುಷ್ಠಾನ</string>
     <string name="home_hook_type">Hook ಪ್ರಕಾರ</string>

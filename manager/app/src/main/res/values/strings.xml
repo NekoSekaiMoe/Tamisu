@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">YukiSU</string>
+    <string name="app_name" translatable="false">Tamisu</string>
     <string name="home">Home</string>
     <string name="learn_more">Learn more</string>
     <string name="home_not_installed">Not installed</string>
@@ -231,8 +231,8 @@
     <string name="reboot_complete_msg">Whether to reboot immediately？</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU Vision</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU is an extremely aggressive and independent KSU branch, but we still thank official KernelSU, SukiSU, Magisk, APatch and others for their contributions.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu is a kernel-level Zygisk provider (à la ZygiskNext), not a root provider. It coexists with KernelSU, Magisk, or APatch, owning only zygote injection while the root solution owns su, app profile, and modules.</string>
     <string name="custom_settings">Custom settings</string>
     <string name="theme_color">Theme Color</string>
     <string name="image_editor_hint">Use two fingers to zoom the image, and one finger to drag it to adjust the position</string>
@@ -325,7 +325,7 @@
     <string name="show_more_module_info">Show More Module Info</string>
     <string name="show_more_module_info_summary">Display additional module information like update JSON URLs</string>
     <string name="kernel_simple_kernel">Kernel Version Concise Mode</string>
-    <string name="kernel_simple_kernel_summary">Enable or disable the clean mode displayed by the YukiSU kernel version</string>
+    <string name="kernel_simple_kernel_summary">Enable or disable the clean mode displayed by the Tamisu kernel version</string>
     <string name="home_zygisk_implement">Zygisk implement</string>
     <string name="module_disabled_by_yukizygisk">YukiZygisk is enabled; this module is disabled to prevent conflicts</string>
     <string name="home_meta_module_implement">Meta Module implement</string>

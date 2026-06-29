@@ -289,8 +289,8 @@
     <string name="reboot_complete_msg">Znova zaženem takoj?</string>
     <string name="yes">Da</string>
     <string name="no">Ne</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU Vid</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU je izjemno agresivna in neodvisna veja KSU, vendar se vseeno zahvaljujemo uradnemu projektu KernelSU, SukiSU, Magisk, APatch in drugim za njihove prispevke.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu Vid</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu je izjemno agresivna in neodvisna veja KSU, vendar se vseeno zahvaljujemo uradnemu projektu KernelSU, SukiSU, Magisk, APatch in drugim za njihove prispevke.</string>
     <string name="custom_settings">Lastne nastavitve</string>
     <string name="theme_color">Barva teme</string>
     <string name="image_editor_hint">Uporabite dva prsta za povečavo slike in en prst za vlečenje ter prilagoditev položaja</string>
@@ -388,7 +388,7 @@
     <string name="show_more_module_info">Pokaži več informacij o modulu</string>
     <string name="show_more_module_info_summary">Pokaži dodatne informacije o modulu, na primer URL-je Update JSON</string>
     <string name="kernel_simple_kernel">Strnjeni način različice jedra</string>
-    <string name="kernel_simple_kernel_summary">Omogoči ali onemogoči strnjeni način prikaza različice jedra YukiSU</string>
+    <string name="kernel_simple_kernel_summary">Omogoči ali onemogoči strnjeni način prikaza različice jedra Tamisu</string>
     <string name="home_zygisk_implement">Izvedba Zygisk</string>
     <string name="home_meta_module_implement">Izvedba metamodula</string>
     <string name="home_hook_type">Vrsta hook</string>

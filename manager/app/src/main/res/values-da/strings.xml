@@ -289,8 +289,8 @@
     <string name="reboot_complete_msg">Vil du genstarte med det samme?</string>
     <string name="yes">Ja</string>
     <string name="no">Nej</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU-vision</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU er en ekstremt aggressiv og uafhængig KSU afdeling, men vi takker stadig det officielle KernelSU projekt, SukiSU, Magisk, APatch og andre for deres bidrag.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu-vision</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu er en ekstremt aggressiv og uafhængig KSU afdeling, men vi takker stadig det officielle KernelSU projekt, SukiSU, Magisk, APatch og andre for deres bidrag.</string>
     <string name="custom_settings">Brugerdefinerede indstillinger</string>
     <string name="theme_color">Temafarve</string>
     <string name="image_editor_hint">Brug to fingre til at zoome billedet, og en finger til at trække det for at justere positionen</string>
@@ -388,7 +388,7 @@
     <string name="show_more_module_info">Vis mere modulinfo</string>
     <string name="show_more_module_info_summary">Vis yderligere modulinfo såsom update JSON-URL\'er</string>
     <string name="kernel_simple_kernel">Kortfattet tilstand for kerneversion</string>
-    <string name="kernel_simple_kernel_summary">Aktivér eller deaktiver den enkle visning af YukiSU-kerneversionen</string>
+    <string name="kernel_simple_kernel_summary">Aktivér eller deaktiver den enkle visning af Tamisu-kerneversionen</string>
     <string name="home_zygisk_implement">Zygisk-implementering</string>
     <string name="home_meta_module_implement">Meta Modul-implementering</string>
     <string name="home_hook_type">Hook-type</string>

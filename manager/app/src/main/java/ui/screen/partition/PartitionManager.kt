@@ -36,11 +36,11 @@ import androidx.compose.ui.unit.dp
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.anatdx.yukisu.R
-import com.anatdx.yukisu.ui.component.rememberConfirmDialog
-import com.anatdx.yukisu.ui.theme.CardConfig
-import com.anatdx.yukisu.ui.theme.getCardColors
-import com.anatdx.yukisu.ui.util.LocalSnackbarHost
+import me.dabao1955.tamisu.R
+import me.dabao1955.tamisu.ui.component.rememberConfirmDialog
+import me.dabao1955.tamisu.ui.theme.CardConfig
+import me.dabao1955.tamisu.ui.theme.getCardColors
+import me.dabao1955.tamisu.ui.util.LocalSnackbarHost
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

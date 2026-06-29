@@ -26,10 +26,10 @@ fun exposeSigningProperty(propertyName: String, envName: String) {
     }
 }
 
-exposeSigningProperty("KEYSTORE_FILE", "YUKISU_KEYSTORE")
-exposeSigningProperty("KEYSTORE_PASSWORD", "YUKISU_KEYSTORE_PASSWORD")
-exposeSigningProperty("KEY_ALIAS", "YUKISU_KEY_ALIAS")
-exposeSigningProperty("KEY_PASSWORD", "YUKISU_KEY_PASSWORD")
+exposeSigningProperty("KEYSTORE_FILE", "TAMISU_KEYSTORE")
+exposeSigningProperty("KEYSTORE_PASSWORD", "TAMISU_KEYSTORE_PASSWORD")
+exposeSigningProperty("KEY_ALIAS", "TAMISU_KEY_ALIAS")
+exposeSigningProperty("KEY_PASSWORD", "TAMISU_KEY_PASSWORD")
 
 apksign {
     storeFileProperty = "KEYSTORE_FILE"
@@ -49,7 +49,7 @@ android {
             keyPassword = ""
         }
     }**/
-    namespace = "com.anatdx.yukisu"
+    namespace = "me.dabao1955.tamisu"
 
     defaultConfig {
         buildConfigField("String", "KSUD_BUNDLED_VERSION", "\"$ksudBundledVersion\"")
@@ -101,7 +101,7 @@ android {
         val abi = project.findProperty("ABI")?.toString() ?: "universal"
         outputs.forEach {
             val output = it as BaseVariantOutputImpl
-            output.outputFileName = "YukiSU_${managerVersionName}_${managerVersionCode}-${abi}-$name.apk"
+            output.outputFileName = "Tamisu_${managerVersionName}_${managerVersionCode}-${abi}-$name.apk"
         }
         kotlin.sourceSets {
             getByName(name) {

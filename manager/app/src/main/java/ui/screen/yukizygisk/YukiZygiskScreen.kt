@@ -56,11 +56,11 @@ import coil.request.ImageRequest
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import com.anatdx.yukisu.Natives
-import com.anatdx.yukisu.R
-import com.anatdx.yukisu.ui.util.execKsud
-import com.anatdx.yukisu.ui.util.getRootShell
-import com.anatdx.yukisu.ui.util.withNewRootShell
+import me.dabao1955.tamisu.Natives
+import me.dabao1955.tamisu.R
+import me.dabao1955.tamisu.ui.util.execKsud
+import me.dabao1955.tamisu.ui.util.getRootShell
+import me.dabao1955.tamisu.ui.util.withNewRootShell
 import com.topjohnwu.superuser.ShellUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay

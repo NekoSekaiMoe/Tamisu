@@ -289,8 +289,8 @@
     <string name="reboot_complete_msg">Kas taaskäivitada kohe?</string>
     <string name="yes">Jah</string>
     <string name="no">Ei</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU Nägemine</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU on äärmiselt agressiivne ja iseseisev KSU haru, kuid siiski täname ametlikku KernelSU projekti, SukiSU, Magisk, APatch ja teisi panuse eest.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu Nägemine</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu on äärmiselt agressiivne ja iseseisev KSU haru, kuid siiski täname ametlikku KernelSU projekti, SukiSU, Magisk, APatch ja teisi panuse eest.</string>
     <string name="custom_settings">Kohandatud seaded</string>
     <string name="theme_color">Teema värv</string>
     <string name="image_editor_hint">Kasutage pildi suurendamiseks kahte sõrme ja asukoha reguleerimiseks ühe sõrmega lohistamist</string>
@@ -388,7 +388,7 @@
     <string name="show_more_module_info">Kuva rohkem mooduli teavet</string>
     <string name="show_more_module_info_summary">Kuva mooduli lisateavet, näiteks Update JSON URL-e</string>
     <string name="kernel_simple_kernel">Kerneli versiooni lühirežiim</string>
-    <string name="kernel_simple_kernel_summary">Luba või keela YukiSU kerneli versiooni kuvamise lühirežiim</string>
+    <string name="kernel_simple_kernel_summary">Luba või keela Tamisu kerneli versiooni kuvamise lühirežiim</string>
     <string name="home_zygisk_implement">Zygiski teostus</string>
     <string name="home_meta_module_implement">Metamooduli teostus</string>
     <string name="home_hook_type">Hooki tüüp</string>

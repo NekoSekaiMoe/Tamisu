@@ -22,8 +22,8 @@ import com.maxkeppeler.sheets.list.ListDialog
 import com.maxkeppeler.sheets.list.models.ListOption
 import com.maxkeppeler.sheets.list.models.ListSelection
 import ui.screen.moreSettings.util.LocaleHelper
-import com.anatdx.yukisu.R
-import com.anatdx.yukisu.ui.theme.*
+import me.dabao1955.tamisu.R
+import me.dabao1955.tamisu.ui.theme.*
 import ui.screen.moreSettings.MoreSettingsHandlers
 import ui.screen.moreSettings.state.MoreSettingsState
 

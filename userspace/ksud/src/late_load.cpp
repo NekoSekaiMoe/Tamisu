@@ -24,7 +24,7 @@ namespace ksud::late_load {
 
 namespace {
 
-constexpr const char* kManagerPackage = "com.anatdx.yukisu";
+constexpr const char* kManagerPackage = "me.dabao1955.tamisu";
 constexpr const char* kLateLoadTmpCandidates[] = {
     "/dev/kernelsu_XXXXXX",
     "/data/local/tmp/kernelsu_XXXXXX",

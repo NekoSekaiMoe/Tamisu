@@ -291,8 +291,8 @@
     <string name="reboot_complete_msg">Reporniți imediat?</string>
     <string name="yes">Da</string>
     <string name="no">Nu</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU Viziune</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU este o ramură KSU extrem de agresivă și independentă, dar totuși mulțumim proiectului oficial KernelSU, SukiSU, Magisk, APatch și altora pentru contribuțiile lor.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu Viziune</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu este o ramură KSU extrem de agresivă și independentă, dar totuși mulțumim proiectului oficial KernelSU, SukiSU, Magisk, APatch și altora pentru contribuțiile lor.</string>
     <string name="custom_settings">Setări personalizate</string>
     <string name="theme_color">Culoarea temei</string>
     <string name="image_editor_hint">Folosiți două degete pentru a mări imaginea și un deget pentru a o trage și ajusta poziția</string>
@@ -390,7 +390,7 @@
     <string name="show_more_module_info">Afișează mai multe informații despre modul</string>
     <string name="show_more_module_info_summary">Afișează informații suplimentare despre modul, precum URL-urile Update JSON</string>
     <string name="kernel_simple_kernel">Mod concis pentru versiunea kernelului</string>
-    <string name="kernel_simple_kernel_summary">Activează sau dezactivează modul concis de afișare a versiunii kernelului YukiSU</string>
+    <string name="kernel_simple_kernel_summary">Activează sau dezactivează modul concis de afișare a versiunii kernelului Tamisu</string>
     <string name="home_zygisk_implement">Implementare Zygisk</string>
     <string name="home_meta_module_implement">Implementare metamodul</string>
     <string name="home_hook_type">Tip de hook</string>

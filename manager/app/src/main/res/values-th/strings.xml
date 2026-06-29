@@ -291,8 +291,8 @@
     <string name="reboot_complete_msg">รีบูตทันทีหรือไม่?</string>
     <string name="yes">ใช่</string>
     <string name="no">ไม่</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU วิสัยทัศน์</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU เป็นสาขา KSU ที่ก้าวร้าวและเป็นอิสระอย่างยิ่ง แต่เรายังคงขอขอบคุณโครงการ KernelSU อย่างเป็นทางการ SukiSU, Magisk, APatch และอื่นๆ สำหรับการมีส่วนร่วมของพวกเขา</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu วิสัยทัศน์</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu เป็นสาขา KSU ที่ก้าวร้าวและเป็นอิสระอย่างยิ่ง แต่เรายังคงขอขอบคุณโครงการ KernelSU อย่างเป็นทางการ SukiSU, Magisk, APatch และอื่นๆ สำหรับการมีส่วนร่วมของพวกเขา</string>
     <string name="custom_settings">การตั้งค่าแบบกำหนดเอง</string>
     <string name="theme_color">สีธีม</string>
     <string name="image_editor_hint">ใช้สองนิ้วเพื่อซูมรูปภาพ และนิ้วเดียวเพื่อลากปรับตำแหน่ง</string>
@@ -390,7 +390,7 @@
     <string name="show_more_module_info">แสดงข้อมูลโมดูลเพิ่มเติม</string>
     <string name="show_more_module_info_summary">แสดงข้อมูลโมดูลเพิ่มเติม เช่น URL ของ Update JSON</string>
     <string name="kernel_simple_kernel">โหมดย่อของเวอร์ชันเคอร์เนล</string>
-    <string name="kernel_simple_kernel_summary">เปิดหรือปิดโหมดย่อของการแสดงเวอร์ชันเคอร์เนล YukiSU</string>
+    <string name="kernel_simple_kernel_summary">เปิดหรือปิดโหมดย่อของการแสดงเวอร์ชันเคอร์เนล Tamisu</string>
     <string name="home_zygisk_implement">การใช้งาน Zygisk</string>
     <string name="home_meta_module_implement">การใช้งานเมตาโมดูล</string>
     <string name="home_hook_type">ประเภท Hook</string>

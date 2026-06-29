@@ -289,8 +289,8 @@
     <string name="reboot_complete_msg">是否立即重新啟動？</string>
     <string name="yes">是</string>
     <string name="no">否</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU 願景</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU 是一個極其激進且特立獨行的 KSU 分支，但仍然感謝官方 KernelSU 和 SukiSU、Magisk、APatch 等作出的貢獻</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu 願景</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu 是一個極其激進且特立獨行的 KSU 分支，但仍然感謝官方 KernelSU 和 SukiSU、Magisk、APatch 等作出的貢獻</string>
     <string name="custom_settings">個人化設定</string>
     <string name="theme_color">主題顏色</string>
     <string name="image_editor_hint">使用雙指縮放圖片，單指拖曳調整位置</string>
@@ -388,7 +388,7 @@
     <string name="show_more_module_info">顯示更多模組資訊</string>
     <string name="show_more_module_info_summary">顯示額外的模組資訊，如更新設定 URL 等</string>
     <string name="kernel_simple_kernel">內核版本簡潔模式</string>
-    <string name="kernel_simple_kernel_summary">啟用或停用 YukiSU 內核版本顯示的簡潔模式</string>
+    <string name="kernel_simple_kernel_summary">啟用或停用 Tamisu 內核版本顯示的簡潔模式</string>
     <string name="home_zygisk_implement">Zygisk 實現</string>
     <string name="home_meta_module_implement">元模組實現</string>
     <string name="home_hook_type">鉤子類型</string>

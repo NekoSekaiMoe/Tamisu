@@ -753,7 +753,7 @@ int uninstall(const std::optional<std::string>& magiskboot_path) {
     }
 
     printf("- Uninstall YukiSU manager..\n");
-    system("pm uninstall com.anatdx.yukisu");
+    system("pm uninstall me.dabao1955.tamisu");
 
     printf("- Rebooting in 5 seconds..\n");
     sleep(5);

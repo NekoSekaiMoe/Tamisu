@@ -289,8 +289,8 @@
     <string name="reboot_complete_msg">Перезавантажитися негайно?</string>
     <string name="yes">Так</string>
     <string name="no">Ні</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU Бачення</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU є надзвичайно агресивною та незалежною гілкою KSU, але ми все одно дякуємо офіційному проекту KernelSU, SukiSU, Magisk, APatch та іншим за їхній внесок.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu Бачення</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu є надзвичайно агресивною та незалежною гілкою KSU, але ми все одно дякуємо офіційному проекту KernelSU, SukiSU, Magisk, APatch та іншим за їхній внесок.</string>
     <string name="custom_settings">Власні налаштування</string>
     <string name="theme_color">Колір теми</string>
     <string name="image_editor_hint">Використовуйте два пальці для масштабування зображення та один палець для перетягування, щоб налаштувати положення</string>
@@ -388,7 +388,7 @@
     <string name="show_more_module_info">Показувати більше інформації про модуль</string>
     <string name="show_more_module_info_summary">Відображати додаткову інформацію про модуль, як-от URL-адреси для оновлення JSON</string>
     <string name="kernel_simple_kernel">Спрощений режим версії ядра</string>
-    <string name="kernel_simple_kernel_summary">Увімкнути або вимкнути спрощене відображення версії ядра YukiSU</string>
+    <string name="kernel_simple_kernel_summary">Увімкнути або вимкнути спрощене відображення версії ядра Tamisu</string>
     <string name="home_zygisk_implement">Реалізація Zygisk</string>
     <string name="home_meta_module_implement">Реалізація метамодуля</string>
     <string name="home_hook_type">Тип хука</string>

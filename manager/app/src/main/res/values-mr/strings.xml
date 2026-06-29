@@ -289,8 +289,8 @@
     <string name="reboot_complete_msg">लगेच रीबूट करायचे?</string>
     <string name="yes">होय</string>
     <string name="no">नाही</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU दृष्टी</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU ही अत्यंत आक्रमक आणि स्वतंत्र KSU शाखा आहे, परंतु तरीही आम्ही अधिकृत KernelSU प्रकल्प, SukiSU, Magisk, APatch आणि इतरांना त्यांच्या योगदानाबद्दल धन्यवाद देतो.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu दृष्टी</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu ही अत्यंत आक्रमक आणि स्वतंत्र KSU शाखा आहे, परंतु तरीही आम्ही अधिकृत KernelSU प्रकल्प, SukiSU, Magisk, APatch आणि इतरांना त्यांच्या योगदानाबद्दल धन्यवाद देतो.</string>
     <string name="custom_settings">कस्टम सेटिंग्ज</string>
     <string name="theme_color">थीम रंग</string>
     <string name="image_editor_hint">प्रतिमा झूम करण्यासाठी दोन बोटे वापरा, आणि स्थिती समायोजित करण्यासाठी ती ओढण्यासाठी एक बोट वापरा</string>
@@ -388,7 +388,7 @@
     <string name="show_more_module_info">अधिक मॉड्यूल माहिती दाखवा</string>
     <string name="show_more_module_info_summary">अपडेट JSON URL सारखी अतिरिक्त मॉड्यूल माहिती दाखवा</string>
     <string name="kernel_simple_kernel">कर्नल आवृत्ती संक्षिप्त मोड</string>
-    <string name="kernel_simple_kernel_summary">YukiSU कर्नल आवृत्तीद्वारे प्रदर्शित स्वच्छ मोड सक्षम किंवा अक्षम करा</string>
+    <string name="kernel_simple_kernel_summary">Tamisu कर्नल आवृत्तीद्वारे प्रदर्शित स्वच्छ मोड सक्षम किंवा अक्षम करा</string>
     <string name="home_zygisk_implement">Zygisk अंमलबजावणी</string>
     <string name="home_meta_module_implement">Meta Module अंमलबजावणी</string>
     <string name="home_hook_type">Hook प्रकार</string>

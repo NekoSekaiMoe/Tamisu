@@ -289,9 +289,9 @@
     <string name="reboot_complete_msg">Újraindítja most azonnal?</string>
     <string name="yes">Igen</string>
     <string name="no">Nem</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU Látás
+    <string name="home_ContributionCard_kernelsu">Tamisu Látás
 A</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU egy rendkívül agresszív és független KSU-s ág, de továbbra is köszönjük a hivatalos KernelSU projektnek, SukiSU-nak, Magisk-nak, APatch-nak és másoknak a közreműködést.</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu egy rendkívül agresszív és független KSU-s ág, de továbbra is köszönjük a hivatalos KernelSU projektnek, SukiSU-nak, Magisk-nak, APatch-nak és másoknak a közreműködést.</string>
     <string name="custom_settings">Egyéni beállítások</string>
     <string name="theme_color">Témaszín</string>
     <string name="image_editor_hint">Használjon két ujjat a kép nagyításához, és egy ujjat a húzáshoz a pozíció beállításához</string>
@@ -389,7 +389,7 @@ A</string>
     <string name="show_more_module_info">További modulinformációk megjelenítése</string>
     <string name="show_more_module_info_summary">További modulinformációk megjelenítése, például Update JSON URL-ek</string>
     <string name="kernel_simple_kernel">Kernel verzió tömör mód</string>
-    <string name="kernel_simple_kernel_summary">A YukiSU kernel verzió megjelenítésének tömör módja be- vagy kikapcsolása</string>
+    <string name="kernel_simple_kernel_summary">A Tamisu kernel verzió megjelenítésének tömör módja be- vagy kikapcsolása</string>
     <string name="home_zygisk_implement">Zygisk megvalósítás</string>
     <string name="home_meta_module_implement">Metamodul megvalósítás</string>
     <string name="home_hook_type">Hook típusa</string>

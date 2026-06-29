@@ -291,8 +291,8 @@
     <string name="reboot_complete_msg">すぐに再起動しますか？</string>
     <string name="yes">はい</string>
     <string name="no">いいえ</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU ビジョン</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU は非常に積極的で独立した KSU ブランチですが、公式の KernelSU プロジェクト、SukiSU、Magisk、APatch などの貢献に今でも感謝しています。</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu ビジョン</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu は非常に積極的で独立した KSU ブランチですが、公式の KernelSU プロジェクト、SukiSU、Magisk、APatch などの貢献に今でも感謝しています。</string>
     <string name="custom_settings">カスタム設定</string>
     <string name="theme_color">テーマカラー</string>
     <string name="image_editor_hint">2 本の指で画像を拡大、1 本の指でドラッグで位置を調整します。</string>
@@ -390,7 +390,7 @@
     <string name="show_more_module_info">モジュール情報の詳細を表示</string>
     <string name="show_more_module_info_summary">更新用 JSON の URL など追加の情報を表示します。</string>
     <string name="kernel_simple_kernel">簡潔モードなカーネル バージョン</string>
-    <string name="kernel_simple_kernel_summary">YukiSU のカーネル バージョンによって表示されるクリーンモードを有効または無効します。</string>
+    <string name="kernel_simple_kernel_summary">Tamisu のカーネル バージョンによって表示されるクリーンモードを有効または無効します。</string>
     <string name="home_zygisk_implement">Zygisk を実装</string>
     <string name="home_meta_module_implement">メタモジュールの実装</string>
     <string name="home_hook_type">フックタイプ</string>

@@ -289,8 +289,8 @@
     <string name="reboot_complete_msg">వెంటనే రీబూట్ చేయాలా?</string>
     <string name="yes">అవును</string>
     <string name="no">కాదు</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU విజన్</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU అనేది చాలా దూకుడు మరియు స్వతంత్ర KSU శాఖ, అయితే మేము ఇప్పటికీ అధికారిక KernelSU ప్రాజెక్ట్, SukiSU, Magisk, APatch మరియు ఇతరుల సహకారం కోసం వారికి ధన్యవాదాలు తెలియజేస్తున్నాము.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu విజన్</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu అనేది చాలా దూకుడు మరియు స్వతంత్ర KSU శాఖ, అయితే మేము ఇప్పటికీ అధికారిక KernelSU ప్రాజెక్ట్, SukiSU, Magisk, APatch మరియు ఇతరుల సహకారం కోసం వారికి ధన్యవాదాలు తెలియజేస్తున్నాము.</string>
     <string name="custom_settings">కస్టమ్ సెట్టింగ్‌లు</string>
     <string name="theme_color">థీమ్ రంగు</string>
     <string name="image_editor_hint">చిత్రాన్ని జూమ్ చేయడానికి రెండు వేళ్లను ఉపయోగించండి, మరియు స్థానాన్ని సర్దుబాటు చేయడానికి దాన్ని లాగడానికి ఒక వేలును ఉపయోగించండి</string>
@@ -388,7 +388,7 @@
     <string name="show_more_module_info">మరిన్ని మాడ్యూల్ సమాచారాన్ని చూపించు</string>
     <string name="show_more_module_info_summary">అప్‌డేట్ JSON URLల వంటి అదనపు మాడ్యూల్ సమాచారాన్ని ప్రదర్శించండి</string>
     <string name="kernel_simple_kernel">కెర్నల్ వెర్షన్ సంక్షిప్త మోడ్</string>
-    <string name="kernel_simple_kernel_summary">YukiSU కెర్నల్ వెర్షన్ ద్వారా ప్రదర్శించబడే శుభ్రమైన మోడ్‌ను ప్రారంభించండి లేదా నిలిపివేయండి</string>
+    <string name="kernel_simple_kernel_summary">Tamisu కెర్నల్ వెర్షన్ ద్వారా ప్రదర్శించబడే శుభ్రమైన మోడ్‌ను ప్రారంభించండి లేదా నిలిపివేయండి</string>
     <string name="home_zygisk_implement">Zygisk అమలు</string>
     <string name="home_meta_module_implement">Meta Module అమలు</string>
     <string name="home_hook_type">Hook రకం</string>

@@ -32,11 +32,11 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import ui.screen.moreSettings.util.LocaleHelper
-import com.anatdx.yukisu.R
-import com.anatdx.yukisu.ui.theme.component.ImageEditorDialog
-import com.anatdx.yukisu.ui.component.KsuIsValid
-import com.anatdx.yukisu.ui.theme.*
-import com.anatdx.yukisu.ui.util.getFeatureStatus
+import me.dabao1955.tamisu.R
+import me.dabao1955.tamisu.ui.theme.component.ImageEditorDialog
+import me.dabao1955.tamisu.ui.component.KsuIsValid
+import me.dabao1955.tamisu.ui.theme.*
+import me.dabao1955.tamisu.ui.util.getFeatureStatus
 import androidx.compose.material.icons.rounded.EnhancedEncryption
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

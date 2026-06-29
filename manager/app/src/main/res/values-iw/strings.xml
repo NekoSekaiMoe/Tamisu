@@ -289,8 +289,8 @@
     <string name="reboot_complete_msg">להפעיל מחדש מיד?</string>
     <string name="yes">כן</string>
     <string name="no">לא</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU חזון</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU הוא סניף KSU אגרסיבי ועצמאי ביותר, אך אנו עדיין מודים לפרויקט הרשמי של KernelSU, SukiSU, Magisk, APatch ואחרים על תרומתם.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu חזון</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu הוא סניף KSU אגרסיבי ועצמאי ביותר, אך אנו עדיין מודים לפרויקט הרשמי של KernelSU, SukiSU, Magisk, APatch ואחרים על תרומתם.</string>
     <string name="custom_settings">הגדרות מותאמות אישית</string>
     <string name="theme_color">צבע ערכת הנושא</string>
     <string name="image_editor_hint">השתמש בשתי אצבעות כדי לשנות את זום התמונה, ובאצבע אחת כדי לגרור אותה ולכוונן את המיקום</string>
@@ -388,7 +388,7 @@
     <string name="show_more_module_info">הצג מידע נוסף על המודול</string>
     <string name="show_more_module_info_summary">הצג מידע נוסף על המודול כגון כתובות Update JSON</string>
     <string name="kernel_simple_kernel">מצב תמציתי של גרסת הליבה</string>
-    <string name="kernel_simple_kernel_summary">הפעל או השבת את המצב הנקי המוצג על ידי גרסת הליבה של YukiSU</string>
+    <string name="kernel_simple_kernel_summary">הפעל או השבת את המצב הנקי המוצג על ידי גרסת הליבה של Tamisu</string>
     <string name="home_zygisk_implement">יישום Zygisk</string>
     <string name="home_meta_module_implement">יישום Meta Module</string>
     <string name="home_hook_type">סוג Hook</string>

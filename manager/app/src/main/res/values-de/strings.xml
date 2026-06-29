@@ -291,8 +291,8 @@
     <string name="reboot_complete_msg">Ob sofort neu gestartet werden soll?</string>
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU-Vision</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU ist ein äußerst aggressiver und unabhängiger KSU-Zweig, aber wir danken dennoch dem offiziellen KernelSU-Projekt, SukiSU, Magisk, APatch und anderen für ihre Beiträge.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu-Vision</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu ist ein äußerst aggressiver und unabhängiger KSU-Zweig, aber wir danken dennoch dem offiziellen KernelSU-Projekt, SukiSU, Magisk, APatch und anderen für ihre Beiträge.</string>
     <string name="custom_settings">Eigene Einstellungen</string>
     <string name="theme_color">Themenfarbe</string>
     <string name="image_editor_hint">Verwende zwei Finger um das Bild zu vergrößern und einen Finger um die Position anzupassen</string>
@@ -390,7 +390,7 @@
     <string name="show_more_module_info">Mehr Modulinfos anzeigen</string>
     <string name="show_more_module_info_summary">Zusätzliche Modulinformationen wie Update-JSON-URLs anzeigen</string>
     <string name="kernel_simple_kernel">Kompakter Modus für Kernel-Version</string>
-    <string name="kernel_simple_kernel_summary">Kompakte Anzeige der YukiSU-Kernel-Version aktivieren oder deaktivieren</string>
+    <string name="kernel_simple_kernel_summary">Kompakte Anzeige der Tamisu-Kernel-Version aktivieren oder deaktivieren</string>
     <string name="home_zygisk_implement">Zygisk-Implementierung</string>
     <string name="home_meta_module_implement">Metamodul-Implementierung</string>
     <string name="home_hook_type">Hook-Typ</string>

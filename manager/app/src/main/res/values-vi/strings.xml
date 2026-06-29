@@ -289,8 +289,8 @@
     <string name="reboot_complete_msg">Khởi động lại ngay lập tức?</string>
     <string name="yes">Có</string>
     <string name="no">Không</string>
-    <string name="home_ContributionCard_kernelsu">YukiSU Tầm nhìn</string>
-    <string name="home_click_to_ContributionCard_kernelsu">YukiSU là một chi nhánh KSU cực kỳ tích cực và độc lập, nhưng chúng tôi vẫn cảm ơn dự án KernelSU chính thức, SukiSU, Magisk, APatch và những dự án khác vì những đóng góp của họ.</string>
+    <string name="home_ContributionCard_kernelsu">Tamisu Tầm nhìn</string>
+    <string name="home_click_to_ContributionCard_kernelsu">Tamisu là một chi nhánh KSU cực kỳ tích cực và độc lập, nhưng chúng tôi vẫn cảm ơn dự án KernelSU chính thức, SukiSU, Magisk, APatch và những dự án khác vì những đóng góp của họ.</string>
     <string name="custom_settings">Cài đặt tùy chỉnh</string>
     <string name="theme_color">Màu chủ đề</string>
     <string name="image_editor_hint">Sử dụng hai ngón tay để phóng to hình ảnh và một ngón tay kéo thả để điều chỉnh vị trí</string>
