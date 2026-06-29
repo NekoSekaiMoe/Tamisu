@@ -790,6 +790,38 @@ void handle_client(int client) {
     write_exact(client, &ok, sizeof(ok));
     break;
   }
+  case zygiskd::Request::PatchText: {
+    // core asks us to write `len` bytes at `addr` in ITS OWN memory (the
+    // specialize inline-hook patching libandroid_runtime's code). SO_PEERCRED
+    // pins the target to the caller (unforgeable), so this only writes the
+    // caller's process. The kernel uses access_process_vm(FOLL_FORCE): a COW
+    // write that patches the read-only, file-backed code page WITHOUT
+    // mprotect, so the executable VMA is never split (defeats the
+    // exec-VMA-count check).
+    uint64_t addr = 0;
+    uint32_t len = 0;
+    if (!read_exact(client, &addr, sizeof(addr)) ||
+        !read_exact(client, &len, sizeof(len)) || len == 0 ||
+        len > YZ_PATCH_TEXT_MAX)
+      break;
+    uint8_t bytes[YZ_PATCH_TEXT_MAX];
+    if (!read_exact(client, bytes, len))
+      break;
+    struct ucred cr{};
+    socklen_t crlen = sizeof(cr);
+    uint8_t ok = 0;
+    if (getsockopt(client, SOL_SOCKET, SO_PEERCRED, &cr, &crlen) == 0 &&
+        cr.pid > 0) {
+      yz_patch_text_cmd pcmd{};
+      pcmd.pid = static_cast<uint32_t>(cr.pid);
+      pcmd.len = len;
+      pcmd.addr = addr;
+      memcpy(pcmd.bytes, bytes, len);
+      ok = ksud::ksuctl(KSU_IOCTL_YZ_PATCH_TEXT, &pcmd) == 0 ? 1 : 0;
+    }
+    write_exact(client, &ok, sizeof(ok));
+    break;
+  }
   case zygiskd::Request::Log: {
     // core forwards its log lines here -- it can't write /dev/kmsg from the
     // zygote/app domain, and must never touch logcat. We emit to dmesg only.

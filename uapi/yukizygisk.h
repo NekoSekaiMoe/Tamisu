@@ -88,7 +88,29 @@ struct yz_unmap_self_cmd {
   __u32 reserved;
   __u64 addr[YZ_MAX_UNMAP_SEGS];
   __u64 size[YZ_MAX_UNMAP_SEGS];
-  
+
+};
+
+/* zygiskd (root) -> kernel: write `len` bytes at `addr` in TARGET pid's address
+ * space via access_process_vm(FOLL_FORCE|FOLL_WRITE) -- the kernel equivalent
+ * of a /proc/<pid>/mem write. The specialize inline-hook uses this to patch
+ * libandroid_runtime's code: FOLL_FORCE makes the kernel copy-on-write the
+ * (read-only, file-backed) code page and write through it, without ever calling
+ * mprotect -- so the executable mapping is not split. An mprotect-based patch
+ * fragments that VMA into several, which detectors flag. copy_to_user_page on
+ * the write path flushes the I-cache for the exec range. Routed through
+ * zygiskd because the app/zygote cannot get the ksu driver fd; zygiskd resolves
+ * the caller pid via SO_PEERCRED, so the target is always the caller's OWN
+ * process. Kernel verifies app-or-zygote. */
+#define KSU_IOCTL_YZ_PATCH_TEXT _IOC(_IOC_WRITE, 'T', 57, 0)
+
+#define YZ_PATCH_TEXT_MAX 64
+
+struct yz_patch_text_cmd {
+  __u32 pid;  /* target process (== the SO_PEERCRED caller) */
+  __u32 len;  /* number of bytes to write, 1..YZ_PATCH_TEXT_MAX */
+  __u64 addr; /* target virtual address */
+  __u8 bytes[YZ_PATCH_TEXT_MAX]; /* the patch bytes */
 };
 
 /* ---- runtime config ---- */
