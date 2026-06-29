@@ -283,16 +283,6 @@ class MoreSettingsHandlers(
         state.showMoreModuleInfo = newValue
     }
 
-    fun handleWebDebuggingChange(newValue: Boolean) {
-        prefs.edit { putBoolean("enable_web_debugging", newValue) }
-        state.enableWebDebugging = newValue
-    }
-
-    fun handleWebUIXErudaChange(newValue: Boolean) {
-        prefs.edit { putBoolean("use_webuix_eruda", newValue) }
-        state.useWebUIXEruda = newValue
-    }
-
     fun handleSelinuxChange(enabled: Boolean) {
         val ok = ShellUtils.fastCmdResult(getRootShell(), if (enabled) "setenforce 1" else "setenforce 0")
         if (ok) {

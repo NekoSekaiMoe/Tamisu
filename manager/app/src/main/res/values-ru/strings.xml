@@ -116,8 +116,6 @@
     <string name="grant_root_failed">Не удалось выдать root!</string>
     <string name="action">Действие</string>
     <string name="close">Закрыть</string>
-    <string name="enable_web_debugging">Включить отладку WebView</string>
-    <string name="enable_web_debugging_summary">Используется для отладки WebUI. Пожалуйста, включайте только при необходимости.</string>
     <string name="home_auth_superkey_tag">SuperKey</string>
     <string name="home_auth_signature_tag">Signature</string>
     <!-- Kasumi toasts -->
@@ -320,12 +318,6 @@
     <string name="background_set_success">Фон успешно установлен</string>
     <string name="background_removed">Пользовательский фон удалён</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">Движок WebUI</string>
-    <string name="engine_auto_select">Автовыбор</string>
-    <string name="engine_force_webuix">WebUI X</string>
-    <string name="engine_force_ksu">KSU WebUI</string>
-    <string name="use_webuix_eruda">Вставить Eruda в WebUI X</string>
-    <string name="use_webuix_eruda_summary">Вставьте консоль отладки в WebUI X для упрощения отладки. Для этого требуется включение веб-отладки.</string>
     <!-- DPI setting related strings -->
     <string name="app_dpi_title">Изменить DPI</string>
     <string name="app_dpi_summary">Регулировка плотности экрана только для текущего приложения</string>

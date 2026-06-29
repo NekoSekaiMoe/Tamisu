@@ -170,9 +170,4 @@ dependencies {
 
     implementation(libs.lsposed.cxx)
 
-    implementation(libs.mmrl.platform)
-    compileOnly(libs.mmrl.hidden.api)
-    implementation(libs.mmrl.webui)
-    implementation(libs.mmrl.ui)
-
 }

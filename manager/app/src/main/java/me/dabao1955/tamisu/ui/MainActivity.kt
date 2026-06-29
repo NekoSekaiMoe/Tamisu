@@ -61,7 +61,6 @@ import me.dabao1955.tamisu.ui.util.LocalSnackbarHost
 import me.dabao1955.tamisu.ui.util.install
 import me.dabao1955.tamisu.ui.util.resetTaskDescriptionToAppName
 import me.dabao1955.tamisu.ui.viewmodel.HomeViewModel
-import me.dabao1955.tamisu.ui.webui.WebUIActivity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import ui.screen.moreSettings.util.LocaleHelper
@@ -357,21 +356,6 @@ private fun ShortcutIntentHandler(
                 navigator.navigate(ExecuteModuleActionScreenDestination(moduleId)) {
                     launchSingleTop = true
                 }
-            }
-
-            "module_webui" -> {
-                val moduleId = intent.getStringExtra("module_id") ?: return@LaunchedEffect
-                val moduleName = intent.getStringExtra("module_name") ?: moduleId
-                val webIntent = Intent(context, WebUIActivity::class.java)
-                    .setData("kernelsu://webui/$moduleId".toUri())
-                    .putExtra("id", moduleId)
-                    .putExtra("name", moduleName)
-                    .putExtra("from_webui_shortcut", true)
-                    .addFlags(
-                        Intent.FLAG_ACTIVITY_NEW_TASK or
-                                Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    )
-                context.startActivity(webIntent)
             }
 
             else -> return@LaunchedEffect

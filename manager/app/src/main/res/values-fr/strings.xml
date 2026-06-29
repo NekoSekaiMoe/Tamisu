@@ -116,8 +116,6 @@
     <string name="grant_root_failed">Échec de l\'octroi des privilèges root !</string>
     <string name="action">Exécuter</string>
     <string name="close">Fermer</string>
-    <string name="enable_web_debugging">Activer le débogage WebView</string>
-    <string name="enable_web_debugging_summary">Peut être utilisé pour déboguer WebUI. Activez uniquement cette option si nécessaire.</string>
     <string name="home_auth_superkey_tag">SuperKey</string>
     <string name="home_auth_signature_tag">Signature</string>
     <!-- Kasumi toasts -->
@@ -320,12 +318,6 @@
     <string name="background_set_success">Fond d\'écran défini avec succès</string>
     <string name="background_removed">Fond d\'écran personnalisé supprimé</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">Sélectionnez le moteur WebUI à utiliser</string>
-    <string name="engine_auto_select">Sélectionner automatiquement</string>
-    <string name="engine_force_webuix">Forcer l\'utilisation de WebUI X</string>
-    <string name="engine_force_ksu">Utilisation obligatoire de KSU WebUI</string>
-    <string name="use_webuix_eruda">Injecter Eruda dans WebUI X</string>
-    <string name="use_webuix_eruda_summary">Injectez une console de débogage dans WebUI X pour faciliter le débogage. Nécessite que le débogage soit activé.</string>
     <!-- DPI setting related strings -->
     <string name="app_dpi_title">DPI appliqué</string>
     <string name="app_dpi_summary">Ajuster la densité d\'affichage de l\'écran pour l\'application actuelle uniquement</string>

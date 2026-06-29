@@ -80,9 +80,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.dergoogler.mmrl.platform.Platform
-import com.dergoogler.mmrl.platform.model.ModuleConfig
-import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
@@ -100,8 +97,6 @@ import me.dabao1955.tamisu.ui.util.module.ModuleModify
 import me.dabao1955.tamisu.ui.util.module.ModuleUtils
 import me.dabao1955.tamisu.ui.util.module.Shortcut
 import me.dabao1955.tamisu.ui.viewmodel.ModuleViewModel
-import me.dabao1955.tamisu.ui.webui.WebUIActivity
-import me.dabao1955.tamisu.ui.webui.WebUIXActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -337,10 +332,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
-    val webUILauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { viewModel.fetchModuleList() }
-
     val bottomSheetMenuItems = remember {
         listOf(
             ModuleBottomSheetMenuItem(
@@ -462,55 +453,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                             return@ModuleList
                         }
                         lastClickTime = currentTime
-
-                        if (hasWebUi) {
-                            try {
-                                val wxEngine = Intent(context, WebUIXActivity::class.java)
-                                    .setData("kernelsu://webuix/$id".toUri())
-                                    .putExtra("id", id)
-                                    .putExtra("name", name)
-
-                                val ksuEngine = Intent(context, WebUIActivity::class.java)
-                                    .setData("kernelsu://webui/$id".toUri())
-                                    .putExtra("id", id)
-                                    .putExtra("name", name)
-
-                                val config = try {
-                                    id.asModuleConfig
-                                } catch (e: Exception) {
-                                    Log.e("ModuleScreen", "Failed to get config from id: $id", e)
-                                    null
-                                }
-
-                                val globalEngine = prefs.getString("webui_engine", "default") ?: "default"
-                                val moduleEngine = config?.getWebuiEngine(context)
-                                val selectedEngine = when (globalEngine) {
-                                    "wx" -> wxEngine
-                                    "ksu" -> ksuEngine
-                                    "default" -> {
-                                        when (moduleEngine) {
-                                            "wx" -> wxEngine
-                                            "ksu" -> ksuEngine
-                                            else -> {
-                                                if (Platform.isAlive) {
-                                                    wxEngine
-                                                } else {
-                                                    ksuEngine
-                                                }
-                                            }
-                                        }
-                                    }
-                                    else -> ksuEngine
-                                }
-                                webUILauncher.launch(selectedEngine)
-                            } catch (e: Exception) {
-                                Log.e("ModuleScreen", "Error launching WebUI: ${e.message}", e)
-                                scope.launch {
-                                    snackBarHost.showSnackbar("Error launching WebUI: ${e.message}")
-                                }
-                            }
-                            return@ModuleList
-                        }
                     },
                     onAddShortcut = { onModuleAddShortcut(it) },
                     context = context,

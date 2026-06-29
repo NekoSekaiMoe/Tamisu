@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import coil.Coil
 import coil.ImageLoader
-import com.dergoogler.mmrl.platform.Platform
 import me.zhanghai.android.appiconloader.coil.AppIconFetcher
 import me.zhanghai.android.appiconloader.coil.AppIconKeyer
 import okhttp3.Cache
@@ -25,8 +24,6 @@ class KernelSUApplication : Application(), ViewModelStoreOwner {
         super.onCreate()
         ksuApp = this
 
-        Platform.setHiddenApiExemptions()
-
         val context = this
         val iconSize = resources.getDimensionPixelSize(android.R.dimen.app_icon_size)
         Coil.setImageLoader(
@@ -37,11 +34,6 @@ class KernelSUApplication : Application(), ViewModelStoreOwner {
                 }
                 .build()
         )
-
-        val webroot = File(dataDir, "webroot")
-        if (!webroot.exists()) {
-            webroot.mkdir()
-        }
 
         // Provide working env for rust's temp_dir()
         Os.setenv("TMPDIR", cacheDir.absolutePath, true)

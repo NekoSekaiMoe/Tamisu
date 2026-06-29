@@ -116,8 +116,6 @@
     <string name="grant_root_failed">獲取 root 權限失敗！</string>
     <string name="action">執行</string>
     <string name="close">關閉</string>
-    <string name="enable_web_debugging">啟用 WebView 除錯</string>
-    <string name="enable_web_debugging_summary">可用於除錯 WebUI，請僅在需要時啟用。</string>
     <string name="home_auth_superkey_tag">SuperKey</string>
     <string name="home_auth_signature_tag">Signature</string>
     <!-- Kasumi toasts -->
@@ -318,12 +316,6 @@
     <string name="background_set_success">背景設定成功</string>
     <string name="background_removed">已移除自訂背景</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">選擇使用的 WebUI 引擎</string>
-    <string name="engine_auto_select">自動選擇</string>
-    <string name="engine_force_webuix">強制使用 WebUI X</string>
-    <string name="engine_force_ksu">強制使用 KSU 的 WebUI</string>
-    <string name="use_webuix_eruda">將 Eruda 注入 WebUI X</string>
-    <string name="use_webuix_eruda_summary">在 WebUI X 中注入除錯控制台，方便除錯，需啟用 WebView 除錯</string>
     <!-- DPI setting related strings -->
     <string name="app_dpi_title">應用程式 DPI</string>
     <string name="app_dpi_summary">僅調整目前應用程式的螢幕顯示密度</string>

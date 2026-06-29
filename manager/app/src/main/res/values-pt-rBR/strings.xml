@@ -116,8 +116,6 @@
     <string name="grant_root_failed">Falha ao conceder acesso root!</string>
     <string name="action">Executar</string>
     <string name="close">Fechar</string>
-    <string name="enable_web_debugging">Ativar depuração do WebView</string>
-    <string name="enable_web_debugging_summary">Pode ser usado para depurar o WebUI. Por favor, ative somente quando necessário.</string>
     <string name="home_auth_superkey_tag">SuperKey</string>
     <string name="home_auth_signature_tag">Signature</string>
     <!-- Kasumi toasts -->
@@ -320,12 +318,6 @@
     <string name="background_set_success">Plano de fundo definido com sucesso</string>
     <string name="background_removed">Planos de fundo personalizados removidos</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">Selecione o motor WebUI a usar</string>
-    <string name="engine_auto_select">Seleção automática</string>
-    <string name="engine_force_webuix">Forçar o uso do WebUI X</string>
-    <string name="engine_force_ksu">Forçar o uso da WebUI do KSU</string>
-    <string name="use_webuix_eruda">Injetar o Eruda no WebUI X</string>
-    <string name="use_webuix_eruda_summary">Injeta um console de depuração no WebUI X para facilitar a depuração. Requer a depuração web ativada</string>
     <!-- DPI setting related strings -->
     <string name="app_dpi_title">DPI aplicado</string>
     <string name="app_dpi_summary">Ajustar a densidade de exibição da tela apenas para o aplicativo atual</string>

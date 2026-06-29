@@ -19,7 +19,6 @@ cmaker = "1.2"
 compose-material = "1.9.4"
 compose-material3 = "1.4.0"
 compose-ui = "1.9.4"
-mmrl = "2bb00b3c2b"
 ndk = "29.0.14206865"
 foundation = "1.9.4"
 
@@ -77,8 +76,4 @@ markdown = { group = "io.noties.markwon", name = "core", version.ref = "markdown
 lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version.ref = "ndk" }
 
 
-mmrl-webui = { group = "com.github.MMRLApp.MMRL", name = "webui", version.ref = "mmrl" }
-mmrl-platform = { group = "com.github.MMRLApp.MMRL", name = "platform", version.ref = "mmrl" }
-mmrl-ui = { group = "com.github.MMRLApp.MMRL", name = "ui", version.ref = "mmrl" }
-mmrl-hidden-api = { group = "com.github.MMRLApp.MMRL", name = "hidden-api", version.ref = "mmrl" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }

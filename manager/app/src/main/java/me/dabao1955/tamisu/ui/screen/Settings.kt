@@ -71,11 +71,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     val snackBarHost = remember { SnackbarHostState() }
     val context = LocalContext.current
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    var selectedEngine by rememberSaveable {
-        mutableStateOf(
-            prefs.getString("webui_engine", "default") ?: "default"
-        )
-    }
 
     Scaffold(
         topBar = {
@@ -187,17 +182,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             autoUpdateKsud = enabled
                         }
                     )
-
-                    // WebUI引擎选择
-                    KsuIsValid {
-                        WebUIEngineSelector(
-                            selectedEngine = selectedEngine,
-                            onEngineSelected = { engine ->
-                                selectedEngine = engine
-                                prefs.edit { putString("webui_engine", engine) }
-                            }
-                        )
-                    }
 
                     // 更多设置
                     SettingItem(
@@ -328,62 +312,6 @@ private fun SettingsGroupCard(
             )
             content()
         }
-    }
-}
-
-@Composable
-private fun WebUIEngineSelector(
-    selectedEngine: String,
-    onEngineSelected: (String) -> Unit
-) {
-    var showDialog by remember { mutableStateOf(false) }
-    val engineOptions = listOf(
-        "default" to stringResource(R.string.engine_auto_select),
-        "wx" to stringResource(R.string.engine_force_webuix),
-        "ksu" to stringResource(R.string.engine_force_ksu)
-    )
-
-    SettingItem(
-        icon = Icons.Filled.WebAsset,
-        title = stringResource(R.string.use_webuix),
-        summary = engineOptions.find { it.first == selectedEngine }?.second
-            ?: stringResource(R.string.engine_auto_select),
-        onClick = { showDialog = true }
-    )
-
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text(stringResource(R.string.use_webuix)) },
-            text = {
-                Column {
-                    engineOptions.forEach { (value, label) ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    onEngineSelected(value)
-                                    showDialog = false
-                                }
-                                .padding(vertical = 12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = selectedEngine == value,
-                                onClick = null
-                            )
-                            Spacer(modifier = Modifier.width(SPACING_MEDIUM))
-                            Text(text = label)
-                        }
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
-        )
     }
 }
 

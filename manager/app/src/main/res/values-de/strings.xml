@@ -116,8 +116,6 @@
     <string name="grant_root_failed">Root-Zugriff konnte nicht gewährt werden!</string>
     <string name="action">Aktion</string>
     <string name="close">Schließen</string>
-    <string name="enable_web_debugging">WebView-Debugging aktivieren</string>
-    <string name="enable_web_debugging_summary">Kann zum Fehlerbeheben der WebUI verwendet werden, bitte nur im Notfall aktivieren.</string>
     <string name="home_auth_superkey_tag">SuperKey</string>
     <string name="home_auth_signature_tag">Signature</string>
     <!-- Kasumi toasts -->
@@ -320,12 +318,6 @@
     <string name="background_set_success">Hintergrund erfolgreich gesetzt</string>
     <string name="background_removed">Eigene Hintergründe entfernt</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">Wähle die zu verwendende WebUI-Engine</string>
-    <string name="engine_auto_select">Automatisch auswählen</string>
-    <string name="engine_force_webuix">Nutzung von WebUI X erzwingen</string>
-    <string name="engine_force_ksu">Pflichtanwendung von KSU WebUI</string>
-    <string name="use_webuix_eruda">Eruda in WebUI X injizieren</string>
-    <string name="use_webuix_eruda_summary">Fügt WebUI X eine Entwicklerkonsole hinzu, um die Fehlersuche zu erleichtern. Web-Debugging muss aktiviert sein.</string>
     <!-- DPI setting related strings -->
     <string name="app_dpi_title">Angewendeter DPI</string>
     <string name="app_dpi_summary">Bildschirmanzahl nur für die aktuelle Anwendung anpassen</string>

@@ -5,11 +5,6 @@
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">shortEdges</item>
     </style>
 
-    <style name="Theme.KernelSU.WebUI" parent="Theme.KernelSU">
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
-    </style>
-
     <style name="Theme.KernelSU.Floating" parent="android:Theme.DeviceDefault.NoActionBar">
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>

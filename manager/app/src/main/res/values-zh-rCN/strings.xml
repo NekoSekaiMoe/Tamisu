@@ -114,8 +114,6 @@
     <string name="grant_root_failed">获取 root 失败！</string>
     <string name="action">执行</string>
     <string name="close">关闭</string>
-    <string name="enable_web_debugging">启用 WebView 调试</string>
-    <string name="enable_web_debugging_summary">可用于调试 WebUI 。请仅在需要时启用。</string>
     <string name="direct_install">直接安装（推荐）</string>
     <string name="select_file">选择一个需要修补的镜像</string>
     <string name="install_inactive_slot">安装到未使用的槽位（OTA 后）</string>
@@ -256,12 +254,6 @@
     <string name="background_set_success">背景设置成功</string>
     <string name="background_removed">已移除自定义背景</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">选择使用的 WebUI 引擎</string>
-    <string name="engine_auto_select">自动选择</string>
-    <string name="engine_force_webuix">强制使用 WebUI X</string>
-    <string name="engine_force_ksu">强制使用 KSU 的 WebUI</string>
-    <string name="use_webuix_eruda">将 Eruda 注入 WebUI X</string>
-    <string name="use_webuix_eruda_summary">在 WebUI X 中注入调试控制台，使调试更容易,需要启用 WebView 调试</string>
     <!-- DPI setting related strings -->
     <string name="app_dpi_title">应用 DPI</string>
     <string name="app_dpi_summary">仅调整当前应用的屏幕显示密度</string>

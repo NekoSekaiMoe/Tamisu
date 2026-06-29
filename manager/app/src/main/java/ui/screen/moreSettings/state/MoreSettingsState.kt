@@ -49,9 +49,6 @@ class MoreSettingsState(
     var isHideTagRow by mutableStateOf(prefs.getBoolean("is_hide_tag_row", false))
     var isKernelSimpleMode by mutableStateOf(prefs.getBoolean("is_kernel_simple_mode", false))
     var showMoreModuleInfo by mutableStateOf(prefs.getBoolean("show_more_module_info", false))
-    var enableWebDebugging by mutableStateOf(prefs.getBoolean("enable_web_debugging", false))
-    var useWebUIXEruda by mutableStateOf(prefs.getBoolean("use_webuix_eruda", false))
-    var webuiEngine by mutableStateOf(prefs.getString("webui_engine", "default") ?: "default")
 
     var selinuxEnabled by mutableStateOf(false)
 

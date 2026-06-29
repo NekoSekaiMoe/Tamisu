@@ -116,8 +116,6 @@
     <string name="grant_root_failed">root の付与に失敗しました！</string>
     <string name="action">アクション</string>
     <string name="close">閉じる</string>
-    <string name="enable_web_debugging">WebView デバッグを有効化する</string>
-    <string name="enable_web_debugging_summary">WebUI のデバッグに使用できます。必要な場合でのみ有効化してください。</string>
     <string name="home_auth_superkey_tag">SuperKey</string>
     <string name="home_auth_signature_tag">Signature</string>
     <!-- Kasumi toasts -->
@@ -320,12 +318,6 @@
     <string name="background_set_success">背景の設定が成功しました</string>
     <string name="background_removed">カスタム背景を削除しました</string>
     <!-- Webui X settings -->
-    <string name="use_webuix">WebUI で使用するエンジン</string>
-    <string name="engine_auto_select">自動選択</string>
-    <string name="engine_force_webuix">WebUI X の使用を強制する</string>
-    <string name="engine_force_ksu">KSU WebUI の使用を強制する</string>
-    <string name="use_webuix_eruda">WebUI に Eruda をインジェクトする</string>
-    <string name="use_webuix_eruda_summary">デバッグを容易にするために WebUI X にデバッグコンソールを挿入します。Web デバッグが ON になっている必要があります。</string>
     <!-- DPI setting related strings -->
     <string name="app_dpi_title">DPI の変更を適用</string>
     <string name="app_dpi_summary">このアプリのみで画面表示密度を調整します。</string>

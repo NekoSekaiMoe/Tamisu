@@ -361,32 +361,8 @@ private fun AdvancedSettings(
             checked = state.hideBlEnabled,
             onChange = handlers::handleHideBlChange
         )
-
-        SettingsDivider()
-
-        SettingsDivider()
-
-        SwitchSettingItem(
-            icon = Icons.Filled.DeveloperMode,
-            title = stringResource(R.string.enable_web_debugging),
-            summary = stringResource(R.string.enable_web_debugging_summary),
-            checked = state.enableWebDebugging,
-            onChange = handlers::handleWebDebuggingChange
-        )
-
-        AnimatedVisibility(
-            visible = state.enableWebDebugging && state.webuiEngine == "wx",
-            enter = fadeIn() + expandVertically(),
-            exit = fadeOut() + shrinkVertically()
-        ) {
-            SwitchSettingItem(
-                icon = Icons.Filled.FormatListNumbered,
-                title = stringResource(R.string.use_webuix_eruda),
-                summary = stringResource(R.string.use_webuix_eruda_summary),
-                checked = state.useWebUIXEruda,
-                onChange = handlers::handleWebUIXErudaChange
-            )
-        }
+    }
+}
     }
 }
 
