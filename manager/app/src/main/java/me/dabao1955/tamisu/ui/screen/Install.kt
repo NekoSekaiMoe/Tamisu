@@ -50,7 +50,6 @@ import com.maxkeppeler.sheets.list.models.ListSelection
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.PartitionManagerScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import me.dabao1955.tamisu.Natives
@@ -415,47 +414,8 @@ fun InstallScreen(
                     exit = shrinkVertically() + fadeOut()
                 ) {
                     Column(modifier = Modifier.fillMaxWidth()) {
-                        Spacer(Modifier.height(16.dp))
-                        Text(
-                            text = stringResource(R.string.install_advanced_tools),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
 
-                        ElevatedCard(
-                            onClick = { navigator.navigate(PartitionManagerScreenDestination) },
-                            colors = getCardColors(MaterialTheme.colorScheme.surfaceVariant),
-                            elevation = getCardElevation(),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            ListItem(
-                                headlineContent = {
-                                    Text(stringResource(R.string.partition_manager))
-                                },
-                                supportingContent = {
-                                    Text(stringResource(R.string.partition_manager_desc))
-                                },
-                                leadingContent = {
-                                    Icon(
-                                        Icons.Default.Storage,
-                                        contentDescription = null
-                                    )
-                                },
-                                trailingContent = {
-                                    Icon(
-                                        Icons.Default.ChevronRight,
-                                        contentDescription = null
-                                    )
-                                }
-                            )
-                        }
-
-                        Spacer(Modifier.height(16.dp))
-                    }
-                }
-
-                AnimatedVisibility(
+                        AnimatedVisibility(
                     visible = !isManager,
                     enter = fadeIn() + expandVertically(),
                     exit = shrinkVertically() + fadeOut()

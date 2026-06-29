@@ -414,7 +414,6 @@
     <!-- Kasumi per-module rules -->
 
     <!-- Partition Manager -->
-    <string name="partition_manager">Partition Manager</string>
     <string name="partition_slot_info">Slot Information</string>
     <string name="partition_device_type">Device Type</string>
     <string name="partition_current_slot">Current Slot</string>
@@ -477,8 +476,6 @@
     <string name="partition_back">Back</string>
     
     <!-- Advanced Tools -->
-    <string name="install_advanced_tools">Advanced Tools</string>
-    <string name="partition_manager_desc">Backup/restore partitions, manage slots</string>
 
     <!-- ksud daemon version / update -->
     <string name="home_ksud_daemon_title">ksud daemon</string>
