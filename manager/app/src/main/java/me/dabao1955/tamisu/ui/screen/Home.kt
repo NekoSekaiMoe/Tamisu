@@ -45,9 +45,6 @@ import me.dabao1955.tamisu.R
 import me.dabao1955.tamisu.ui.component.KsuIsValid
 import me.dabao1955.tamisu.ui.component.rememberConfirmDialog
 import me.dabao1955.tamisu.ui.component.rememberLoadingDialog
-import me.dabao1955.tamisu.ui.theme.CardConfig
-import me.dabao1955.tamisu.ui.theme.CardConfig.cardAlpha
-import me.dabao1955.tamisu.ui.theme.CardConfig.cardElevation
 import me.dabao1955.tamisu.ui.theme.getCardColors
 import me.dabao1955.tamisu.ui.theme.getCardElevation
 import me.dabao1955.tamisu.ui.util.checkNewVersion
@@ -227,11 +224,7 @@ private fun TopBar(
 ) {
     val context = LocalContext.current
     val colorScheme = MaterialTheme.colorScheme
-    val cardColor = if (CardConfig.isCustomBackgroundEnabled) {
-        colorScheme.surfaceContainerLow
-    } else {
-        colorScheme.background
-    }
+    val cardColor = colorScheme.background
 
     TopAppBar(
         title = {
@@ -241,8 +234,8 @@ private fun TopBar(
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = cardColor.copy(alpha = cardAlpha),
-            scrolledContainerColor = cardColor.copy(alpha = cardAlpha)
+            containerColor = cardColor,
+            scrolledContainerColor = cardColor
         ),
         actions = {
             if (isDataLoaded) {

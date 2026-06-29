@@ -233,9 +233,6 @@
     <string name="allowlist_restore_failed">Restauración de lista de permisos falló: %1$s</string>
     <string name="backup_allowlist">Copia de seguridad lista</string>
     <string name="restore_allowlist">Restaurar lista de permisos</string>
-    <string name="settings_custom_background">Fondo de aplicación personalizado</string>
-    <string name="settings_custom_background_summary">Seleccionar una imagen como fondo</string>
-    <string name="settings_card_alpha">Transparencia de la barra de navegación</string>
     <string name="home_android_version">Versión de Android</string>
     <string name="home_device_model">Modelo del dispositivo</string>
     <string name="su_not_allowed">No se permite conceder superusuario a %s</string>
@@ -291,8 +288,6 @@
     <string name="home_click_to_ContributionCard_kernelsu">Tamisu es una rama KSU extremadamente agresiva e independiente, pero aún así agradecemos al proyecto oficial KernelSU, SukiSU, Magisk, APatch y otros por sus contribuciones.</string>
     <string name="custom_settings">Ajustes personalizados</string>
     <string name="theme_color">Color del tema</string>
-    <string name="image_editor_hint">Usa dos dedos para acercar la imagen, y un dedo para arrastrarla para ajustar la posición</string>
-    <string name="reprovision">Ajustar imagen a la pantalla</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
     <string name="Lkm_install_methods">Reparación/instalación de LKM</string>
@@ -313,8 +308,6 @@
     <string name="advanced_settings">Configuraciones avanzadas</string>
     <string name="appearance_settings">Personalizar la barra de herramientas.</string>
     <string name="back">Retorno</string>
-    <string name="background_set_success">Fondo establecido correctamente</string>
-    <string name="background_removed">Eliminar fondo personalizado</string>
     <!-- Webui X settings -->
     <!-- DPI setting related strings -->
     <string name="app_dpi_title">DPI aplicado</string>
@@ -332,7 +325,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">Idioma de la aplicación</string>
     <string name="language_system_default">Seguir sistema</string>
-    <string name="settings_card_dim">Ajuste de oscuridad de tarjeta</string>
     <!-- Flash related -->
     <string name="error_code">código de error</string>
     <string name="check_log">Por favor, compruebe el registro</string>

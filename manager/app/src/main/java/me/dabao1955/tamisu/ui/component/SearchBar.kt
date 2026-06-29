@@ -22,7 +22,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import me.dabao1955.tamisu.ui.theme.CardConfig
 
 private const val TAG = "SearchBar"
 
@@ -43,12 +42,7 @@ fun SearchAppBar(
     var onSearch by remember { mutableStateOf(false) }
 
     val colorScheme = MaterialTheme.colorScheme
-    val cardColor = if (CardConfig.isCustomBackgroundEnabled) {
-        colorScheme.surfaceContainerLow
-    } else {
-        colorScheme.background
-    }
-    val cardAlpha = CardConfig.cardAlpha
+    val cardColor = colorScheme.background
 
     if (onSearch) {
         LaunchedEffect(Unit) { focusRequester.requestFocus() }
@@ -133,8 +127,8 @@ fun SearchAppBar(
         windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         scrollBehavior = scrollBehavior,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = cardColor.copy(alpha = cardAlpha),
-            scrolledContainerColor = cardColor.copy(alpha = cardAlpha)
+            containerColor = cardColor,
+            scrolledContainerColor = cardColor
         )
     )
 }

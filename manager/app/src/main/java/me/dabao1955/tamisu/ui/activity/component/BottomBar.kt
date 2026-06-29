@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.spec.RouteOrDirection
@@ -17,8 +18,6 @@ import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import me.dabao1955.tamisu.ui.MainActivity
 import me.dabao1955.tamisu.ui.activity.util.*
 import me.dabao1955.tamisu.ui.screen.BottomBarDestination
-import me.dabao1955.tamisu.ui.theme.CardConfig.cardAlpha
-import me.dabao1955.tamisu.ui.theme.CardConfig.cardElevation
 import me.dabao1955.tamisu.ui.util.*
 
 @SuppressLint("ContextCastToActivity")
@@ -42,10 +41,10 @@ fun BottomBar(navController: NavHostController) {
             WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
         ),
         containerColor = TopAppBarDefaults.topAppBarColors(
-            containerColor = cardColor.copy(alpha = cardAlpha),
-            scrolledContainerColor = cardColor.copy(alpha = cardAlpha)
+            containerColor = cardColor,
+            scrolledContainerColor = cardColor
         ).containerColor,
-        tonalElevation = cardElevation
+        tonalElevation = 0.dp
     ) {
         BottomBarDestination.entries.forEach { destination ->
             if (!isFullFeatured && destination.rootRequired) return@forEach

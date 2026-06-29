@@ -233,9 +233,6 @@
     <string name="allowlist_restore_failed">허용 목록 복원 실패: %1$s</string>
     <string name="backup_allowlist">허용 목록 백업</string>
     <string name="restore_allowlist">허용 목록 복원</string>
-    <string name="settings_custom_background">사용자 지정 앱 배경</string>
-    <string name="settings_custom_background_summary">배경으로 사용할 이미지를 선택하세요</string>
-    <string name="settings_card_alpha">탐색 모음 투명도</string>
     <string name="home_android_version">Android 버전</string>
     <string name="home_device_model">기기 모델</string>
     <string name="su_not_allowed">%s에 슈퍼유저 권한을 부여할 수 없습니다</string>
@@ -291,8 +288,6 @@
     <string name="home_click_to_ContributionCard_kernelsu">Tamisu는 매우 공격적이고 독립적인 KSU 브랜치이지만 공식 KernelSU 프로젝트, SukiSU, Magisk, APatch 및 기타 기여에 감사드립니다.</string>
     <string name="custom_settings">사용자 지정 설정</string>
     <string name="theme_color">테마 색상</string>
-    <string name="image_editor_hint">두 손가락으로 이미지를 확대하고, 한 손가락으로 드래그하여 위치를 조정하세요</string>
-    <string name="reprovision">이미지를 화면에 맞추기</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
     <string name="Lkm_install_methods">LKM 복구/설치</string>
@@ -313,8 +308,6 @@
     <string name="advanced_settings">고급 설정</string>
     <string name="appearance_settings">도구 모음 사용자 지정</string>
     <string name="back">뒤로</string>
-    <string name="background_set_success">배경이 성공적으로 설정되었습니다</string>
-    <string name="background_removed">사용자 지정 배경이 제거되었습니다</string>
     <!-- Webui X settings -->
     <!-- DPI setting related strings -->
     <string name="app_dpi_title">적용된 DPI</string>
@@ -332,7 +325,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">앱 언어</string>
     <string name="language_system_default">시스템 설정 따르기</string>
-    <string name="settings_card_dim">카드 어둡기 조정</string>
     <!-- Flash related -->
     <string name="error_code">오류 코드</string>
     <string name="check_log">로그를 확인하세요</string>

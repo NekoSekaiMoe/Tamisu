@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
-import android.net.Uri
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
@@ -23,8 +22,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.core.content.edit
 import me.dabao1955.tamisu.R
 import me.dabao1955.tamisu.ui.component.ConfirmResult
 import me.dabao1955.tamisu.ui.component.rememberConfirmDialog
@@ -51,9 +48,6 @@ class MoreSettingsHandlers(
 
     fun initializeSettings() {
         CardConfig.load(context)
-        state.cardAlpha = CardConfig.cardAlpha
-        state.cardDim = CardConfig.cardDim
-        state.isCustomBackgroundEnabled = ThemeConfig.customBackgroundUri != null
 
         state.themeMode = when (ThemeConfig.forceDarkMode) {
             true -> 2
@@ -174,62 +168,6 @@ class MoreSettingsHandlers(
             context.startActivity(restartIntent)
 
             state.showDpiConfirmDialog = false
-        }
-    }
-
-    fun handleCustomBackground(transformedUri: Uri) {
-        context.saveAndApplyCustomBackground(transformedUri)
-        state.isCustomBackgroundEnabled = true
-        CardConfig.cardElevation = 0.dp
-        CardConfig.isCustomBackgroundEnabled = true
-        saveCardConfig(context)
-
-        Toast.makeText(
-            context,
-            context.getString(R.string.background_set_success),
-            Toast.LENGTH_SHORT
-        ).show()
-    }
-
-    fun handleRemoveCustomBackground() {
-        context.saveCustomBackground(null)
-        state.isCustomBackgroundEnabled = false
-        CardConfig.cardAlpha = 1f
-        CardConfig.cardDim = 0f
-        CardConfig.isCustomAlphaSet = false
-        CardConfig.isCustomDimSet = false
-        CardConfig.isCustomBackgroundEnabled = false
-        saveCardConfig(context)
-        ThemeConfig.preventBackgroundRefresh = false
-
-        context.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE).edit {
-            putBoolean("prevent_background_refresh", false)
-        }
-
-        Toast.makeText(
-            context,
-            context.getString(R.string.background_removed),
-            Toast.LENGTH_SHORT
-        ).show()
-    }
-
-    fun handleCardAlphaChange(newValue: Float) {
-        state.cardAlpha = newValue
-        CardConfig.cardAlpha = newValue
-        CardConfig.isCustomAlphaSet = true
-        prefs.edit {
-            putBoolean("is_custom_alpha_set", true)
-            putFloat("card_alpha", newValue)
-        }
-    }
-
-    fun handleCardDimChange(newValue: Float) {
-        state.cardDim = newValue
-        CardConfig.cardDim = newValue
-        CardConfig.isCustomDimSet = true
-        prefs.edit {
-            putBoolean("is_custom_dim_set", true)
-            putFloat("card_dim", newValue)
         }
     }
 

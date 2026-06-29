@@ -7,7 +7,6 @@ import android.provider.Settings
 import androidx.core.content.edit
 import me.dabao1955.tamisu.ui.MainActivity
 import me.dabao1955.tamisu.ui.theme.CardConfig
-import me.dabao1955.tamisu.ui.theme.ThemeConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class ThemeChangeContentObserver(
@@ -31,10 +30,6 @@ object ThemeUtils {
         )
 
         if (isFirstRun) {
-            ThemeConfig.preventBackgroundRefresh = false
-            activity.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE).edit {
-                putBoolean("prevent_background_refresh", false)
-            }
             prefs.edit { putBoolean("is_first_run", false) }
         }
 
@@ -47,10 +42,7 @@ object ThemeUtils {
     fun registerThemeChangeObserver(activity: MainActivity): ThemeChangeContentObserver {
         val contentObserver = ThemeChangeContentObserver(Handler(activity.mainLooper)) {
             activity.runOnUiThread {
-                if (!ThemeConfig.preventBackgroundRefresh) {
-                    ThemeConfig.backgroundImageLoaded = false
-                    loadCustomBackground()
-                }
+                loadCustomBackground()
             }
         }
 
@@ -69,27 +61,24 @@ object ThemeUtils {
 
     fun onActivityPause(activity: MainActivity) {
         CardConfig.save(activity.applicationContext)
-        activity.getSharedPreferences("theme_prefs", Context.MODE_PRIVATE).edit {
-            putBoolean("prevent_background_refresh", true)
-        }
-        ThemeConfig.preventBackgroundRefresh = true
     }
 
     fun onActivityResume() {
-        if (!ThemeConfig.backgroundImageLoaded && !ThemeConfig.preventBackgroundRefresh) {
-            loadCustomBackground()
-        }
     }
 
+    @Suppress("unused")
     private fun loadThemeMode() {
     }
 
+    @Suppress("unused")
     private fun loadThemeColors() {
     }
 
+    @Suppress("unused")
     private fun loadDynamicColorState() {
     }
 
+    @Suppress("unused", "UNUSED_PARAMETER")
     private fun loadCustomBackground() {
     }
 }

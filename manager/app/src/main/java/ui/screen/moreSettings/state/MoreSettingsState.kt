@@ -2,17 +2,13 @@ package ui.screen.moreSettings.state
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.net.Uri
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import ui.screen.moreSettings.util.LocaleHelper
-import me.dabao1955.tamisu.Natives
 import me.dabao1955.tamisu.R
-import me.dabao1955.tamisu.ui.theme.CardConfig
 import me.dabao1955.tamisu.ui.theme.ThemeConfig
 
 @Stable
@@ -37,7 +33,6 @@ class MoreSettingsState(
     var showThemeModeDialog by mutableStateOf(false)
     var showThemeColorDialog by mutableStateOf(false)
     var showDpiConfirmDialog by mutableStateOf(false)
-    var showImageEditor by mutableStateOf(false)
 
     var isSimpleMode by mutableStateOf(prefs.getBoolean("is_simple_mode", false))
     var isHideVersion by mutableStateOf(prefs.getBoolean("is_hide_version", false))
@@ -53,12 +48,6 @@ class MoreSettingsState(
     var selinuxEnabled by mutableStateOf(false)
 
     var hideBlEnabled by mutableStateOf(false)
-
-    var cardAlpha by mutableFloatStateOf(CardConfig.cardAlpha)
-    var cardDim by mutableFloatStateOf(CardConfig.cardDim)
-    var isCustomBackgroundEnabled by mutableStateOf(ThemeConfig.customBackgroundUri != null)
-
-    var selectedImageUri by mutableStateOf<Uri?>(null)
 
     val systemDpi = context.resources.displayMetrics.densityDpi
     var currentDpi by mutableIntStateOf(prefs.getInt("app_dpi", systemDpi))

@@ -164,9 +164,6 @@
     <!-- Allowlist related -->
     <string name="backup_allowlist">备份应用列表</string>
     <string name="restore_allowlist">还原应用列表</string>
-    <string name="settings_custom_background">自定义背景</string>
-    <string name="settings_custom_background_summary">选择一张图片作为应用背景</string>
-    <string name="settings_card_alpha">卡片不透明度</string>
     <string name="home_android_version">Android 版本</string>
     <string name="home_device_model">设备型号</string>
     <string name="su_not_allowed">不允许授予 %s 超级用户权限</string>
@@ -216,8 +213,6 @@
     <string name="home_click_to_ContributionCard_kernelsu">Tamisu 是内核级 Zygisk 提供方（类似 ZygiskNext），而非 root 提供方。它与 KernelSU、Magisk 或 APatch 共存，只负责 zygote 注入，su / 应用档案 / 模块由 root 方案负责。</string>
     <string name="custom_settings">个性化设置</string>
     <string name="theme_color">主题颜色</string>
-    <string name="image_editor_hint">使用双指缩放图片，单指拖动调整位置</string>
-    <string name="reprovision">使图像适应屏幕</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
     <string name="Lkm_install_methods">LKM 修补/安装</string>
@@ -238,8 +233,6 @@
     <string name="advanced_settings">高级设置</string>
     <string name="appearance_settings">外观设置</string>
     <string name="back">返回</string>
-    <string name="background_set_success">背景设置成功</string>
-    <string name="background_removed">已移除自定义背景</string>
     <!-- Webui X settings -->
     <!-- DPI setting related strings -->
     <string name="app_dpi_title">应用 DPI</string>
@@ -257,7 +250,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">应用语言</string>
     <string name="language_system_default">跟随系统</string>
-    <string name="settings_card_dim">卡片暗度调节</string>
     <!-- Flash related -->
     <string name="error_code">错误代码</string>
     <string name="check_log">请查看日志</string>

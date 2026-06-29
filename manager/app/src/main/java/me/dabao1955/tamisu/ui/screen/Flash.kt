@@ -43,7 +43,6 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import me.dabao1955.tamisu.R
 import me.dabao1955.tamisu.ui.component.KeyEventBlocker
-import me.dabao1955.tamisu.ui.theme.CardConfig
 import me.dabao1955.tamisu.ui.util.*
 import me.dabao1955.tamisu.ui.util.module.ModuleUtils
 import me.dabao1955.tamisu.ui.viewmodel.ModuleViewModel
@@ -628,12 +627,7 @@ private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val cardColor = if (CardConfig.isCustomBackgroundEnabled) {
-        colorScheme.surfaceContainerLow
-    } else {
-        colorScheme.background
-    }
-    val cardAlpha = CardConfig.cardAlpha
+    val cardColor = colorScheme.background
 
     val statusColor = when(status) {
         FlashingStatus.FLASHING -> MaterialTheme.colorScheme.primary
@@ -675,8 +669,8 @@ private fun TopBar(
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = cardColor.copy(alpha = cardAlpha),
-            scrolledContainerColor = cardColor.copy(alpha = cardAlpha)
+            containerColor = cardColor,
+            scrolledContainerColor = cardColor
         ),
         actions = {
             IconButton(onClick = onSave) {

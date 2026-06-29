@@ -2,11 +2,7 @@ package ui.screen.moreSettings
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.net.Uri
 import android.os.Build
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.*
@@ -33,14 +29,10 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import ui.screen.moreSettings.util.LocaleHelper
 import me.dabao1955.tamisu.R
-import me.dabao1955.tamisu.ui.theme.component.ImageEditorDialog
 import me.dabao1955.tamisu.ui.component.KsuIsValid
 import me.dabao1955.tamisu.ui.theme.*
 import me.dabao1955.tamisu.ui.util.getFeatureStatus
 import androidx.compose.material.icons.rounded.EnhancedEncryption
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import ui.screen.moreSettings.component.ColorCircle
 import ui.screen.moreSettings.component.LanguageSelectionDialog
 import ui.screen.moreSettings.component.MoreSettingsDialogs
@@ -49,7 +41,6 @@ import ui.screen.moreSettings.component.SettingsCard
 import ui.screen.moreSettings.component.SettingsDivider
 import ui.screen.moreSettings.component.SwitchSettingItem
 import ui.screen.moreSettings.state.MoreSettingsState
-import kotlin.math.roundToInt
 
 @SuppressLint("LocalContextConfigurationRead", "LocalContextResourcesRead", "ObsoleteSdkInt")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -61,7 +52,6 @@ fun MoreSettingsScreen(
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
     val snackBarHost = remember { SnackbarHostState() }
     val prefs = remember { context.getSharedPreferences("settings", Context.MODE_PRIVATE) }
     val systemIsDark = isSystemInDarkTheme()
@@ -71,34 +61,8 @@ fun MoreSettingsScreen(
     val settingsHandlers = remember { MoreSettingsHandlers(context, prefs, settingsState) }
 
 
-    val pickImageLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            settingsState.selectedImageUri = it
-            settingsState.showImageEditor = true
-        }
-    }
-
-
     LaunchedEffect(Unit) {
         settingsHandlers.initializeSettings()
-    }
-
-
-    if (settingsState.showImageEditor && settingsState.selectedImageUri != null) {
-        ImageEditorDialog(
-            imageUri = settingsState.selectedImageUri!!,
-            onDismiss = {
-                settingsState.showImageEditor = false
-                settingsState.selectedImageUri = null
-            },
-            onConfirm = { transformedUri ->
-                settingsHandlers.handleCustomBackground(transformedUri)
-                settingsState.showImageEditor = false
-                settingsState.selectedImageUri = null
-            }
-        )
     }
 
 
@@ -126,8 +90,8 @@ fun MoreSettingsScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = CardConfig.cardAlpha),
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow.copy(alpha = CardConfig.cardAlpha)
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow
                 ),
                 windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
                 scrollBehavior = scrollBehavior
@@ -147,9 +111,7 @@ fun MoreSettingsScreen(
 
             AppearanceSettings(
                 state = settingsState,
-                handlers = settingsHandlers,
-                pickImageLauncher = pickImageLauncher,
-                coroutineScope = coroutineScope
+                handlers = settingsHandlers
             )
 
 
@@ -173,9 +135,7 @@ fun MoreSettingsScreen(
 @Composable
 private fun AppearanceSettings(
     state: MoreSettingsState,
-    handlers: MoreSettingsHandlers,
-    pickImageLauncher: ActivityResultLauncher<String>,
-    coroutineScope: CoroutineScope
+    handlers: MoreSettingsHandlers
 ) {
     SettingsCard(title = stringResource(R.string.appearance_settings)) {
 
@@ -213,16 +173,6 @@ private fun AppearanceSettings(
 
 
         DpiSettings(state = state, handlers = handlers)
-
-        SettingsDivider()
-
-
-        CustomBackgroundSettings(
-            state = state,
-            handlers = handlers,
-            pickImageLauncher = pickImageLauncher,
-            coroutineScope = coroutineScope
-        )
     }
 }
 
@@ -523,163 +473,6 @@ private fun DpiSliderControls(
             Text(stringResource(R.string.dpi_apply_settings))
         }
     }
-}
-
-@Composable
-private fun CustomBackgroundSettings(
-    state: MoreSettingsState,
-    handlers: MoreSettingsHandlers,
-    pickImageLauncher: ActivityResultLauncher<String>,
-    coroutineScope: CoroutineScope
-) {
-    SwitchSettingItem(
-        icon = Icons.Filled.Wallpaper,
-        title = stringResource(id = R.string.settings_custom_background),
-        summary = stringResource(id = R.string.settings_custom_background_summary),
-        checked = state.isCustomBackgroundEnabled,
-        onChange = { isChecked ->
-            if (isChecked) {
-                pickImageLauncher.launch("image/*")
-            } else {
-                handlers.handleRemoveCustomBackground()
-            }
-        }
-    )
-
-    AnimatedVisibility(
-        visible = ThemeConfig.customBackgroundUri != null,
-        enter = fadeIn() + slideInVertically(),
-        exit = fadeOut() + slideOutVertically()
-    ) {
-        BackgroundAdjustmentControls(
-            state = state,
-            handlers = handlers,
-            coroutineScope = coroutineScope
-        )
-    }
-}
-
-@Composable
-private fun BackgroundAdjustmentControls(
-    state: MoreSettingsState,
-    handlers: MoreSettingsHandlers,
-    coroutineScope: CoroutineScope
-) {
-    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-        AlphaSlider(state = state, handlers = handlers, coroutineScope = coroutineScope)
-
-        DimSlider(state = state, handlers = handlers, coroutineScope = coroutineScope)
-    }
-}
-
-@Composable
-private fun AlphaSlider(
-    state: MoreSettingsState,
-    handlers: MoreSettingsHandlers,
-    coroutineScope: CoroutineScope
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(bottom = 4.dp)
-    ) {
-        Icon(
-            Icons.Filled.Opacity,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = stringResource(R.string.settings_card_alpha),
-            style = MaterialTheme.typography.titleSmall
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Text(
-            text = "${(state.cardAlpha * 100).roundToInt()}%",
-            style = MaterialTheme.typography.labelMedium,
-        )
-    }
-
-    val alphaSliderValue by animateFloatAsState(
-        targetValue = state.cardAlpha,
-        label = "Alpha Slider Animation"
-    )
-
-    Slider(
-        value = alphaSliderValue,
-        onValueChange = { newValue ->
-            handlers.handleCardAlphaChange(newValue)
-        },
-        onValueChangeFinished = {
-            coroutineScope.launch(Dispatchers.IO) {
-                saveCardConfig(handlers.context)
-            }
-        },
-        valueRange = 0f..1f,
-        steps = 20,
-        colors = SliderDefaults.colors(
-            thumbColor = MaterialTheme.colorScheme.primary,
-            activeTrackColor = MaterialTheme.colorScheme.primary,
-            inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    )
-}
-
-@Composable
-private fun DimSlider(
-    state: MoreSettingsState,
-    handlers: MoreSettingsHandlers,
-    coroutineScope: CoroutineScope
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
-    ) {
-        Icon(
-            Icons.Filled.LightMode,
-            contentDescription = null,
-            modifier = Modifier.size(20.dp),
-            tint = MaterialTheme.colorScheme.primary
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = stringResource(R.string.settings_card_dim),
-            style = MaterialTheme.typography.titleSmall
-        )
-        Spacer(modifier = Modifier.weight(1f))
-        Text(
-            text = "${(state.cardDim * 100).roundToInt()}%",
-            style = MaterialTheme.typography.labelMedium,
-        )
-    }
-
-    val dimSliderValue by animateFloatAsState(
-        targetValue = state.cardDim,
-        label = "Dim Slider Animation"
-    )
-
-    Slider(
-        value = dimSliderValue,
-        onValueChange = { newValue ->
-            handlers.handleCardDimChange(newValue)
-        },
-        onValueChangeFinished = {
-            coroutineScope.launch(Dispatchers.IO) {
-                saveCardConfig(handlers.context)
-            }
-        },
-        valueRange = 0f..1f,
-        steps = 20,
-        colors = SliderDefaults.colors(
-            thumbColor = MaterialTheme.colorScheme.primary,
-            activeTrackColor = MaterialTheme.colorScheme.primary,
-            inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    )
-}
-
-fun saveCardConfig(context: Context) {
-    CardConfig.save(context)
 }
 
 @Composable

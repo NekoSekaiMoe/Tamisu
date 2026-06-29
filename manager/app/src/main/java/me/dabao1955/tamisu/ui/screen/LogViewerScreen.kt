@@ -30,8 +30,6 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import me.dabao1955.tamisu.R
 import me.dabao1955.tamisu.ui.component.*
-import me.dabao1955.tamisu.ui.theme.CardConfig
-import me.dabao1955.tamisu.ui.theme.CardConfig.cardAlpha
 import me.dabao1955.tamisu.ui.theme.getCardColors
 import me.dabao1955.tamisu.ui.theme.getCardElevation
 import me.dabao1955.tamisu.ui.util.*
@@ -1109,11 +1107,7 @@ private fun LogViewerTopBar(
     onClearLogs: () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val cardColor = if (CardConfig.isCustomBackgroundEnabled) {
-        colorScheme.surfaceContainerLow
-    } else {
-        colorScheme.background
-    }
+    val cardColor = colorScheme.background
 
     Column {
         TopAppBar(
@@ -1152,8 +1146,8 @@ private fun LogViewerTopBar(
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = cardColor.copy(alpha = cardAlpha),
-                scrolledContainerColor = cardColor.copy(alpha = cardAlpha)
+                containerColor = cardColor,
+                scrolledContainerColor = cardColor
             ),
             windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
             scrollBehavior = scrollBehavior

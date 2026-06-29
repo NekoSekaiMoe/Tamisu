@@ -34,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -60,10 +59,6 @@ import me.dabao1955.tamisu.ui.component.SuperDropdown
 import me.dabao1955.tamisu.ui.component.rememberConfirmDialog
 import me.dabao1955.tamisu.ui.component.rememberCustomDialog
 import me.dabao1955.tamisu.ui.component.rememberLoadingDialog
-import me.dabao1955.tamisu.ui.theme.CardConfig
-import me.dabao1955.tamisu.ui.theme.CardConfig.cardAlpha
-import me.dabao1955.tamisu.ui.theme.CardConfig.cardElevation
-import me.dabao1955.tamisu.ui.theme.ThemeConfig
 import me.dabao1955.tamisu.ui.theme.ThemeColors
 import me.dabao1955.tamisu.ui.theme.ThemeManager
 import me.dabao1955.tamisu.ui.theme.getCardColors
@@ -737,7 +732,7 @@ private fun SelectInstallMethod(
             ) {
                 MaterialTheme(
                     colorScheme = MaterialTheme.colorScheme.copy(
-                        surface = if (CardConfig.isCustomBackgroundEnabled) Color.Transparent else MaterialTheme.colorScheme.surfaceVariant
+                        surface = MaterialTheme.colorScheme.surfaceVariant
                     )
                 ) {
                     ListItem(
@@ -768,9 +763,9 @@ private fun SelectInstallMethod(
                             val interactionSource = remember { MutableInteractionSource() }
                             Surface(
                                 color = if (option.javaClass == selectedOption?.javaClass)
-                                    MaterialTheme.colorScheme.secondaryContainer.copy(alpha = cardAlpha)
+                                    MaterialTheme.colorScheme.secondaryContainer
                                 else
-                                    MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = cardAlpha),
+                                    MaterialTheme.colorScheme.surfaceContainerHighest,
                                 shape = MaterialTheme.shapes.medium,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -867,12 +862,7 @@ private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val cardColor = if (CardConfig.isCustomBackgroundEnabled) {
-        colorScheme.surfaceContainerLow
-    } else {
-        colorScheme.background
-    }
-    val cardAlpha = cardAlpha
+    val cardColor = colorScheme.background
 
     TopAppBar(
         title = {
@@ -882,8 +872,8 @@ private fun TopBar(
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = cardColor.copy(alpha = cardAlpha),
-            scrolledContainerColor = cardColor.copy(alpha = cardAlpha)
+            containerColor = cardColor,
+            scrolledContainerColor = cardColor
         ),
         navigationIcon = {
             IconButton(onClick = onBack) {

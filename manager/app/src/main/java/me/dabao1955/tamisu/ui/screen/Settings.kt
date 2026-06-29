@@ -44,8 +44,6 @@ import me.dabao1955.tamisu.BuildConfig
 import me.dabao1955.tamisu.Natives
 import me.dabao1955.tamisu.R
 import me.dabao1955.tamisu.ui.component.*
-import me.dabao1955.tamisu.ui.theme.CardConfig
-import me.dabao1955.tamisu.ui.theme.CardConfig.cardAlpha
 import me.dabao1955.tamisu.ui.theme.getCardColors
 import me.dabao1955.tamisu.ui.theme.getCardElevation
 import me.dabao1955.tamisu.ui.util.*
@@ -686,11 +684,7 @@ private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val cardColor = if (CardConfig.isCustomBackgroundEnabled) {
-        colorScheme.surfaceContainerLow
-    } else {
-        colorScheme.background
-    }
+    val cardColor = colorScheme.background
     TopAppBar(
         title = {
             Text(
@@ -699,8 +693,8 @@ private fun TopBar(
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = cardColor.copy(alpha = cardAlpha),
-            scrolledContainerColor = cardColor.copy(alpha = cardAlpha)
+            containerColor = cardColor,
+            scrolledContainerColor = cardColor
         ),
         windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         scrollBehavior = scrollBehavior

@@ -168,9 +168,6 @@
     <!-- Allowlist related -->
     <string name="backup_allowlist">Backup Allowlist</string>
     <string name="restore_allowlist">Restore Allowlist</string>
-    <string name="settings_custom_background">Custom App Background</string>
-    <string name="settings_custom_background_summary">Select an image as background</string>
-    <string name="settings_card_alpha">Navigation bar transparency</string>
     <string name="home_android_version">Android version</string>
     <string name="home_device_model">Device model</string>
     <string name="su_not_allowed">Granting superuser to %s is not allowed</string>
@@ -220,8 +217,6 @@
     <string name="home_click_to_ContributionCard_kernelsu">Tamisu is a kernel-level Zygisk provider (à la ZygiskNext), not a root provider. It coexists with KernelSU, Magisk, or APatch, owning only zygote injection while the root solution owns su, app profile, and modules.</string>
     <string name="custom_settings">Custom settings</string>
     <string name="theme_color">Theme Color</string>
-    <string name="image_editor_hint">Use two fingers to zoom the image, and one finger to drag it to adjust the position</string>
-    <string name="reprovision">Fit image to screen</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
     <string name="Lkm_install_methods">LKM repair/installation</string>
@@ -242,8 +237,6 @@
     <string name="advanced_settings">Advanced Settings</string>
     <string name="appearance_settings">Customize the toolbar</string>
     <string name="back">Comeback</string>
-    <string name="background_set_success">Background set successfully</string>
-    <string name="background_removed">Removed custom backgrounds</string>
     <!-- Webui X settings -->
     <!-- DPI setting related strings -->
     <string name="app_dpi_title">Applied DPI</string>
@@ -261,7 +254,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">App Language</string>
     <string name="language_system_default">Follow System</string>
-    <string name="settings_card_dim">Card Darkness Adjustment</string>
     <!-- Flash related -->
     <string name="error_code">error code</string>
     <string name="check_log">Please check the log</string>

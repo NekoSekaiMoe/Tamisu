@@ -235,9 +235,6 @@
     <string name="allowlist_restore_failed">La restauration de la liste d\'autorisations a échoué : %1$s</string>
     <string name="backup_allowlist">Sauvegarder la liste blanche</string>
     <string name="restore_allowlist">Restaurer la liste blanche</string>
-    <string name="settings_custom_background">Arrière-plan personnalisé de l\'application</string>
-    <string name="settings_custom_background_summary">Sélectionnez une image comme arrière-plan</string>
-    <string name="settings_card_alpha">Transparence de la barre de navigation</string>
     <string name="home_android_version">Version Android</string>
     <string name="home_device_model">Modèle du téléphone</string>
     <string name="su_not_allowed">Donner un super-utilisateur à %s n\'est pas autorisé</string>
@@ -293,8 +290,6 @@
     <string name="home_click_to_ContributionCard_kernelsu">Tamisu est une branche KSU extrêmement agressive et indépendante, mais nous remercions toujours le projet officiel KernelSU, SukiSU, Magisk, APatch et autres pour leurs contributions.</string>
     <string name="custom_settings">Paramètres personnalisés</string>
     <string name="theme_color">Couleur du thème</string>
-    <string name="image_editor_hint">Utilisez deux doigts pour zoomer l\'image, et un doigt pour le faire glisser pour ajuster la position</string>
-    <string name="reprovision">Ajuster l\'image à l\'écran</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
     <string name="Lkm_install_methods">Réparation/installation LKM</string>
@@ -315,8 +310,6 @@
     <string name="advanced_settings">Paramètres avancés</string>
     <string name="appearance_settings">Choisir les boutons à afficher</string>
     <string name="back">Reviens</string>
-    <string name="background_set_success">Fond d\'écran défini avec succès</string>
-    <string name="background_removed">Fond d\'écran personnalisé supprimé</string>
     <!-- Webui X settings -->
     <!-- DPI setting related strings -->
     <string name="app_dpi_title">DPI appliqué</string>
@@ -334,7 +327,6 @@
     <!-- Language settings related strings -->
     <string name="settings_language">Langue de l\'application</string>
     <string name="language_system_default">Suivre le paramètre système</string>
-    <string name="settings_card_dim">Ajustement de l\'obscurité de la carte</string>
     <!-- Flash related -->
     <string name="error_code">code d\'erreur</string>
     <string name="check_log">Veuillez vérifier le journal</string>
