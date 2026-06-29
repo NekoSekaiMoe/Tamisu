@@ -15,7 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.dabao1955.tamisu.BuildConfig
 import me.dabao1955.tamisu.Natives
-import me.dabao1955.tamisu.ui.util.HanziToPinyin
 import me.dabao1955.tamisu.ui.util.listModules
 import me.dabao1955.tamisu.ui.util.getRootShell
 import me.dabao1955.tamisu.ui.util.getFeatureValue
@@ -130,8 +129,7 @@ class ModuleViewModel : ViewModel() {
                 { if (sortActionFirst) !(it.hasWebUi || it.hasActionScript) else 0 },
             ).thenBy(Collator.getInstance(Locale.getDefault()), ModuleInfo::id)
         modules.filter {
-            it.id.contains(search, true) || it.name.contains(search, true) || HanziToPinyin.getInstance()
-                .toPinyinString(it.name)?.contains(search, true) == true
+            it.id.contains(search, true) || it.name.contains(search, true)
         }.sortedWith(comparator)
     }
 
