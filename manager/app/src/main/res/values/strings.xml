@@ -200,15 +200,6 @@
     <string name="theme_dark">Dark</string>
     <string name="dynamic_color_title">Dynamic colours</string>
     <string name="dynamic_color_summary">Dynamic colours using system themes</string>
-    <string name="choose_theme_color">Choose a theme colour</string>
-    <string name="color_default">Blue</string>
-    <string name="color_green">Green</string>
-    <string name="color_purple">Purple</string>
-    <string name="color_orange">Orange</string>
-    <string name="color_pink">Pink</string>
-    <string name="color_gray">Gray</string>
-    <string name="color_yellow">Yellow</string>
-    <string name="color_trans_pride">Trans Pride</string>
     <string name="reboot_complete_title">Scrubbing complete</string>
     <string name="reboot_complete_msg">Whether to reboot immediately？</string>
     <string name="yes">Yes</string>
@@ -216,7 +207,6 @@
     <string name="home_ContributionCard_kernelsu">Tamisu</string>
     <string name="home_click_to_ContributionCard_kernelsu">Tamisu is a kernel-level Zygisk provider (à la ZygiskNext), not a root provider. It coexists with KernelSU, Magisk, or APatch, owning only zygote injection while the root solution owns su, app profile, and modules.</string>
     <string name="custom_settings">Custom settings</string>
-    <string name="theme_color">Theme Color</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
     <string name="Lkm_install_methods">LKM repair/installation</string>

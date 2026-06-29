@@ -3,9 +3,6 @@ package ui.screen.moreSettings.component
 import android.content.Context
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.setValue
@@ -13,7 +10,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
 import com.maxkeppeker.sheets.core.models.base.Header
@@ -23,7 +19,6 @@ import com.maxkeppeler.sheets.list.models.ListOption
 import com.maxkeppeler.sheets.list.models.ListSelection
 import ui.screen.moreSettings.util.LocaleHelper
 import me.dabao1955.tamisu.R
-import me.dabao1955.tamisu.ui.theme.*
 import ui.screen.moreSettings.MoreSettingsHandlers
 import ui.screen.moreSettings.state.MoreSettingsState
 
@@ -56,16 +51,6 @@ fun MoreSettingsDialogs(
                 state.showDpiConfirmDialog = false
                 state.tempDpi = state.currentDpi
             }
-        )
-    }
-
-    if (state.showThemeColorDialog) {
-        ThemeColorDialog(
-            onColorSelected = { theme ->
-                handlers.handleThemeColorChange(theme)
-                state.showThemeColorDialog = false
-            },
-            onDismiss = { state.showThemeColorDialog = false }
         )
     }
 }
@@ -278,75 +263,4 @@ fun LanguageSelectionDialog(
         )
     }
 }
-@Composable
-fun ThemeColorDialog(
-    onColorSelected: (ThemeColors) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val themeColorOptions = listOf(
-        stringResource(R.string.color_default) to ThemeColors.Default,
-        stringResource(R.string.color_green) to ThemeColors.Green,
-        stringResource(R.string.color_purple) to ThemeColors.Purple,
-        stringResource(R.string.color_orange) to ThemeColors.Orange,
-        stringResource(R.string.color_pink) to ThemeColors.Pink,
-        stringResource(R.string.color_gray) to ThemeColors.Gray,
-        stringResource(R.string.color_yellow) to ThemeColors.Yellow
-    )
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.choose_theme_color)) },
-        text = {
-            Column {
-                themeColorOptions.forEach { (name, theme) ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { onColorSelected(theme) }
-                            .padding(vertical = 12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        val isDark = isSystemInDarkTheme()
-                        Box(
-                            modifier = Modifier.padding(end = 12.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                ColorCircle(
-                                    color = if (isDark) theme.primaryDark else theme.primaryLight,
-                                    isSelected = false,
-                                    modifier = Modifier.padding(horizontal = 2.dp)
-                                )
-                                ColorCircle(
-                                    color = if (isDark) theme.secondaryDark else theme.secondaryLight,
-                                    isSelected = false,
-                                    modifier = Modifier.padding(horizontal = 2.dp)
-                                )
-                                ColorCircle(
-                                    color = if (isDark) theme.tertiaryDark else theme.tertiaryLight,
-                                    isSelected = false,
-                                    modifier = Modifier.padding(horizontal = 2.dp)
-                                )
-                            }
-                        }
-                        Text(name)
-                        Spacer(modifier = Modifier.weight(1f))
-                        if (ThemeConfig.currentTheme::class == theme::class) {
-                            Icon(
-                                Icons.Default.Check,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = onDismiss
-            ) {
-                Text(stringResource(R.string.cancel))
-            }
-        }
-    )
-}

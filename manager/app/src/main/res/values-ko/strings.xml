@@ -271,15 +271,6 @@
     <string name="theme_dark">어둡게</string>
     <string name="dynamic_color_title">동적 색상</string>
     <string name="dynamic_color_summary">시스템 테마를 사용한 동적 색상</string>
-    <string name="choose_theme_color">테마 색상 선택</string>
-    <string name="color_default">파랑</string>
-    <string name="color_green">초록</string>
-    <string name="color_purple">보라</string>
-    <string name="color_orange">주황</string>
-    <string name="color_pink">분홍</string>
-    <string name="color_gray">회색</string>
-    <string name="color_yellow">노랑</string>
-    <string name="color_trans_pride">Trans Pride</string>
     <string name="reboot_complete_title">정리 완료</string>
     <string name="reboot_complete_msg">지금 바로 재부팅하시겠습니까?</string>
     <string name="yes">예</string>
@@ -287,7 +278,6 @@
     <string name="home_ContributionCard_kernelsu">Tamisu 비전</string>
     <string name="home_click_to_ContributionCard_kernelsu">Tamisu는 매우 공격적이고 독립적인 KSU 브랜치이지만 공식 KernelSU 프로젝트, SukiSU, Magisk, APatch 및 기타 기여에 감사드립니다.</string>
     <string name="custom_settings">사용자 지정 설정</string>
-    <string name="theme_color">테마 색상</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
     <string name="Lkm_install_methods">LKM 복구/설치</string>

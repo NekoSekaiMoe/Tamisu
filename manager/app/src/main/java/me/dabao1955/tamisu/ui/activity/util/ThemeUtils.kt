@@ -34,7 +34,6 @@ object ThemeUtils {
         }
 
         loadThemeMode()
-        loadThemeColors()
         loadDynamicColorState()
         CardConfig.load(activity.applicationContext)
     }
@@ -68,10 +67,6 @@ object ThemeUtils {
 
     @Suppress("unused")
     private fun loadThemeMode() {
-    }
-
-    @Suppress("unused")
-    private fun loadThemeColors() {
     }
 
     @Suppress("unused")

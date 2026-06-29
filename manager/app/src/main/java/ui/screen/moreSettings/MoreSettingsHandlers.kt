@@ -119,20 +119,6 @@ class MoreSettingsHandlers(
         }
     }
 
-    fun handleThemeColorChange(theme: ThemeColors) {
-        context.saveThemeColors(when (theme) {
-            ThemeColors.Green -> "green"
-            ThemeColors.Purple -> "purple"
-            ThemeColors.Orange -> "orange"
-            ThemeColors.Pink -> "pink"
-            ThemeColors.Gray -> "gray"
-            ThemeColors.Yellow -> "yellow"
-            ThemeColors.TransPride -> "trans"
-            else -> "default"
-        })
-        ThemeConfig.updateTheme(theme = theme)
-    }
-
     fun handleDynamicColorChange(enabled: Boolean) {
         state.useDynamicColor = enabled
         context.saveDynamicColorState(enabled)

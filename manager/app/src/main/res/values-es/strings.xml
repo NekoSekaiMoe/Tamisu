@@ -271,15 +271,6 @@
     <string name="theme_dark">Oscuro</string>
     <string name="dynamic_color_title">Color dinámico</string>
     <string name="dynamic_color_summary">Colores dinámicos usando temas del sistema</string>
-    <string name="choose_theme_color">Elegir un color de tema</string>
-    <string name="color_default">Azul</string>
-    <string name="color_green">Verde</string>
-    <string name="color_purple">Morado</string>
-    <string name="color_orange">Naranja</string>
-    <string name="color_pink">Rosa</string>
-    <string name="color_gray">Gris</string>
-    <string name="color_yellow">Amarillo</string>
-    <string name="color_trans_pride">Trans Pride</string>
     <string name="reboot_complete_title">Desguace completo</string>
     <string name="reboot_complete_msg">¿Reiniciar inmediatamente?</string>
     <string name="yes">Si</string>
@@ -287,7 +278,6 @@
     <string name="home_ContributionCard_kernelsu">Tamisu Visión</string>
     <string name="home_click_to_ContributionCard_kernelsu">Tamisu es una rama KSU extremadamente agresiva e independiente, pero aún así agradecemos al proyecto oficial KernelSU, SukiSU, Magisk, APatch y otros por sus contribuciones.</string>
     <string name="custom_settings">Ajustes personalizados</string>
-    <string name="theme_color">Color del tema</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
     <string name="Lkm_install_methods">Reparación/instalación de LKM</string>

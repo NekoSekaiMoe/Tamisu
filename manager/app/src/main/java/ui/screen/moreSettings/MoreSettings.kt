@@ -3,7 +3,6 @@ package ui.screen.moreSettings
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
-import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -33,7 +32,6 @@ import me.dabao1955.tamisu.ui.component.KsuIsValid
 import me.dabao1955.tamisu.ui.theme.*
 import me.dabao1955.tamisu.ui.util.getFeatureStatus
 import androidx.compose.material.icons.rounded.EnhancedEncryption
-import ui.screen.moreSettings.component.ColorCircle
 import ui.screen.moreSettings.component.LanguageSelectionDialog
 import ui.screen.moreSettings.component.MoreSettingsDialogs
 import ui.screen.moreSettings.component.SettingItem
@@ -158,15 +156,6 @@ private fun AppearanceSettings(
                 checked = state.useDynamicColor,
                 onChange = handlers::handleDynamicColorChange
             )
-        }
-
-
-        AnimatedVisibility(
-            visible = Build.VERSION.SDK_INT < Build.VERSION_CODES.S || !state.useDynamicColor,
-            enter = fadeIn() + expandVertically(),
-            exit = fadeOut() + shrinkVertically()
-        ) {
-            ThemeColorSelection(state = state)
         }
 
         SettingsDivider()
@@ -314,50 +303,6 @@ private fun AdvancedSettings(
     }
 }
     }
-}
-
-@Composable
-private fun ThemeColorSelection(state: MoreSettingsState) {
-    SettingItem(
-        icon = Icons.Default.Palette,
-        title = stringResource(R.string.theme_color),
-        subtitle = when (ThemeConfig.currentTheme) {
-            is ThemeColors.Green -> stringResource(R.string.color_green)
-            is ThemeColors.Purple -> stringResource(R.string.color_purple)
-            is ThemeColors.Orange -> stringResource(R.string.color_orange)
-            is ThemeColors.Pink -> stringResource(R.string.color_pink)
-            is ThemeColors.Gray -> stringResource(R.string.color_gray)
-            is ThemeColors.Yellow -> stringResource(R.string.color_yellow)
-            is ThemeColors.TransPride -> stringResource(R.string.color_trans_pride)  // 🏳️‍⚧️
-            else -> stringResource(R.string.color_default)
-        },
-        onClick = { state.showThemeColorDialog = true },
-        trailingContent = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(start = 8.dp)
-            ) {
-                val theme = ThemeConfig.currentTheme
-                val isDark = isSystemInDarkTheme()
-
-                ColorCircle(
-                    color = if (isDark) theme.primaryDark else theme.primaryLight,
-                    isSelected = false,
-                    modifier = Modifier.padding(horizontal = 2.dp)
-                )
-                ColorCircle(
-                    color = if (isDark) theme.secondaryDark else theme.secondaryLight,
-                    isSelected = false,
-                    modifier = Modifier.padding(horizontal = 2.dp)
-                )
-                ColorCircle(
-                    color = if (isDark) theme.tertiaryDark else theme.tertiaryLight,
-                    isSelected = false,
-                    modifier = Modifier.padding(horizontal = 2.dp)
-                )
-            }
-        }
-    )
 }
 
 @Composable

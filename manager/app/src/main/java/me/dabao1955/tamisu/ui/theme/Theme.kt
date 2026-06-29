@@ -21,7 +21,6 @@ import androidx.core.content.edit
 @Stable
 object ThemeConfig {
     var forceDarkMode by mutableStateOf<Boolean?>(null)
-    var currentTheme by mutableStateOf<ThemeColors>(ThemeColors.Default)
     var useDynamicColor by mutableStateOf(false)
 
     private var lastDarkModeState: Boolean? = null
@@ -33,18 +32,15 @@ object ThemeConfig {
     }
 
     fun updateTheme(
-        theme: ThemeColors? = null,
         dynamicColor: Boolean? = null,
         darkMode: Boolean? = null
     ) {
-        theme?.let { currentTheme = it }
         dynamicColor?.let { useDynamicColor = it }
         darkMode?.let { forceDarkMode = it }
     }
 
     fun reset() {
         forceDarkMode = null
-        currentTheme = ThemeColors.Default
         useDynamicColor = false
         lastDarkModeState = null
     }
@@ -73,19 +69,6 @@ object ThemeManager {
             "light" -> false
             else -> null
         }
-    }
-
-    fun saveThemeColors(context: Context, themeName: String) {
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
-            putString("theme_colors", themeName)
-        }
-        ThemeConfig.currentTheme = ThemeColors.fromName(themeName)
-    }
-
-    fun loadThemeColors(context: Context) {
-        val themeName = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString("theme_colors", "default") ?: "default"
-        ThemeConfig.currentTheme = ThemeColors.fromName(themeName)
     }
 
     fun saveDynamicColorState(context: Context, enabled: Boolean) {
@@ -142,7 +125,6 @@ fun KernelSUTheme(
 private fun ThemeInitializer(context: Context, systemIsDark: Boolean) {
     LaunchedEffect(Unit) {
         ThemeManager.loadThemeMode(context)
-        ThemeManager.loadThemeColors(context)
         ThemeManager.loadDynamicColorState(context)
         CardConfig.load(context)
     }
@@ -201,90 +183,85 @@ private fun createDynamicLightColorScheme(context: Context): ColorScheme {
 
 @Composable
 private fun createDarkColorScheme() = darkColorScheme(
-    primary = ThemeConfig.currentTheme.primaryDark,
-    onPrimary = ThemeConfig.currentTheme.onPrimaryDark,
-    primaryContainer = ThemeConfig.currentTheme.primaryContainerDark,
-    onPrimaryContainer = ThemeConfig.currentTheme.onPrimaryContainerDark,
-    secondary = ThemeConfig.currentTheme.secondaryDark,
-    onSecondary = ThemeConfig.currentTheme.onSecondaryDark,
-    secondaryContainer = ThemeConfig.currentTheme.secondaryContainerDark,
-    onSecondaryContainer = ThemeConfig.currentTheme.onSecondaryContainerDark,
-    tertiary = ThemeConfig.currentTheme.tertiaryDark,
-    onTertiary = ThemeConfig.currentTheme.onTertiaryDark,
-    tertiaryContainer = ThemeConfig.currentTheme.tertiaryContainerDark,
-    onTertiaryContainer = ThemeConfig.currentTheme.onTertiaryContainerDark,
-    error = ThemeConfig.currentTheme.errorDark,
-    onError = ThemeConfig.currentTheme.onErrorDark,
-    errorContainer = ThemeConfig.currentTheme.errorContainerDark,
-    onErrorContainer = ThemeConfig.currentTheme.onErrorContainerDark,
-    background = ThemeConfig.currentTheme.backgroundDark,
-    onBackground = ThemeConfig.currentTheme.onBackgroundDark,
-    surface = ThemeConfig.currentTheme.surfaceDark,
-    onSurface = ThemeConfig.currentTheme.onSurfaceDark,
-    surfaceVariant = ThemeConfig.currentTheme.surfaceVariantDark,
-    onSurfaceVariant = ThemeConfig.currentTheme.onSurfaceVariantDark,
-    outline = ThemeConfig.currentTheme.outlineDark,
-    outlineVariant = ThemeConfig.currentTheme.outlineVariantDark,
-    scrim = ThemeConfig.currentTheme.scrimDark,
-    inverseSurface = ThemeConfig.currentTheme.inverseSurfaceDark,
-    inverseOnSurface = ThemeConfig.currentTheme.inverseOnSurfaceDark,
-    inversePrimary = ThemeConfig.currentTheme.inversePrimaryDark,
-    surfaceDim = ThemeConfig.currentTheme.surfaceDimDark,
-    surfaceBright = ThemeConfig.currentTheme.surfaceBrightDark,
-    surfaceContainerLowest = ThemeConfig.currentTheme.surfaceContainerLowestDark,
-    surfaceContainerLow = ThemeConfig.currentTheme.surfaceContainerLowDark,
-    surfaceContainer = ThemeConfig.currentTheme.surfaceContainerDark,
-    surfaceContainerHigh = ThemeConfig.currentTheme.surfaceContainerHighDark,
-    surfaceContainerHighest = ThemeConfig.currentTheme.surfaceContainerHighestDark,
+    primary = ThemeColors.Default.primaryDark,
+    onPrimary = ThemeColors.Default.onPrimaryDark,
+    primaryContainer = ThemeColors.Default.primaryContainerDark,
+    onPrimaryContainer = ThemeColors.Default.onPrimaryContainerDark,
+    secondary = ThemeColors.Default.secondaryDark,
+    onSecondary = ThemeColors.Default.onSecondaryDark,
+    secondaryContainer = ThemeColors.Default.secondaryContainerDark,
+    onSecondaryContainer = ThemeColors.Default.onSecondaryContainerDark,
+    tertiary = ThemeColors.Default.tertiaryDark,
+    onTertiary = ThemeColors.Default.onTertiaryDark,
+    tertiaryContainer = ThemeColors.Default.tertiaryContainerDark,
+    onTertiaryContainer = ThemeColors.Default.onTertiaryContainerDark,
+    error = ThemeColors.Default.errorDark,
+    onError = ThemeColors.Default.onErrorDark,
+    errorContainer = ThemeColors.Default.errorContainerDark,
+    onErrorContainer = ThemeColors.Default.onErrorContainerDark,
+    background = ThemeColors.Default.backgroundDark,
+    onBackground = ThemeColors.Default.onBackgroundDark,
+    surface = ThemeColors.Default.surfaceDark,
+    onSurface = ThemeColors.Default.onSurfaceDark,
+    surfaceVariant = ThemeColors.Default.surfaceVariantDark,
+    onSurfaceVariant = ThemeColors.Default.onSurfaceVariantDark,
+    outline = ThemeColors.Default.outlineDark,
+    outlineVariant = ThemeColors.Default.outlineVariantDark,
+    scrim = ThemeColors.Default.scrimDark,
+    inverseSurface = ThemeColors.Default.inverseSurfaceDark,
+    inverseOnSurface = ThemeColors.Default.inverseOnSurfaceDark,
+    inversePrimary = ThemeColors.Default.inversePrimaryDark,
+    surfaceDim = ThemeColors.Default.surfaceDimDark,
+    surfaceBright = ThemeColors.Default.surfaceBrightDark,
+    surfaceContainerLowest = ThemeColors.Default.surfaceContainerLowestDark,
+    surfaceContainerLow = ThemeColors.Default.surfaceContainerLowDark,
+    surfaceContainer = ThemeColors.Default.surfaceContainerDark,
+    surfaceContainerHigh = ThemeColors.Default.surfaceContainerHighDark,
+    surfaceContainerHighest = ThemeColors.Default.surfaceContainerHighestDark,
 )
 
 @Composable
 private fun createLightColorScheme() = lightColorScheme(
-    primary = ThemeConfig.currentTheme.primaryLight,
-    onPrimary = ThemeConfig.currentTheme.onPrimaryLight,
-    primaryContainer = ThemeConfig.currentTheme.primaryContainerLight,
-    onPrimaryContainer = ThemeConfig.currentTheme.onPrimaryContainerLight,
-    secondary = ThemeConfig.currentTheme.secondaryLight,
-    onSecondary = ThemeConfig.currentTheme.onSecondaryLight,
-    secondaryContainer = ThemeConfig.currentTheme.secondaryContainerLight,
-    onSecondaryContainer = ThemeConfig.currentTheme.onSecondaryContainerLight,
-    tertiary = ThemeConfig.currentTheme.tertiaryLight,
-    onTertiary = ThemeConfig.currentTheme.onTertiaryLight,
-    tertiaryContainer = ThemeConfig.currentTheme.tertiaryContainerLight,
-    onTertiaryContainer = ThemeConfig.currentTheme.onTertiaryContainerLight,
-    error = ThemeConfig.currentTheme.errorLight,
-    onError = ThemeConfig.currentTheme.onErrorLight,
-    errorContainer = ThemeConfig.currentTheme.errorContainerLight,
-    onErrorContainer = ThemeConfig.currentTheme.onErrorContainerLight,
-    background = ThemeConfig.currentTheme.backgroundLight,
-    onBackground = ThemeConfig.currentTheme.onBackgroundLight,
-    surface = ThemeConfig.currentTheme.surfaceLight,
-    onSurface = ThemeConfig.currentTheme.onSurfaceLight,
-    surfaceVariant = ThemeConfig.currentTheme.surfaceVariantLight,
-    onSurfaceVariant = ThemeConfig.currentTheme.onSurfaceVariantLight,
-    outline = ThemeConfig.currentTheme.outlineLight,
-    outlineVariant = ThemeConfig.currentTheme.outlineVariantLight,
-    scrim = ThemeConfig.currentTheme.scrimLight,
-    inverseSurface = ThemeConfig.currentTheme.inverseSurfaceLight,
-    inverseOnSurface = ThemeConfig.currentTheme.inverseOnSurfaceLight,
-    inversePrimary = ThemeConfig.currentTheme.inversePrimaryLight,
-    surfaceDim = ThemeConfig.currentTheme.surfaceDimLight,
-    surfaceBright = ThemeConfig.currentTheme.surfaceBrightLight,
-    surfaceContainerLowest = ThemeConfig.currentTheme.surfaceContainerLowestLight,
-    surfaceContainerLow = ThemeConfig.currentTheme.surfaceContainerLowLight,
-    surfaceContainer = ThemeConfig.currentTheme.surfaceContainerLight,
-    surfaceContainerHigh = ThemeConfig.currentTheme.surfaceContainerHighLight,
-    surfaceContainerHighest = ThemeConfig.currentTheme.surfaceContainerHighestLight,
+    primary = ThemeColors.Default.primaryLight,
+    onPrimary = ThemeColors.Default.onPrimaryLight,
+    primaryContainer = ThemeColors.Default.primaryContainerLight,
+    onPrimaryContainer = ThemeColors.Default.onPrimaryContainerLight,
+    secondary = ThemeColors.Default.secondaryLight,
+    onSecondary = ThemeColors.Default.onSecondaryLight,
+    secondaryContainer = ThemeColors.Default.secondaryContainerLight,
+    onSecondaryContainer = ThemeColors.Default.onSecondaryContainerLight,
+    tertiary = ThemeColors.Default.tertiaryLight,
+    onTertiary = ThemeColors.Default.onTertiaryLight,
+    tertiaryContainer = ThemeColors.Default.tertiaryContainerLight,
+    onTertiaryContainer = ThemeColors.Default.onTertiaryContainerLight,
+    error = ThemeColors.Default.errorLight,
+    onError = ThemeColors.Default.onErrorLight,
+    errorContainer = ThemeColors.Default.errorContainerLight,
+    onErrorContainer = ThemeColors.Default.onErrorContainerLight,
+    background = ThemeColors.Default.backgroundLight,
+    onBackground = ThemeColors.Default.onBackgroundLight,
+    surface = ThemeColors.Default.surfaceLight,
+    onSurface = ThemeColors.Default.onSurfaceLight,
+    surfaceVariant = ThemeColors.Default.surfaceVariantLight,
+    onSurfaceVariant = ThemeColors.Default.onSurfaceVariantLight,
+    outline = ThemeColors.Default.outlineLight,
+    outlineVariant = ThemeColors.Default.outlineVariantLight,
+    scrim = ThemeColors.Default.scrimLight,
+    inverseSurface = ThemeColors.Default.inverseSurfaceLight,
+    inverseOnSurface = ThemeColors.Default.inverseOnSurfaceLight,
+    inversePrimary = ThemeColors.Default.inversePrimaryLight,
+    surfaceDim = ThemeColors.Default.surfaceDimLight,
+    surfaceBright = ThemeColors.Default.surfaceBrightLight,
+    surfaceContainerLowest = ThemeColors.Default.surfaceContainerLowestLight,
+    surfaceContainerLow = ThemeColors.Default.surfaceContainerLowLight,
+    surfaceContainer = ThemeColors.Default.surfaceContainerLight,
+    surfaceContainerHigh = ThemeColors.Default.surfaceContainerHighLight,
+    surfaceContainerHighest = ThemeColors.Default.surfaceContainerHighestLight,
 )
 
 // 向后兼容
 fun Context.saveThemeMode(forceDark: Boolean?) {
     ThemeManager.saveThemeMode(this, forceDark)
-}
-
-
-fun Context.saveThemeColors(themeName: String) {
-    ThemeManager.saveThemeColors(this, themeName)
 }
 
 

@@ -196,15 +196,6 @@
     <string name="theme_dark">深色</string>
     <string name="dynamic_color_title">动态颜色</string>
     <string name="dynamic_color_summary">使用系统主题的动态颜色</string>
-    <string name="choose_theme_color">选择主题色</string>
-    <string name="color_default">蓝色</string>
-    <string name="color_green">绿色</string>
-    <string name="color_purple">紫色</string>
-    <string name="color_orange">橙色</string>
-    <string name="color_pink">粉色</string>
-    <string name="color_gray">高级灰</string>
-    <string name="color_yellow">黄色</string>
-    <string name="color_trans_pride">Trans Pride</string>
     <string name="reboot_complete_title">刷写完成</string>
     <string name="reboot_complete_msg">是否立即重启？</string>
     <string name="yes">是</string>
@@ -212,7 +203,6 @@
     <string name="home_ContributionCard_kernelsu">Tamisu</string>
     <string name="home_click_to_ContributionCard_kernelsu">Tamisu 是内核级 Zygisk 提供方（类似 ZygiskNext），而非 root 提供方。它与 KernelSU、Magisk 或 APatch 共存，只负责 zygote 注入，su / 应用档案 / 模块由 root 方案负责。</string>
     <string name="custom_settings">个性化设置</string>
-    <string name="theme_color">主题颜色</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
     <string name="Lkm_install_methods">LKM 修补/安装</string>

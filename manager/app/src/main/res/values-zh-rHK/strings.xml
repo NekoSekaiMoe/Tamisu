@@ -271,15 +271,6 @@
     <string name="theme_dark">深色</string>
     <string name="dynamic_color_title">動態顏色</string>
     <string name="dynamic_color_summary">使用系統主題嘅動態顏色</string>
-    <string name="choose_theme_color">選擇主題色</string>
-    <string name="color_default">藍色</string>
-    <string name="color_green">綠色</string>
-    <string name="color_purple">紫色</string>
-    <string name="color_orange">橙色</string>
-    <string name="color_pink">粉色</string>
-    <string name="color_gray">高級灰</string>
-    <string name="color_yellow">黃色</string>
-    <string name="color_trans_pride">Trans Pride</string>
     <string name="reboot_complete_title">刷寫完成</string>
     <string name="reboot_complete_msg">是否立即重新啟動？</string>
     <string name="yes">係</string>
@@ -287,7 +278,6 @@
     <string name="home_ContributionCard_kernelsu">Tamisu 願景</string>
     <string name="home_click_to_ContributionCard_kernelsu">Tamisu 係一個極其激進且特立獨行嘅 KSU 分支，但仍然感謝官方 KernelSU 同 SukiSU、Magisk、APatch 等作出嘅貢獻</string>
     <string name="custom_settings">個性化配置</string>
-    <string name="theme_color">主題顏色</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
     <string name="Lkm_install_methods">LKM修補/安裝</string>

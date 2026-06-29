@@ -273,15 +273,6 @@
     <string name="theme_dark">ダーク</string>
     <string name="dynamic_color_title">ダイナミックカラー</string>
     <string name="dynamic_color_summary">システムテーマのダイナミックカラーを使用します。</string>
-    <string name="choose_theme_color">テーマカラーを選択</string>
-    <string name="color_default">ブルー</string>
-    <string name="color_green">グリーン</string>
-    <string name="color_purple">パープル</string>
-    <string name="color_orange">オレンジ</string>
-    <string name="color_pink">ピンク</string>
-    <string name="color_gray">グレー</string>
-    <string name="color_yellow">イエロー</string>
-    <string name="color_trans_pride">Trans Pride</string>
     <string name="reboot_complete_title">スクラブが完了しました</string>
     <string name="reboot_complete_msg">すぐに再起動しますか？</string>
     <string name="yes">はい</string>
@@ -289,7 +280,6 @@
     <string name="home_ContributionCard_kernelsu">Tamisu ビジョン</string>
     <string name="home_click_to_ContributionCard_kernelsu">Tamisu は非常に積極的で独立した KSU ブランチですが、公式の KernelSU プロジェクト、SukiSU、Magisk、APatch などの貢献に今でも感謝しています。</string>
     <string name="custom_settings">カスタム設定</string>
-    <string name="theme_color">テーマカラー</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
     <string name="Lkm_install_methods">LKM の修復またはインストール</string>

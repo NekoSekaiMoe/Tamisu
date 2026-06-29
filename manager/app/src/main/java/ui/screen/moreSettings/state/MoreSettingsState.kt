@@ -31,7 +31,6 @@ class MoreSettingsState(
     var currentAppLocale by mutableStateOf(LocaleHelper.getCurrentAppLocale(context))
 
     var showThemeModeDialog by mutableStateOf(false)
-    var showThemeColorDialog by mutableStateOf(false)
     var showDpiConfirmDialog by mutableStateOf(false)
 
     var isSimpleMode by mutableStateOf(prefs.getBoolean("is_simple_mode", false))
