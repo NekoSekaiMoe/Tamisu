@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * Tamisu - zygiskd <-> core wire protocol + multi-call entry.
+ * YukiZygisk - zygiskd <-> core wire protocol + multi-call entry.
  *
  * Author: Anatdx
  */
@@ -18,8 +18,7 @@ enum class Request : uint8_t {
   GetModuleFd = 3,      // arg u32 index -> module lib fd
   ConnectCompanion = 4, // arg u32 index -> companion socket fd
   GetModuleDir = 5,     // arg u32 index -> module root dir fd
-  GetConfig = 6, // -> struct tamisu_config (runtime config from
-                 //    tamisu_config.json)
+  GetConfig = 6, // -> struct yz_config (runtime config from yzconfig.json)
   GetStatus = 7, // -> u32 len + len bytes of status JSON (manager only;
                  //    SO_PEERCRED-gated to the authenticated manager uid)
   RevertMount =

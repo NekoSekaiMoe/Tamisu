@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * Tamisu - zygiskd: the Zygisk daemon (compiled into ksud).
+ * YukiZygisk - zygiskd: the Zygisk daemon (compiled into ksud).
  *
  * Author: Anatdx
  */
 
 #include "zygiskd.hpp"
-#include "uapi/tamisu.h"
+#include "uapi/yukizygisk.h"
 
 #include "core/json.hpp"
 #include "defs.hpp"
@@ -100,14 +100,14 @@ struct Module {
 std::vector<Module> g_modules;
 
 int consume_ready_fd() {
-  const char *env = getenv("TAMISU_READY_FD");
+  const char *env = getenv("YUKIZYGISK_READY_FD");
   if (env == nullptr || *env == '\0')
     return -1;
 
   errno = 0;
   char *end = nullptr;
   long fd = strtol(env, &end, 10);
-  unsetenv("TAMISU_READY_FD");
+  unsetenv("YUKIZYGISK_READY_FD");
   if (errno || end == env || *end != '\0' || fd < 0 || fd > INT32_MAX)
     return -1;
   return static_cast<int>(fd);
@@ -344,7 +344,7 @@ bool ensure_companion(uint32_t idx) {
  * killer) its mountinfo root field is under /adb/modules/ -- every magic-mount
  * bound out of /data/adb/modules carries that root wherever its target lands.
  */
-static bool tamisu_mi_parse(const std::string &line, std::string &root,
+static bool yz_mi_parse(const std::string &line, std::string &root,
                         std::string &target, std::string &source) {
   std::istringstream iss(line);
   std::vector<std::string> tok;
@@ -374,7 +374,7 @@ static bool tamisu_mi_parse(const std::string &line, std::string &root,
 /* Caller is already inside the target app's mount namespace, so /proc/self
  * mountinfo is the app's. Collect matching mounts, umount in reverse (children
  * / later mounts first to dodge EBUSY) with MNT_DETACH (lazy). */
-static void tamisu_umount_root_in_ns() {
+static void yz_umount_root_in_ns() {
   std::ifstream f("/proc/self/mountinfo");
   if (!f.is_open())
     return;
@@ -382,7 +382,7 @@ static void tamisu_umount_root_in_ns() {
   std::string line;
   while (std::getline(f, line)) {
     std::string root, target, source;
-    if (!tamisu_mi_parse(line, root, target, source))
+    if (!yz_mi_parse(line, root, target, source))
       continue;
     bool should = source == "KSU" || source == "magisk" || source == "APatch" ||
                   target.rfind("/data/adb/modules", 0) == 0 ||
@@ -399,7 +399,7 @@ static void tamisu_umount_root_in_ns() {
  * loses sight of them; unshare would detach into a copy and leave them intact.
  * umount2 needs CAP_SYS_ADMIN, which this root daemon has; the app
  * (untrusted_app) never receives the ksu driver fd. */
-static bool tamisu_revert_app_mounts(pid_t app_pid) {
+static bool yz_revert_app_mounts(pid_t app_pid) {
   if (app_pid <= 0)
     return false;
   pid_t child = fork();
@@ -414,7 +414,7 @@ static bool tamisu_revert_app_mounts(pid_t app_pid) {
     if (setns(fd, CLONE_NEWNS) != 0)
       _exit(2);
     close(fd);
-    tamisu_umount_root_in_ns();
+    yz_umount_root_in_ns();
     _exit(0);
   }
   int st = 0;
@@ -433,14 +433,13 @@ uint32_t query_flags(uint32_t uid) {
   return flags;
 }
 
-/* Runtime config parsed from tamisu_config.json. All-zero = everything off,
- * the safe default when the file is missing or malformed. Re-read on
- * TAMISU_EV_RELOAD. */
-tamisu_config g_tamisu_config{};
+/* Runtime config parsed from yzconfig.json. All-zero = everything off, the safe
+ * default when the file is missing or malformed. Re-read on YZ_EV_RELOAD. */
+yz_config g_yz_config{};
 
-void read_tamisu_config() {
-  tamisu_config cfg{};
-  int fd = open(ksud::TAMISU_CONFIG_PATH, O_RDONLY | O_CLOEXEC);
+void read_yzconfig() {
+  yz_config cfg{};
+  int fd = open(ksud::YZCONFIG_PATH, O_RDONLY | O_CLOEXEC);
   if (fd >= 0) {
     std::string buf;
     char tmp[1024];
@@ -458,16 +457,16 @@ void read_tamisu_config() {
         cfg.dmesg_log = root.at("dmesg_log").as_bool() ? 1 : 0;
     }
   }
-  g_tamisu_config = cfg;
+  g_yz_config = cfg;
   // Hand the kernel the yukilinker first-stage toggle: zygote_probe stages
   // libyukilinker (on) or the core directly (off). Re-sent on every reload;
   // it applies to the next zygote (module load mode itself hot-reloads in
   // core).
-  tamisu_yukilinker_cmd yc{};
+  yz_yukilinker_cmd yc{};
   yc.enabled = cfg.yukilinker;
-  ksud::ksuctl(KSU_IOCTL_TAMISU_SET_YUKILINKER, &yc);
-  DLOGI("tamisu_config: yukilinker=%u denylist_mode=%u dmesg_log=%u",
-        cfg.yukilinker, cfg.denylist_mode, cfg.dmesg_log);
+  ksud::ksuctl(KSU_IOCTL_YZ_SET_YUKILINKER, &yc);
+  DLOGI("yzconfig: yukilinker=%u denylist_mode=%u dmesg_log=%u", cfg.yukilinker,
+        cfg.denylist_mode, cfg.dmesg_log);
 }
 
 /* ---- injection telemetry (manager status panel) ------------------------- *
@@ -600,11 +599,11 @@ std::string build_status_json() {
   std::string s = "{\"count\":";
   s += std::to_string(g_inject_count);
   s += ",\"yukilinker\":";
-  s += g_tamisu_config.yukilinker ? "true" : "false";
+  s += g_yz_config.yukilinker ? "true" : "false";
   s += ",\"denylist_mode\":";
-  s += std::to_string(g_tamisu_config.denylist_mode);
+  s += std::to_string(g_yz_config.denylist_mode);
   s += ",\"dmesg_log\":";
-  s += g_tamisu_config.dmesg_log ? "true" : "false";
+  s += g_yz_config.dmesg_log ? "true" : "false";
   s += ",\"recent\":[";
   bool first = true;
   for (uint32_t a : g_recent_appids) {
@@ -709,7 +708,7 @@ void handle_client(int client) {
     break;
   }
   case zygiskd::Request::GetConfig: {
-    write_exact(client, &g_tamisu_config, sizeof(g_tamisu_config));
+    write_exact(client, &g_yz_config, sizeof(g_yz_config));
     break;
   }
   case zygiskd::Request::GetStatus: {
@@ -747,7 +746,7 @@ void handle_client(int client) {
     uint8_t ok = 0;
     if (getsockopt(client, SOL_SOCKET, SO_PEERCRED, &cr, &crlen) == 0 &&
         cr.pid > 0)
-      ok = tamisu_revert_app_mounts(static_cast<pid_t>(cr.pid)) ? 1 : 0;
+      ok = yz_revert_app_mounts(static_cast<pid_t>(cr.pid)) ? 1 : 0;
     write_exact(client, &ok, sizeof(ok));
     break;
   }
@@ -757,15 +756,14 @@ void handle_client(int client) {
     // munmap the core segments (task_work, after it returns to the JVM). The
     // driver fd never enters the app.
     uint8_t n = 0;
-    if (!read_exact(client, &n, sizeof(n)) || n == 0 ||
-        n > TAMISU_MAX_UNMAP_SEGS)
+    if (!read_exact(client, &n, sizeof(n)) || n == 0 || n > YZ_MAX_UNMAP_SEGS)
       break;
     struct ucred cr{};
     socklen_t crlen = sizeof(cr);
     uint8_t ok = 0;
     if (getsockopt(client, SOL_SOCKET, SO_PEERCRED, &cr, &crlen) == 0 &&
         cr.pid > 0) {
-      tamisu_unmap_pid_cmd ucmd{};
+      yz_unmap_pid_cmd ucmd{};
       ucmd.pid = static_cast<uint32_t>(cr.pid);
       ucmd.n_segs = n;
       bool good = true;
@@ -779,14 +777,14 @@ void handle_client(int client) {
         // Revert the app's module mounts in-process (ReZygisk-style:
         // fork + setns into the target's mount namespace + umount2 by
         // source-name predicate). This is the sole umount path --
-        // tamisu no longer ships the kernel TAMISU_UMOUNT_PID ioctl.
+        // tamisu no longer ships the kernel YZ_UMOUNT_PID ioctl.
         //
         // The core munmaps its OWN segments synchronously (tail-call
         // munmap in zygisk_self_destruct); we do NOT kernel-munmap them
         // here -- the async task_work raced the core's own execution
         // and crashed it (libc returned into the just-unmapped core).
         // ucmd.addr/size are read for ABI compat but otherwise unused.
-        ok = tamisu_revert_app_mounts(ucmd.pid) ? 1 : 0;
+        ok = yz_revert_app_mounts(ucmd.pid) ? 1 : 0;
       }
     }
     write_exact(client, &ok, sizeof(ok));
@@ -804,9 +802,9 @@ void handle_client(int client) {
     uint32_t len = 0;
     if (!read_exact(client, &addr, sizeof(addr)) ||
         !read_exact(client, &len, sizeof(len)) || len == 0 ||
-        len > TAMISU_PATCH_TEXT_MAX)
+        len > YZ_PATCH_TEXT_MAX)
       break;
-    uint8_t bytes[TAMISU_PATCH_TEXT_MAX];
+    uint8_t bytes[YZ_PATCH_TEXT_MAX];
     if (!read_exact(client, bytes, len))
       break;
     struct ucred cr{};
@@ -814,12 +812,12 @@ void handle_client(int client) {
     uint8_t ok = 0;
     if (getsockopt(client, SOL_SOCKET, SO_PEERCRED, &cr, &crlen) == 0 &&
         cr.pid > 0) {
-      tamisu_patch_text_cmd pcmd{};
+      yz_patch_text_cmd pcmd{};
       pcmd.pid = static_cast<uint32_t>(cr.pid);
       pcmd.len = len;
       pcmd.addr = addr;
       memcpy(pcmd.bytes, bytes, len);
-      ok = ksud::ksuctl(KSU_IOCTL_TAMISU_PATCH_TEXT, &pcmd) == 0 ? 1 : 0;
+      ok = ksud::ksuctl(KSU_IOCTL_YZ_PATCH_TEXT, &pcmd) == 0 ? 1 : 0;
     }
     write_exact(client, &ok, sizeof(ok));
     break;
@@ -884,15 +882,14 @@ int bind_listen() {
 
 /* join the kernel's lifecycle-event multicast group */
 int nl_listen() {
-  int fd =
-      socket(AF_NETLINK, SOCK_RAW | SOCK_CLOEXEC, TAMISU_NETLINK_PROTO);
+  int fd = socket(AF_NETLINK, SOCK_RAW | SOCK_CLOEXEC, YZ_NETLINK_PROTO);
   if (fd < 0) {
     DLOGE("netlink socket: %s", strerror(errno));
     return -1;
   }
   sockaddr_nl addr{};
   addr.nl_family = AF_NETLINK;
-  addr.nl_groups = 1u << (TAMISU_NL_GROUP_EVENTS - 1);
+  addr.nl_groups = 1u << (YZ_NL_GROUP_EVENTS - 1);
   if (bind(fd, reinterpret_cast<sockaddr *>(&addr), sizeof(addr)) < 0) {
     DLOGE("netlink bind: %s", strerror(errno));
     close(fd);
@@ -909,7 +906,7 @@ int nl_listen() {
 // path (zygiskd::Request::GetModuleFd over the daemon socket) already brokers
 // every module fd on demand and closes it immediately after loading, so the
 // kernel push channel is pure overhead that leaves an observable fingerprint.
-// Drop it. The kernel side (ksu_zygote_ctl_handoff / tamisu_deliver_cb) remains
+// Drop it. The kernel side (ksu_zygote_ctl_handoff / yz_deliver_cb) remains
 // compiled in but is now dead code that no caller reaches.
 void on_specialize(uint32_t /*pid*/, uint32_t /*appid*/) {
   // intentionally empty -- see comment above.
@@ -924,18 +921,18 @@ void nl_drain(int fd) {
   int len = static_cast<int>(got);
   for (nlmsghdr *nlh = reinterpret_cast<nlmsghdr *>(buf); NLMSG_OK(nlh, len);
        nlh = NLMSG_NEXT(nlh, len)) {
-    if (nlh->nlmsg_type != TAMISU_NL_MSG_EVENT)
+    if (nlh->nlmsg_type != YZ_NL_MSG_EVENT)
       continue;
-    if (nlh->nlmsg_len < NLMSG_LENGTH(sizeof(tamisu_event)))
+    if (nlh->nlmsg_len < NLMSG_LENGTH(sizeof(yz_event)))
       continue;
-    auto *ev = static_cast<tamisu_event *>(NLMSG_DATA(nlh));
+    auto *ev = static_cast<yz_event *>(NLMSG_DATA(nlh));
     DLOGI("event type=%u pid=%u appid=%u", ev->type, ev->pid, ev->appid);
-    if (ev->type == TAMISU_EV_SPECIALIZE) {
+    if (ev->type == YZ_EV_SPECIALIZE) {
       record_injection(
           ev->appid); // telemetry: count + recent, even with 0 mods
       on_specialize(ev->pid, ev->appid);
-    } else if (ev->type == TAMISU_EV_RELOAD)
-      read_tamisu_config(); // manager changed tamisu_config.json; re-read it now
+    } else if (ev->type == YZ_EV_RELOAD)
+      read_yzconfig(); // manager changed yzconfig.json; re-read it now
   }
 }
 
@@ -1004,7 +1001,7 @@ bool send_dlopen_offset() {
 
   const char *dlopen_name = nullptr;
   const char *dlsym_name = nullptr;
-  tamisu_dlopen_cmd cmd{};
+  yz_dlopen_cmd cmd{};
   cmd.dlopen_offset = resolve_first(kDlopen, 2, &dlopen_name);
   cmd.dlsym_offset = resolve_first(kDlsym, 2, &dlsym_name);
 
@@ -1015,7 +1012,7 @@ bool send_dlopen_offset() {
     return false;
   }
 
-  int ret = ksud::ksuctl(KSU_IOCTL_TAMISU_SET_DLOPEN, &cmd);
+  int ret = ksud::ksuctl(KSU_IOCTL_YZ_SET_DLOPEN, &cmd);
   DLOGI("linker dlopen '%s'=0x%llx dlsym '%s'=0x%llx -> kernel ret=%d",
         dlopen_name, (unsigned long long)cmd.dlopen_offset, dlsym_name,
         (unsigned long long)cmd.dlsym_offset, ret);
@@ -1045,13 +1042,13 @@ int run_daemon() {
   }
 
   g_modules = scan_modules();
-  read_tamisu_config();
+  read_yzconfig();
   DLOGI("found %zu zygisk module(s) for %s", g_modules.size(), kAbi);
   bool offsets_ready = send_dlopen_offset();
 
   int nlfd = nl_listen();
   DLOGI("zygiskd up: unix @%s, netlink proto=%d", zygiskd::kSocketName,
-        TAMISU_NETLINK_PROTO);
+        YZ_NETLINK_PROTO);
   notify_ready(ready_fd, offsets_ready);
 
   pollfd pfds[2] = {{srv, POLLIN, 0}, {nlfd, POLLIN, 0}};

@@ -156,7 +156,7 @@ int spawn_zygiskd() {
         if (ready_pipe[1] >= 0) {
             char fd_env[16];
             snprintf(fd_env, sizeof(fd_env), "%d", ready_pipe[1]);
-            setenv("TAMISU_READY_FD", fd_env, 1);
+            setenv("YUKIZYGISK_READY_FD", fd_env, 1);
         }
 
         char* const argv[] = {const_cast<char*>(DAEMON_PATH), const_cast<char*>("zygiskd"),
@@ -199,15 +199,15 @@ int spawn_zygiskd() {
     return 0;
 }
 
-// Tamisu gate: only when the feature is on and we're NOT in safe mode.
+// YukiZygisk gate: only when the feature is on and we're NOT in safe mode.
 // Bring zygiskd up at post-fs-data so it has resolved the linker dlopen
 // offsets and is listening before zygote starts; the kernel then injects
-// zygote on the KSU_FEATURE_TAMISU gate. Feature off / safe mode: no-op.
+// zygote on the KSU_FEATURE_YUKIZYGISK gate. Feature off / safe mode: no-op.
 void ensure_zygiskd_running_if_enabled() {
     if (is_safe_mode()) {
         return;
     }
-    const auto [value, supported] = get_feature(KSU_FEATURE_TAMISU);
+    const auto [value, supported] = get_feature(KSU_FEATURE_YUKIZYGISK);
     if (!supported || value == 0) {
         return;
     }
@@ -216,10 +216,10 @@ void ensure_zygiskd_running_if_enabled() {
     // one zygote process corrupts PLT hooks and crashes the process.
     // Priority: Magisk Zygisk > Tamisu > {ZygiskNext, NeoZygisk, ReZygisk}.
     if (is_magisk_zygisk_enabled()) {
-        LOGW("Tamisu disabled: Magisk Zygisk has higher priority");
+        LOGW("YukiZygisk disabled: Magisk Zygisk has higher priority");
         return;
     }
-    LOGI("Tamisu feature on -- launching zygiskd");
+    LOGI("YukiZygisk feature on -- launching zygiskd");
     spawn_zygiskd();
 }
 
@@ -270,9 +270,9 @@ int on_post_data_fs() {
         LOGW("Failed to ensure binaries");
     }
 
-    // Stage the Tamisu payload into /data/adb/ksu/lib/tamisu/ (no-op if
+    // Stage the YukiZygisk payload into /data/adb/ksu/lib/yukizygisk/ (no-op if
     // this ksud wasn't built with the payload embedded).
-    ensure_tamisu(true);
+    ensure_yukizygisk(true);
 
     // if we are in safe mode, we should disable all modules
     if (safe_mode) {

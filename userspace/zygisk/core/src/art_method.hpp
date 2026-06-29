@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * Tamisu - recover a RegisterNatives'd method's JNI function pointer.
+ * YukiZygisk - recover a RegisterNatives'd method's JNI function pointer.
  *
  * ART never hands back the JNI entry of a registered native, and the ArtMethod
  * layout drifts between Android releases -- so instead of hardcoding offsets we

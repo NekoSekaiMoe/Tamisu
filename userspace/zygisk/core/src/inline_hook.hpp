@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * Tamisu - minimal AArch64 inline hook for the specialize natives.
+ * YukiZygisk - minimal AArch64 inline hook for the specialize natives.
  *
  * Why not RegisterNatives: it writes our wrapper's address into the method's
  * ArtMethod entry, so ART (especially the USAP pool's cached entries) holds a
@@ -57,17 +57,17 @@
 
 /* capture-stub template + ret-ctx slot, defined in self_unmap.S. */
 extern "C" {
-extern uint8_t tamisu_cap_tmpl[];
-extern uint8_t tamisu_cap_tmpl_ctx[];
-extern uint8_t tamisu_cap_tmpl_wrap[];
-extern uint8_t tamisu_cap_tmpl_end[];
-extern uint64_t g_tamisu_ret_ctx[];
+extern uint8_t yz_cap_tmpl[];
+extern uint8_t yz_cap_tmpl_ctx[];
+extern uint8_t yz_cap_tmpl_wrap[];
+extern uint8_t yz_cap_tmpl_end[];
+extern uint64_t g_yz_ret_ctx[];
 /* Write `len` bytes at `addr` in our own mm via the kernel (defined in
- * core.cpp): zygiskd -> KSU_IOCTL_TAMISU_PATCH_TEXT ->
+ * core.cpp): zygiskd -> KSU_IOCTL_YZ_PATCH_TEXT ->
  * access_process_vm(FOLL_FORCE). A copy-on-write patch with NO mprotect, so the
  * patched system library's executable VMA stays a single mapping instead of
  * being split. */
-bool tamisu_patch_text(uintptr_t addr, const void *bytes, unsigned int len);
+bool yz_patch_text(uintptr_t addr, const void *bytes, unsigned int len);
 }
 
 namespace yuki::ihook {
@@ -192,9 +192,9 @@ inline void *install(void *target, void *replacement, Hook *out) {
     if (is_pcrel(t[i]))
       return nullptr; // un-relocatable prologue -> bail
 
-  const size_t cap_size = static_cast<size_t>(tamisu_cap_tmpl_end - tamisu_cap_tmpl);
-  const size_t ctx_off = static_cast<size_t>(tamisu_cap_tmpl_ctx - tamisu_cap_tmpl);
-  const size_t wrap_off = static_cast<size_t>(tamisu_cap_tmpl_wrap - tamisu_cap_tmpl);
+  const size_t cap_size = static_cast<size_t>(yz_cap_tmpl_end - yz_cap_tmpl);
+  const size_t ctx_off = static_cast<size_t>(yz_cap_tmpl_ctx - yz_cap_tmpl);
+  const size_t wrap_off = static_cast<size_t>(yz_cap_tmpl_wrap - yz_cap_tmpl);
   const size_t co_off = (cap_size + 3U) & ~static_cast<size_t>(3); // 4-aligned
 
   // Trampoline page near the target so both the patch's forward B and the
@@ -207,9 +207,9 @@ inline void *install(void *target, void *replacement, Hook *out) {
       page.file_backed ? file_page : reinterpret_cast<uint8_t *>(page.addr);
   auto *mapped_base = reinterpret_cast<uint8_t *>(page.addr);
   // capture stub: copy the template, patch its two literals.
-  memcpy(base, tamisu_cap_tmpl, cap_size);
+  memcpy(base, yz_cap_tmpl, cap_size);
   *reinterpret_cast<uint64_t *>(base + ctx_off) =
-      reinterpret_cast<uint64_t>(g_tamisu_ret_ctx);
+      reinterpret_cast<uint64_t>(g_yz_ret_ctx);
   *reinterpret_cast<uint64_t *>(base + wrap_off) =
       reinterpret_cast<uint64_t>(replacement);
   // call-orig trampoline: original 2 insns + direct B back to target+8. The
@@ -254,7 +254,7 @@ inline void *install(void *target, void *replacement, Hook *out) {
       enc_b(reinterpret_cast<uintptr_t>(target) + 4,
             reinterpret_cast<uintptr_t>(page.addr)), // B <capture stub>
   };
-  if (!tamisu_patch_text(reinterpret_cast<uintptr_t>(target), patch,
+  if (!yz_patch_text(reinterpret_cast<uintptr_t>(target), patch,
                      sizeof(patch))) {
     munmap(page.addr, 0x1000);
     return nullptr;

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * Tamisu - libzygisk.so: Zygote lifecycle bootstrap + module pipeline glue.
+ * YukiZygisk - libzygisk.so: Zygote lifecycle bootstrap + module pipeline glue.
  *
  * Author: Anatdx
  */
@@ -30,9 +30,9 @@ void zygisk_self_unhook(JNIEnv *env);
  * faulted resident (inflated Rss/Pss = an smaps anomaly). Call post-specialize
  * in the child, single-threaded. Full rationale at the definition in hook.cpp.
  */
-void tamisu_drop_runtime_header_pages();
+void yz_drop_runtime_header_pages();
 /* True iff all specialize natives were inline-hooked (no RegisterNatives
- * fallback) -> each wrapper ran its capture stub, so g_tamisu_ret_ctx is valid and
+ * fallback) -> each wrapper ran its capture stub, so g_yz_ret_ctx is valid and
  * the tail-call munmap is safe. Query BEFORE zygisk_self_unhook clears
  * the hook records. */
 bool zygisk_specialize_fully_inline_hooked();

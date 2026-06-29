@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * Tamisu - libzygisk.so: Zygote lifecycle bootstrap + specialize takeover.
+ * YukiZygisk - libzygisk.so: Zygote lifecycle bootstrap + specialize takeover.
  *
  * strdup("ZygoteInit") (fired from AndroidRuntime::start, VM up, JNI safe) is
  * our timing signal; from there we grab the JNIEnv, recover the original JNI
@@ -121,7 +121,7 @@ void finish_restore_only_child(JNIEnv *env, bool is_child_zygote) {
   if (is_child_zygote)
     return;
   zygisk_self_unhook(env);
-  tamisu_drop_runtime_header_pages();
+  yz_drop_runtime_header_pages();
 }
 
 /* the fork() the native specialize code calls: once we've forked in
@@ -613,7 +613,7 @@ void hook_jni_methods(JNIEnv *env, const char *clz, JNINativeMethod *methods,
  * here, once, in the zygote body; every app then forks without it. (An
  * init-time inline-hook injector would leave no such rwx page; the kernel
  * AT_ENTRY stub does.) */
-void tamisu_unmap_injection_stub() {
+void yz_unmap_injection_stub() {
   for (auto &m : lsplt::MapInfo::Scan()) {
     if ((m.perms & (PROT_READ | PROT_WRITE | PROT_EXEC)) !=
             (PROT_READ | PROT_WRITE | PROT_EXEC) ||
@@ -671,7 +671,7 @@ void hook_zygote_jni() {
   // app would otherwise inherit (duck's maps_anomaly flags it as anonymous +
   // writable executable). The stub already ran (pre-__libc_init), so this is
   // safe.
-  tamisu_unmap_injection_stub();
+  yz_unmap_injection_stub();
   // Modules are loaded per-specialize in the CHILD (see the fork wrappers),
   // NOT here in the zygote body: a module's onLoad may call getModuleDir,
   // whose DIR fd would linger in the zygote and abort the next fork
@@ -695,7 +695,7 @@ void hook_zygote_jni() {
  * post-specialize, in the child, single-threaded -- no concurrent .dynsym
  * reader. kAndroidRuntime / lsplt are the anonymous-namespace members above,
  * visible throughout this TU. */
-void tamisu_drop_runtime_header_pages() {
+void yz_drop_runtime_header_pages() {
   for (const auto &m : lsplt::MapInfo::Scan()) {
     if (m.offset == 0 && m.perms == PROT_READ &&
         m.path.ends_with(kAndroidRuntime)) {
@@ -759,9 +759,9 @@ bool zygisk_exempt_fd(int fd) {
 
 /* True iff every specialize native was inline-hooked (none fell back to
  * RegisterNatives). Only then was each wrapper entered through its capture
- * stub, so g_tamisu_ret_ctx holds THIS specialize's ART entry frame and the
- * tail-call munmap (tamisu_self_unmap_tail) is safe. Must be queried BEFORE
- * zygisk_self_unhook clears the records. If any method fell back, g_tamisu_ret_ctx
+ * stub, so g_yz_ret_ctx holds THIS specialize's ART entry frame and the
+ * tail-call munmap (yz_self_unmap_tail) is safe. Must be queried BEFORE
+ * zygisk_self_unhook clears the records. If any method fell back, g_yz_ret_ctx
  * may be stale/zero -> the caller must NOT tail-call munmap (disguise instead).
  */
 bool zygisk_specialize_fully_inline_hooked() {

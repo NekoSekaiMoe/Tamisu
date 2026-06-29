@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * Tamisu - libzloader.so: hide injected libraries from the linker's solist.
+ * YukiZygisk - libzloader.so: hide injected libraries from the linker's solist.
  *
  * Android's zygote walks the linker soinfo list before each fork and aborts
  * (`JNI FatalError ... Not allowlisted`) if it finds a library outside the

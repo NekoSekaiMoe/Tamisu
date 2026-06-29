@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * Tamisu - libzloader.so: hide the injection from solist/maps scanners.
+ * YukiZygisk - libzloader.so: hide the injection from solist/maps scanners.
  *
  * Approach (implemented from scratch):
  *  - hide_from_solist re-links our own injected libs out of the solist (they're
@@ -38,15 +38,14 @@
 namespace zloader {
 namespace {
 
-/* Logs go to dmesg via zygiskd, never logcat. tamisu_klog is weak (strong def
- * in core.cpp); in the loader build it links as null and these become no-ops.
- */
+/* Logs go to dmesg via zygiskd, never logcat. yz_klog is weak (strong def in
+ * core.cpp); in the loader build it links as null and these become no-ops. */
 extern "C" __attribute__((weak, format(printf, 1, 2))) void
-tamisu_klog(const char *fmt, ...);
+yz_klog(const char *fmt, ...);
 #define SLOGE(...)                                                             \
   do {                                                                         \
-    if (tamisu_klog != nullptr)                                                \
-      tamisu_klog(__VA_ARGS__);                                                \
+    if (yz_klog != nullptr)                                                    \
+      yz_klog(__VA_ARGS__);                                                    \
   } while (0)
 #define SLOGI(...) SLOGE(__VA_ARGS__)
 
