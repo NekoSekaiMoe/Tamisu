@@ -194,13 +194,6 @@ bool uid_should_umount(uint32_t /*uid*/) {
     return false;
 }
 
-// Tamisu has no manager-app concept (zygisk-only build). Return 0 so the
-// zygiskd GetStatus SO_PEERCRED gate trusts root (uid 0) as the legitimate
-// telemetry peer. The check at the call site uses `mgr >= 0`.
-int get_manager_uid() {
-    return 0;
-}
-
 int get_wrapped_fd(int fd) {
     GetWrapperFdCmd cmd = {static_cast<__u32>(fd), 0};
     return ksuctl(KSU_IOCTL_GET_WRAPPER_FD, &cmd);

@@ -49,9 +49,6 @@ namespace ksud {
 int ksuctl(int request, void *arg);
 bool uid_granted_root(uint32_t uid);
 bool uid_should_umount(uint32_t uid);
-// Kernel-authenticated manager uid (preset/superkey full uid, dynamic managers
-// excluded); -1 if none. The trust anchor for SO_PEERCRED on GetStatus.
-int get_manager_uid();
 } // namespace ksud
 
 namespace {
@@ -637,17 +634,18 @@ void handle_client(int client) {
     // the kernel-authenticated manager (preset/superkey full uid) may read the
     // telemetry; anyone else gets an empty reply (len 0). The manager itself
     // connects, so the peer uid is its own app uid.
+    // Tamisu has no manager-app concept: the only legitimate caller of
+    // GetStatus is a root-owned process (ksud, manager app holding root).
+    // Gate on peer uid == 0 directly, no manager-uid lookup needed.
     std::string js;
     struct ucred cr{};
     socklen_t crlen = sizeof(cr);
-    int mgr = ksud::get_manager_uid();
-    if (mgr >= 0 &&
-        getsockopt(client, SOL_SOCKET, SO_PEERCRED, &cr, &crlen) == 0 &&
-        static_cast<int>(cr.uid) == mgr) {
+    if (getsockopt(client, SOL_SOCKET, SO_PEERCRED, &cr, &crlen) == 0 &&
+        cr.uid == 0) {
       js = build_status_json();
     } else {
-      DLOGI("GetStatus denied: peer uid=%d manager uid=%d",
-            static_cast<int>(cr.uid), mgr);
+      DLOGI("GetStatus denied: peer uid=%d (root only)",
+            static_cast<int>(cr.uid));
     }
     uint32_t n = static_cast<uint32_t>(js.size());
     write_exact(client, &n, sizeof(n));
