@@ -35,7 +35,6 @@ class MoreSettingsState(
 
     var isSimpleMode by mutableStateOf(prefs.getBoolean("is_simple_mode", false))
     var isKernelSimpleMode by mutableStateOf(prefs.getBoolean("is_kernel_simple_mode", false))
-    var showMoreModuleInfo by mutableStateOf(prefs.getBoolean("show_more_module_info", false))
 
     var selinuxEnabled by mutableStateOf(false)
 

@@ -13,12 +13,7 @@
     <string name="selinux_status_enforcing">Принудительный</string>
     <string name="selinux_status_permissive">Разрешающий</string>
     <string name="selinux_status_unknown">Неизвестно</string>
-    <string name="module_failed_to_enable">Не удалось включить модуль %s</string>
-    <string name="module_failed_to_disable">Не удалось отключить модуль %s</string>
-    <string name="module_empty">Нет установленных модулей</string>
-    <string name="module">Модули</string>
     <string name="uninstall">Удалить</string>
-    <string name="module_install">Установить</string>
     <string name="install">Установка</string>
     <string name="reboot">Перезагрузить</string>
     <string name="settings">Настройки</string>
@@ -28,12 +23,6 @@
     <string name="reboot_bootloader">Перезагрузить в Bootloader</string>
     <string name="reboot_download">Перезагрузить в Download</string>
     <string name="reboot_edl">Перезагрузить в EDL</string>
-    <string name="module_uninstall_confirm">Вы уверены, что хотите удалить модуль %s?</string>
-    <string name="metamodule_uninstall_confirm">Вы уверены, что хотите удалить модуль %s? Это действие затронет все модули, и некоторые функции метамодуля (например, монтирование) перестанут работать</string>
-    <string name="module_uninstall_success">%s удалён</string>
-    <string name="module_uninstall_failed">Не удалось удалить %s</string>
-    <string name="module_version">Версия</string>
-    <string name="module_author">Автор</string>
     <string name="refresh">Обновить</string>
     <string name="show_system_apps">Показать системные приложения</string>
     <string name="hide_system_apps">Скрыть системные приложения</string>
@@ -41,9 +30,8 @@
     <string name="safe_mode">Безопасный режим</string>
     <string name="jailbreak_timeout">Джейлбрейк, возможно, не удался, проверьте журналы</string>
     <string name="reboot_to_apply">Перезагрузите, чтобы изменения вступили в силу</string>
-    <string name="module_magisk_conflict">Модули недоступны из-за конфликта с Magisk!</string>
     <string name="home_support_title">Поддержка развития</string>
-    <string name="about_source_code"><![CDATA[Просмотреть исходный код на %1$s<br/>Присоединяйтесь к нашему %2$s каналу]]></string>
+    <string name="about_source_code">Просмотреть исходный код на %1$s&lt;br/&gt;Присоединяйтесь к нашему %2$s каналу</string>
     <string name="profile_default">По умолчанию</string>
     <string name="profile_template">Шаблон</string>
     <string name="profile_custom">Пользовательский</string>
@@ -92,7 +80,7 @@
     <string name="action">Действие</string>
     <string name="close">Закрыть</string>
     <string name="home_auth_signature_tag">Signature</string>
-    <!-- Kasumi toasts -->
+    
     <string name="direct_install">Прямая установка (Рекомендуется)</string>
     <string name="select_file">Выберите изображение, которое необходимо пропатчить.</string>
     <string name="install_inactive_slot">Установка в неактивный слот (После OTA)</string>
@@ -128,29 +116,15 @@
     <string name="selected_lkm">Выбран LKM: %s</string>
     <string name="save_log">Сохранить логи</string>
     <string name="log_saved">Логи сохранены</string>
-    <!-- Module related -->
-    <string name="module_install_confirm">подтвердите установку модуля %1$s?</string>
-    <string name="unknown_module">неизвестный модуль</string>
-    <!-- Module shortcut related -->
-    <string name="module_action_success">Действие модуля завершено</string>
-    <!-- Restore related -->
-    <string name="restore_confirm_title">Подтвердите восстановление модуля</string>
-    <string name="restore_confirm_message">Эта операция перезапишет все существующие модули. Продолжить?</string>
+    
     <string name="confirm">Подтвердить</string>
     <string name="cancel">Отмена</string>
-    <!-- Backup related -->
-    <string name="backup_success">Резервная копия создана успешно</string>
-    <string name="backup_failed">Ошибка резервного копирования: %1$s</string>
-    <string name="backup_modules">Резервное копирование модулей</string>
-    <string name="restore_modules">Восстановить модули</string>
-    <!-- Restore related messages -->
-    <string name="restore_success">Модули восстановлены, требуется перезагрузка</string>
-    <string name="restore_failed">Ошибка восстановления: %1$s</string>
+    
     <string name="restart_now">Перезапустить сейчас</string>
     <string name="unknown_error">Неизвестная ошибка</string>
-    <!-- Command related -->
+    
     <string name="command_execution_failed">Выполнение команды не удалось: %1$s</string>
-    <!-- Allowlist related -->
+    
     <string name="backup_allowlist">Резервное копирование списка</string>
     <string name="restore_allowlist">Восстановить список</string>
     <string name="home_android_version">Версия Android</string>
@@ -158,7 +132,6 @@
     <string name="su_not_allowed">Предоставление рут-доступа %s запрещено</string>
     <string name="feature_status_unsupported_summary">Ядро не поддерживает эту функцию</string>
     <string name="feature_status_managed_summary">Эта функция управляется модулем</string>
-    <string name="module_install_multiple_confirm_with_names">Уверены, что хотите установить следующие %1$d модули? \n\n%2$s</string>
     <string name="more_settings">Доп. настройки</string>
     <string name="selinux">SELinux</string>
     <string name="selinux_enabled">Включено</string>
@@ -176,13 +149,13 @@
     <string name="yes">Да</string>
     <string name="no">Нет</string>
     <string name="custom_settings">Персонализация</string>
-    <!-- Error Messages -->
-    <!-- lkm/gki install -->
+    
+    
     <string name="Lkm_install_methods">Починить/установить LKM</string>
     <string name="configuration">Настройка</string>
     <string name="app_settings">Настройки приложения</string>
     <string name="tools">Инструменты</string>
-    <!--  String resources used in SuperUser -->
+    
     <string name="no_apps_found">Приложение не найдено</string>
     <string name="selinux_enabled_toast">SELinux включен</string>
     <string name="selinux_disabled_toast">SELinux отключен</string>
@@ -196,8 +169,8 @@
     <string name="advanced_settings">Расширенные</string>
     <string name="appearance_settings">Внешний вид</string>
     <string name="back">Возвращение</string>
-    <!-- Webui X settings -->
-    <!-- DPI setting related strings -->
+    
+    
     <string name="app_dpi_title">Изменить DPI</string>
     <string name="app_dpi_summary">Регулировка плотности экрана только для текущего приложения</string>
     <string name="dpi_size_small">маленький</string>
@@ -210,23 +183,17 @@
     <string name="dpi_confirm_message">Вы уверены, что хотите изменить DPI приложения с %1$d на %2$d?</string>
     <string name="dpi_confirm_summary">Приложение нужно перезапустить, чтобы применить новые настройки DPI. Это не влияет на системную строку состояния или другие приложения</string>
     <string name="dpi_applied_success">DPI был установлен в %1$d, действующий после перезапуска приложения</string>
-    <!-- Language settings related strings -->
+    
     <string name="settings_language">Язык приложения</string>
     <string name="language_system_default">Как в системе</string>
-    <!-- Flash related -->
+    
     <string name="error_code">код ошибки</string>
     <string name="check_log">Пожалуйста, проверьте журнал</string>
-    <string name="installing_module">Модуль устанавливается %1$d/%2$d</string>
-    <string name="module_failed_count">%d не удалось установить новый модуль</string>
-    <!-- Kasumi status text -->
-    <string name="warning_of_meta_module_title">Требуется Мета-модуль</string>
-    <string name="warning_of_meta_module_summary">Этот модуль хочет смонтировать /system, метамодуль выполнит это. Иначе он может не работать</string>
-    <!-- 分类相关 -->
     <string name="category_all_apps">Все</string>
     <string name="category_root_apps">Рут-доступ</string>
     <string name="category_custom_apps">Пользовательские</string>
     <string name="category_default_apps">Стандартные</string>
-    <!-- 排序相关 -->
+    
     <string name="sort_name_asc">Название (по возрастанию)</string>
     <string name="sort_name_desc">Название (по убыванию)</string>
     <string name="sort_install_time_new">Время установки (новые)</string>
@@ -234,9 +201,9 @@
     <string name="sort_size_desc">Размер (по убыванию)</string>
     <string name="sort_size_asc">Размер (по возрастанию)</string>
     <string name="sort_usage_freq">Частота использования</string>
-    <!-- 状态相关 -->
+    
     <string name="no_apps_in_category">В этой категории нет приложений</string>
-    <!-- 标签相关 -->
+    
     <string name="deny_authorization">Доступ отклонён</string>
     <string name="grant_authorization">Доступ выдан</string>
     <string name="unmount_modules">Размонтирование модулей</string>
@@ -247,27 +214,15 @@
     <string name="scroll_to_bottom">Вниз</string>
     <string name="selected">Выбранные</string>
     <string name="select">опция</string>
-    <!-- BottomSheet相关 -->
+    
     <string name="menu_options">Опции меню</string>
     <string name="sort_options">Сортировка</string>
     <string name="app_categories">Выбор типа приложения</string>
-    <string name="show_more_module_info">Показать больше информации о модуле</string>
-    <string name="show_more_module_info_summary">Показывать доп. информацию о модулях, такую как JSON ссылку для обновления</string>
     <string name="kernel_simple_kernel">Скрыть доп. информацию о ядре</string>
     <string name="kernel_simple_kernel_summary">Включить или отключить чистый режим, отображаемой версии ядра Tamisu</string>
     <string name="home_zygisk_implement">Реализация Zygisk</string>
-    <string name="home_meta_module_implement">Реализация Мета-модуля</string>
     <string name="home_hook_type">Типы хуков</string>
-    <!-- 确认安装相关字符串 -->
-    <string name="confirm_installation">Подтвердите установку</string>
-    <string name="confirm_multiple_installation">Подтвердите установку (%d файлов)</string>
-    <string name="install_confirm">Установить</string>
-    <string name="module_package">Модули</string>
-    <string name="unknown_package">Неизвестно</string>
-    <string name="unknown_file">Неизвестный файл</string>
-    <string name="version">Версия</string>
-    <string name="author">Автор</string>
-    <string name="description">Описание</string>
+    
     <string name="log_viewer_title">Просмотр логов</string>
     <string name="log_viewer_back">Назад</string>
     <string name="log_viewer_search">Поиск</string>
@@ -324,21 +279,21 @@
     <string name="mnt_detach">MNT_DETACH</string>
     <string name="group_contains_apps">Содержит %d приложений</string>
 
-    <!-- SuperKey authentication -->
+    
     <string name="show_password">Показать пароль</string>
     <string name="hide_password">Скрыть пароль</string>
 
-    <!-- SuperKey settings -->
+    
     <string name="signature_bypass_title">Режим только СуперКлюча</string>
     <string name="signature_bypass_desc">Отключить проверку подписи APK. Менеджер будет распознаваться только через аутентификацию по СуперКлючу.</string>
 
-    <!-- Kasumi Configuration -->
-    <!-- Kasumi uname spoofing -->
-    <!-- Kasumi user hide rules -->
+    
+    
+    
 
-    <!-- Kasumi per-module rules -->
+    
 
-    <!-- Partition Manager -->
+    
     <string name="partition_slot_info">Сведения о слотах</string>
     <string name="partition_device_type">Тип устройства</string>
     <string name="partition_current_slot">Текущий слот</string>
@@ -400,9 +355,9 @@
     <string name="partition_no_selection">Раздел не выбран</string>
     <string name="partition_back">Назад</string>
 
-    <!-- Advanced Tools -->
+    
 
-    <!-- ksud daemon version / update -->
+    
     <string name="home_ksud_daemon_title">демон ksud</string>
     <string name="home_ksud_daemon_apk_version">ksud из менеджера: %1$s</string>
     <string name="home_ksud_daemon_installed_version">Установленный ksud (/data/adb/ksud): %1$s</string>

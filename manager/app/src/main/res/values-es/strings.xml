@@ -13,12 +13,7 @@
     <string name="selinux_status_enforcing">Estricto</string>
     <string name="selinux_status_permissive">Permisivo</string>
     <string name="selinux_status_unknown">Desconocido</string>
-    <string name="module_failed_to_enable">Error al activar el módulo: %s</string>
-    <string name="module_failed_to_disable">Error al desactivar el módulo: %s</string>
-    <string name="module_empty">Ningún módulo instalado</string>
-    <string name="module">Módulo</string>
     <string name="uninstall">Desinstalar</string>
-    <string name="module_install">Instalar</string>
     <string name="install">Instalar</string>
     <string name="reboot">Reiniciar</string>
     <string name="settings">Ajustes</string>
@@ -28,12 +23,6 @@
     <string name="reboot_bootloader">Reiniciar en modo de arranque</string>
     <string name="reboot_download">Reiniciar en modo Download</string>
     <string name="reboot_edl">Reiniciar en modo EDL</string>
-    <string name="module_uninstall_confirm">¿Está seguro de que desea desinstalar el módulo %s?</string>
-    <string name="metamodule_uninstall_confirm">¿Seguro que quieres desinstalar el módulo %s? Esta acción afectará a todos los módulos, y ciertas funciones del metamódulo (como el montaje) dejarán de funcionar</string>
-    <string name="module_uninstall_success">%s desinstalado</string>
-    <string name="module_uninstall_failed">Fallo al desinstalar: %s</string>
-    <string name="module_version">Versión</string>
-    <string name="module_author">Autor</string>
     <string name="refresh">Refrescar</string>
     <string name="show_system_apps">Mostrar aplicaciones del sistema</string>
     <string name="hide_system_apps">Ocultar aplicaciones del sistema</string>
@@ -41,9 +30,8 @@
     <string name="safe_mode">Modo seguro</string>
     <string name="jailbreak_timeout">Es posible que el jailbreak haya fallado, revisa los registros</string>
     <string name="reboot_to_apply">Reinicia para aplicar cambios</string>
-    <string name="module_magisk_conflict">¡Los módulos no están disponibles debido a un conflicto con Magisk!</string>
     <string name="home_support_title">Desarrollo de Apoyo</string>
-    <string name="about_source_code"><![CDATA[Ver el código fuente en %1$s<br/>Únete a nuestro canal %2$s]]></string>
+    <string name="about_source_code">Ver el código fuente en %1$s&lt;br/&gt;Únete a nuestro canal %2$s</string>
     <string name="profile_default">Predeterminado</string>
     <string name="profile_template">Plantilla</string>
     <string name="profile_custom">Personalizado</string>
@@ -92,7 +80,7 @@
     <string name="action">Ejecutar</string>
     <string name="close">Cancelar</string>
     <string name="home_auth_signature_tag">Signature</string>
-    <!-- Kasumi toasts -->
+    
     <string name="direct_install">Instalación directa (Recomendada)</string>
     <string name="select_file">Seleccione un archivo</string>
     <string name="install_inactive_slot">Instalar en ranura inactiva (Después de OTA)</string>
@@ -126,29 +114,15 @@
     <string name="selected_lkm">LKM seleccionado: %s</string>
     <string name="save_log">Guardar registros</string>
     <string name="log_saved">Registro guardado</string>
-    <!-- Module related -->
-    <string name="module_install_confirm">¿confirmar la instalación del módulo %1$s?</string>
-    <string name="unknown_module">módulo desconocido</string>
-    <!-- Module shortcut related -->
-    <string name="module_action_success">Acción del módulo finalizada</string>
-    <!-- Restore related -->
-    <string name="restore_confirm_title">Confirmar restauración del módulo</string>
-    <string name="restore_confirm_message">Esta operación sobrescribirá todos los módulos existentes. ¿Continuar?</string>
+    
     <string name="confirm">Confirmar</string>
     <string name="cancel">Cancelar</string>
-    <!-- Backup related -->
-    <string name="backup_success">Copia de seguridad exitosa (tar.gz)</string>
-    <string name="backup_failed">Copia de seguridad fallida: %1$s</string>
-    <string name="backup_modules">módulos de respaldo</string>
-    <string name="restore_modules">restaurar módulos</string>
-    <!-- Restore related messages -->
-    <string name="restore_success">Módulos restaurados con éxito, se requiere reiniciar</string>
-    <string name="restore_failed">Restauración fallida: %1$s</string>
+    
     <string name="restart_now">Reiniciar ahora</string>
     <string name="unknown_error">Error desconocido</string>
-    <!-- Command related -->
+    
     <string name="command_execution_failed">Ejecución del comando fallida: %1$s</string>
-    <!-- Allowlist related -->
+    
     <string name="backup_allowlist">Copia de seguridad lista</string>
     <string name="restore_allowlist">Restaurar lista de permisos</string>
     <string name="home_android_version">Versión de Android</string>
@@ -156,7 +130,6 @@
     <string name="su_not_allowed">No se permite conceder superusuario a %s</string>
     <string name="feature_status_unsupported_summary">El kernel no admite esta función</string>
     <string name="feature_status_managed_summary">Esta función está gestionada por un módulo</string>
-    <string name="module_install_multiple_confirm_with_names">¿Seguro que quieres instalar los siguientes módulos %1$d ? \n\n%2$s</string>
     <string name="more_settings">Opciones avanzadas</string>
     <string name="selinux">SELinux</string>
     <string name="selinux_enabled">Habilitado</string>
@@ -174,13 +147,13 @@
     <string name="yes">Si</string>
     <string name="no">No</string>
     <string name="custom_settings">Ajustes personalizados</string>
-    <!-- Error Messages -->
-    <!-- lkm/gki install -->
+    
+    
     <string name="Lkm_install_methods">Reparación/instalación de LKM</string>
     <string name="configuration">Configurar</string>
     <string name="app_settings">Configuración de la Aplicación</string>
     <string name="tools">Herramientas</string>
-    <!--  String resources used in SuperUser -->
+    
     <string name="no_apps_found">No se ha encontrado la solicitud</string>
     <string name="selinux_enabled_toast">SELinux habilitado</string>
     <string name="selinux_disabled_toast">SELinux desactivado</string>
@@ -194,8 +167,8 @@
     <string name="advanced_settings">Configuraciones avanzadas</string>
     <string name="appearance_settings">Personalizar la barra de herramientas.</string>
     <string name="back">Retorno</string>
-    <!-- Webui X settings -->
-    <!-- DPI setting related strings -->
+    
+    
     <string name="app_dpi_title">DPI aplicado</string>
     <string name="app_dpi_summary">Ajustar la densidad de pantalla para la aplicación actual</string>
     <string name="dpi_size_small">Pequeño </string>
@@ -208,23 +181,17 @@
     <string name="dpi_confirm_message">¿Estás seguro de que quieres cambiar el DPI de la aplicación de %1$d a %2$d?</string>
     <string name="dpi_confirm_summary">La aplicación necesita reiniciarse para aplicar la nueva configuración DPI, no afecta a la barra de estado del sistema u otras aplicaciones</string>
     <string name="dpi_applied_success">DPI ha sido establecido a %1$d, efectivo después de reiniciar la aplicación</string>
-    <!-- Language settings related strings -->
+    
     <string name="settings_language">Idioma de la aplicación</string>
     <string name="language_system_default">Seguir sistema</string>
-    <!-- Flash related -->
+    
     <string name="error_code">código de error</string>
     <string name="check_log">Por favor, compruebe el registro</string>
-    <string name="installing_module">Módulo instalado %1$d/%2$d</string>
-    <string name="module_failed_count">%d falló al instalar un nuevo módulo</string>
-    <!-- Kasumi status text -->
-    <string name="warning_of_meta_module_title">Metamódulo requerido</string>
-    <string name="warning_of_meta_module_summary">Este módulo quiere montar /system, el metamódulo se encargará de ello. De lo contrario, podría no funcionar</string>
-    <!-- 分类相关 -->
     <string name="category_all_apps">Todas</string>
     <string name="category_root_apps">Root</string>
     <string name="category_custom_apps">Personalizado</string>
     <string name="category_default_apps">Predeterminado</string>
-    <!-- 排序相关 -->
+    
     <string name="sort_name_asc">Nombre ascendente</string>
     <string name="sort_name_desc">Nombre descendente</string>
     <string name="sort_install_time_new">Hora de instalación (lo más nuevo primero)</string>
@@ -232,9 +199,9 @@
     <string name="sort_size_desc">Tamaño (el más grande primero)</string>
     <string name="sort_size_asc">Orden ascendente de tamaño</string>
     <string name="sort_usage_freq">Utilizado con mayor frecuencia</string>
-    <!-- 状态相关 -->
+    
     <string name="no_apps_in_category">No hay aplicaciones en esta categoría</string>
-    <!-- 标签相关 -->
+    
     <string name="deny_authorization">Revocar autorización</string>
     <string name="grant_authorization">Autorizar</string>
     <string name="unmount_modules">Desmontar los montajes de módulos</string>
@@ -245,27 +212,15 @@
     <string name="scroll_to_bottom">Abajo</string>
     <string name="selected">Seleccionados</string>
     <string name="select">opción</string>
-    <!-- BottomSheet相关 -->
+    
     <string name="menu_options">Opciones del menú</string>
     <string name="sort_options">Ordenar por</string>
     <string name="app_categories">Selección del tipo de aplicación</string>
-    <string name="show_more_module_info">Mostrar más información del módulo</string>
-    <string name="show_more_module_info_summary">Mostrar información adicional del módulo, como las URL de Update JSON</string>
     <string name="kernel_simple_kernel">Modo conciso de la versión del kernel</string>
     <string name="kernel_simple_kernel_summary">Activar o desactivar el modo conciso de visualización de la versión del kernel de Tamisu</string>
     <string name="home_zygisk_implement">Implementación de Zygisk</string>
-    <string name="home_meta_module_implement">Implementación del metamódulo</string>
     <string name="home_hook_type">Tipo de hook</string>
-    <!-- 确认安装相关字符串 -->
-    <string name="confirm_installation">Confirmar instalación</string>
-    <string name="confirm_multiple_installation">Confirmar instalación (%d archivos)</string>
-    <string name="install_confirm">Instalar</string>
-    <string name="module_package">Módulo</string>
-    <string name="unknown_package">Desconocido</string>
-    <string name="unknown_file">Archivo desconocido</string>
-    <string name="version">Versión</string>
-    <string name="author">Autor</string>
-    <string name="description">Descripción</string>
+    
     <string name="log_viewer_title">Visor de registros</string>
     <string name="log_viewer_back">Atrás</string>
     <string name="log_viewer_search">Buscar</string>
@@ -321,21 +276,21 @@
     <string name="mnt_detach">MNT_DETACH</string>
     <string name="group_contains_apps">Contiene %d aplicaciones</string>
 
-    <!-- SuperKey authentication -->
+    
     <string name="show_password">Mostrar contraseña</string>
     <string name="hide_password">Ocultar contraseña</string>
 
-    <!-- SuperKey settings -->
+    
     <string name="signature_bypass_title">Modo solo SuperKey</string>
     <string name="signature_bypass_desc">Desactivar la verificación de firma APK. El administrador solo se reconocerá mediante la autenticación SuperKey.</string>
 
-    <!-- Kasumi Configuration -->
-    <!-- Kasumi uname spoofing -->
-    <!-- Kasumi user hide rules -->
+    
+    
+    
 
-    <!-- Kasumi per-module rules -->
+    
 
-    <!-- Partition Manager -->
+    
     <string name="partition_slot_info">Información de slots</string>
     <string name="partition_device_type">Tipo de dispositivo</string>
     <string name="partition_current_slot">Slot actual</string>
@@ -397,9 +352,9 @@
     <string name="partition_no_selection">Ninguna partición seleccionada</string>
     <string name="partition_back">Atrás</string>
 
-    <!-- Advanced Tools -->
+    
 
-    <!-- ksud daemon version / update -->
+    
     <string name="home_ksud_daemon_title">demonio ksud</string>
     <string name="home_ksud_daemon_apk_version">ksud incluido en el administrador: %1$s</string>
     <string name="home_ksud_daemon_installed_version">ksud instalado (/data/adb/ksud): %1$s</string>

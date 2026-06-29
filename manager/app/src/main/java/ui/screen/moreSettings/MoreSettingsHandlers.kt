@@ -168,11 +168,6 @@ class MoreSettingsHandlers(
         state.isKernelSimpleMode = newValue
     }
 
-    fun handleShowMoreModuleInfoChange(newValue: Boolean) {
-        prefs.edit { putBoolean("show_more_module_info", newValue) }
-        state.showMoreModuleInfo = newValue
-    }
-
     fun handleSelinuxChange(enabled: Boolean) {
         val ok = ShellUtils.fastCmdResult(getRootShell(), if (enabled) "setenforce 1" else "setenforce 0")
         if (ok) {

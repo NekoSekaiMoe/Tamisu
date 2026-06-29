@@ -9,26 +9,13 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.LifecycleCoroutineScope
 import me.dabao1955.tamisu.Natives
-import me.dabao1955.tamisu.ui.MainActivity
-import me.dabao1955.tamisu.ui.util.*
-import kotlinx.coroutines.Dispatchers
+import me.dabao1955.tamisu.ui.util.rootAvailable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.util.*
-import android.net.Uri
-import androidx.lifecycle.lifecycleScope
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import me.dabao1955.tamisu.ui.component.ZipFileDetector
-import me.dabao1955.tamisu.ui.component.ZipFileInfo
-import me.dabao1955.tamisu.ui.component.ZipType
-import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
-import me.dabao1955.tamisu.ui.screen.FlashIt
-import kotlinx.coroutines.withContext
-import androidx.core.content.edit
 
 object AnimatedBottomBar {
     @Composable
@@ -46,58 +33,15 @@ object AnimatedBottomBar {
     }
 }
 
-object UltraActivityUtils {
-
-    suspend fun detectZipTypeAndShowConfirmation(
-        activity: MainActivity,
-        zipUris: ArrayList<Uri>,
-        onResult: (List<ZipFileInfo>) -> Unit
-    ) {
-        val infos = ZipFileDetector.detectAndParseZipFiles(activity, zipUris)
-        withContext(Dispatchers.Main) { onResult(infos) }
-    }
-
-    fun navigateToFlashScreen(
-        activity: MainActivity,
-        zipFiles: List<ZipFileInfo>,
-        navigator: DestinationsNavigator
-    ) {
-        activity.lifecycleScope.launch {
-            val moduleUris = zipFiles.filter { it.type == ZipType.MODULE }.map { it.uri }
-
-            if (moduleUris.isNotEmpty()) {
-                navigator.navigate(
-                    FlashScreenDestination(
-                        FlashIt.FlashModules(ArrayList(moduleUris))
-                    )
-                )
-            }
-        }
-    }
-}
-
 object AppData {
     object DataRefreshManager {
-        private val _moduleCount = MutableStateFlow(0)
         private val _isFullFeatured = MutableStateFlow(false)
 
-        val moduleCount: StateFlow<Int> = _moduleCount.asStateFlow()
         val isFullFeatured: StateFlow<Boolean> = _isFullFeatured.asStateFlow()
 
         fun refreshData() {
-            val mc = getModuleCountUse()
             val ff = isFullFeatured()
-            if (_moduleCount.value != mc) _moduleCount.value = mc
             if (_isFullFeatured.value != ff) _isFullFeatured.value = ff
-        }
-    }
-
-    fun getModuleCountUse(): Int {
-        return try {
-            if (!rootAvailable()) return 0
-            getModuleCount()
-        } catch (_: Exception) {
-            0
         }
     }
 
@@ -143,3 +87,4 @@ object DisplayUtils {
         }
     }
 }
+

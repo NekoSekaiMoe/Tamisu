@@ -13,12 +13,7 @@
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">不明</string>
-    <string name="module_failed_to_enable">%s モジュールを ON にできませんでした</string>
-    <string name="module_failed_to_disable">%s モジュールを OFF にできませんでした</string>
-    <string name="module_empty">モジュールがインストールされていません</string>
-    <string name="module">モジュール</string>
     <string name="uninstall">アンインストール</string>
-    <string name="module_install">インストール</string>
     <string name="install">インストール</string>
     <string name="reboot">再起動</string>
     <string name="settings">設定</string>
@@ -28,12 +23,6 @@
     <string name="reboot_bootloader">ブートローダーで再起動</string>
     <string name="reboot_download">ダウンロードモードで再起動</string>
     <string name="reboot_edl">EDL で再起動</string>
-    <string name="module_uninstall_confirm">%s モジュールをアンインストールしますか？</string>
-    <string name="metamodule_uninstall_confirm">モジュール %s をアンインストールしてもよろしいですか？この操作はすべてのモジュールに影響し、メタモジュールが提供する一部の機能（マウントなど）が動作しなくなります</string>
-    <string name="module_uninstall_success">%s をアンインストールしました</string>
-    <string name="module_uninstall_failed">%s をアンインストールできませんでした</string>
-    <string name="module_version">バージョン</string>
-    <string name="module_author">作者</string>
     <string name="refresh">更新</string>
     <string name="show_system_apps">システムアプリを表示</string>
     <string name="hide_system_apps">システムアプリを非表示</string>
@@ -41,9 +30,8 @@
     <string name="safe_mode">セーフモード</string>
     <string name="jailbreak_timeout">脱獄に失敗した可能性があります。ログを確認してください</string>
     <string name="reboot_to_apply">再起動すると有効化されます</string>
-    <string name="module_magisk_conflict">モジュールが Magisk との競合により利用できません！</string>
     <string name="home_support_title">サポート開発</string>
-    <string name="about_source_code"><![CDATA[ソースコードは %1$s で確認できます<br/>%2$s チャンネルにご参加ください]]></string>
+    <string name="about_source_code">ソースコードは %1$s で確認できます&lt;br/&gt;%2$s チャンネルにご参加ください</string>
     <string name="profile_default">デフォルト</string>
     <string name="profile_template">テンプレート</string>
     <string name="profile_custom">カスタム</string>
@@ -92,7 +80,7 @@
     <string name="action">アクション</string>
     <string name="close">閉じる</string>
     <string name="home_auth_signature_tag">Signature</string>
-    <!-- Kasumi toasts -->
+    
     <string name="direct_install">直接インストール (推奨)</string>
     <string name="select_file">パッチを行うイメージを選択</string>
     <string name="install_inactive_slot">非アクティブなスロットにインストール (OTA 後)</string>
@@ -128,29 +116,15 @@
     <string name="selected_lkm">選択された LKM: %s</string>
     <string name="save_log">ログを保存</string>
     <string name="log_saved">保存されたログ</string>
-    <!-- Module related -->
-    <string name="module_install_confirm">%1$s モジュールをインストールしますか？</string>
-    <string name="unknown_module">不明なモジュール</string>
-    <!-- Module shortcut related -->
-    <string name="module_action_success">モジュール操作が完了しました</string>
-    <!-- Restore related -->
-    <string name="restore_confirm_title">モジュールの復元を確認</string>
-    <string name="restore_confirm_message">この操作によりモジュールが上書きされます。続行しますか？</string>
+    
     <string name="confirm">確認</string>
     <string name="cancel">キャンセル</string>
-    <!-- Backup related -->
-    <string name="backup_success">バックアップが完了しました (tar.gz)</string>
-    <string name="backup_failed">バックアップに失敗: %1$s</string>
-    <string name="backup_modules">モジュールをバックアップ</string>
-    <string name="restore_modules">モジュールを復元</string>
-    <!-- Restore related messages -->
-    <string name="restore_success">モジュールは正常に復元されました、再起動が必要です</string>
-    <string name="restore_failed">復元に失敗: %1$s</string>
+    
     <string name="restart_now">今すぐ再起動</string>
     <string name="unknown_error">不明なエラー</string>
-    <!-- Command related -->
+    
     <string name="command_execution_failed">コマンドの実行に失敗しました: %1$s</string>
-    <!-- Allowlist related -->
+    
     <string name="backup_allowlist">許可リストをバックアップ</string>
     <string name="restore_allowlist">許可リストを復元</string>
     <string name="home_android_version">Android バージョン</string>
@@ -158,7 +132,6 @@
     <string name="su_not_allowed">「%s」にスーパーユーザー権限を付与することはできません</string>
     <string name="feature_status_unsupported_summary">カーネルがこの機能をサポートしていません</string>
     <string name="feature_status_managed_summary">この機能はモジュールによって管理されています</string>
-    <string name="module_install_multiple_confirm_with_names">%1$d 個のモジュールをインストールしてもよろしいですか？\n\n%2$s</string>
     <string name="more_settings">その他の設定</string>
     <string name="selinux">SELinux</string>
     <string name="selinux_enabled">有効</string>
@@ -176,13 +149,13 @@
     <string name="yes">はい</string>
     <string name="no">いいえ</string>
     <string name="custom_settings">カスタム設定</string>
-    <!-- Error Messages -->
-    <!-- lkm/gki install -->
+    
+    
     <string name="Lkm_install_methods">LKM の修復またはインストール</string>
     <string name="configuration">設定</string>
     <string name="app_settings">アプリの設定</string>
     <string name="tools">ツール</string>
-    <!--  String resources used in SuperUser -->
+    
     <string name="no_apps_found">アプリがありません</string>
     <string name="selinux_enabled_toast">SELinux 有効</string>
     <string name="selinux_disabled_toast">SELinux 無効</string>
@@ -196,8 +169,8 @@
     <string name="advanced_settings">高度な設定</string>
     <string name="appearance_settings">ツールバーをカスタマイズ</string>
     <string name="back">戻る</string>
-    <!-- Webui X settings -->
-    <!-- DPI setting related strings -->
+    
+    
     <string name="app_dpi_title">DPI の変更を適用</string>
     <string name="app_dpi_summary">このアプリのみで画面表示密度を調整します。</string>
     <string name="dpi_size_small">小</string>
@@ -210,23 +183,17 @@
     <string name="dpi_confirm_message">アプリの DPI を %1$d から %2$d に変更してもよろしいですか？</string>
     <string name="dpi_confirm_summary">変更した DPI 設定を適用するにはアプリを再起動する必要がありますが、システムステータスバーや他のアプリには影響しません</string>
     <string name="dpi_applied_success">DPI は %1$d に変更されました。アプリの再起動後に適用されます。</string>
-    <!-- Language settings related strings -->
+    
     <string name="settings_language">アプリの言語</string>
     <string name="language_system_default">システムに従う</string>
-    <!-- Flash related -->
+    
     <string name="error_code">エラーコード</string>
     <string name="check_log">ログを確認してください</string>
-    <string name="installing_module">モジュールをインストール中: %1$d/%2$d</string>
-    <string name="module_failed_count">%d モジュールのインストールに失敗しました</string>
-    <!-- Kasumi status text -->
-    <string name="warning_of_meta_module_title">メタモジュールが必要です</string>
-    <string name="warning_of_meta_module_summary">このモジュールは /system をマウントしようとしています。メタモジュールがそれを処理します。そうでない場合、動作しないことがあります</string>
-    <!-- 分类相关 -->
     <string name="category_all_apps">すべて</string>
     <string name="category_root_apps">Root</string>
     <string name="category_custom_apps">カスタム</string>
     <string name="category_default_apps">デフォルト</string>
-    <!-- 排序相关 -->
+    
     <string name="sort_name_asc">名前の昇順</string>
     <string name="sort_name_desc">名前の降順</string>
     <string name="sort_install_time_new">インストール日時 (新しい)</string>
@@ -234,9 +201,9 @@
     <string name="sort_size_desc">サイズの降順</string>
     <string name="sort_size_asc">サイズの昇順</string>
     <string name="sort_usage_freq">使用頻度</string>
-    <!-- 状态相关 -->
+    
     <string name="no_apps_in_category">このカテゴリーにアプリはありません</string>
-    <!-- 标签相关 -->
+    
     <string name="deny_authorization">権限の認証</string>
     <string name="grant_authorization">認証</string>
     <string name="unmount_modules">モジュールのマウントを解除</string>
@@ -247,27 +214,15 @@
     <string name="scroll_to_bottom">画面下</string>
     <string name="selected">選択中</string>
     <string name="select">オプション</string>
-    <!-- BottomSheet相关 -->
+    
     <string name="menu_options">メニューのオプション</string>
     <string name="sort_options">並べ替え</string>
     <string name="app_categories">アプリタイプを選択</string>
-    <string name="show_more_module_info">モジュール情報の詳細を表示</string>
-    <string name="show_more_module_info_summary">更新用 JSON の URL など追加の情報を表示します。</string>
     <string name="kernel_simple_kernel">簡潔モードなカーネル バージョン</string>
     <string name="kernel_simple_kernel_summary">Tamisu のカーネル バージョンによって表示されるクリーンモードを有効または無効します。</string>
     <string name="home_zygisk_implement">Zygisk を実装</string>
-    <string name="home_meta_module_implement">メタモジュールの実装</string>
     <string name="home_hook_type">フックタイプ</string>
-    <!-- 确认安装相关字符串 -->
-    <string name="confirm_installation">インストールを確認</string>
-    <string name="confirm_multiple_installation">インストールを確認 (%d 個のファイル)</string>
-    <string name="install_confirm">インストール</string>
-    <string name="module_package">モジュール</string>
-    <string name="unknown_package">不明</string>
-    <string name="unknown_file">不明なファイル</string>
-    <string name="version">バージョン</string>
-    <string name="author">作者</string>
-    <string name="description">説明</string>
+    
     <string name="log_viewer_title">ログビューア</string>
     <string name="log_viewer_back">戻る</string>
     <string name="log_viewer_search">検索</string>
@@ -323,21 +278,21 @@
     <string name="mnt_detach">MNT_DETACH</string>
     <string name="group_contains_apps">%d 個のアプリが含まれています</string>
 
-    <!-- SuperKey authentication -->
+    
     <string name="show_password">パスワードを表示</string>
     <string name="hide_password">パスワードを非表示</string>
 
-    <!-- SuperKey settings -->
+    
     <string name="signature_bypass_title">SuperKey のみモード</string>
     <string name="signature_bypass_desc">APK 署名検証を無効にします。マネージャーは SuperKey 認証でのみ認識されます。</string>
 
-    <!-- Kasumi Configuration -->
-    <!-- Kasumi uname spoofing -->
-    <!-- Kasumi user hide rules -->
+    
+    
+    
 
-    <!-- Kasumi per-module rules -->
+    
 
-    <!-- Partition Manager -->
+    
     <string name="partition_slot_info">スロット情報</string>
     <string name="partition_device_type">デバイスの種類</string>
     <string name="partition_current_slot">現在のスロット</string>
@@ -399,9 +354,9 @@
     <string name="partition_no_selection">パーティションが選択されていません</string>
     <string name="partition_back">戻る</string>
 
-    <!-- Advanced Tools -->
+    
 
-    <!-- ksud daemon version / update -->
+    
     <string name="home_ksud_daemon_title">ksud デーモン</string>
     <string name="home_ksud_daemon_apk_version">マネージャー同梱の ksud: %1$s</string>
     <string name="home_ksud_daemon_installed_version">インストール済み ksud (/data/adb/ksud): %1$s</string>

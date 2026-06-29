@@ -41,9 +41,7 @@ class HomeViewModel : ViewModel() {
         val deviceModel: String = "",
         val managerVersion: Pair<String, Long> = Pair("", 0L),
         val seLinuxStatus: String = "",
-        val moduleCount: Int = 0,
         val zygiskImplement: String = "",
-        val metaModuleImplement: String = "",
         // Manager process seccomp mode: -1 unsupported, 0 disabled, 1 strict,
         // 2 filter (mirrors upstream's prctl(PR_GET_SECCOMP)).
         val seccompStatus: Int = 2
@@ -186,11 +184,13 @@ class HomeViewModel : ViewModel() {
                 delay(100)
 
                 if (!isSimpleMode) {
-                    val moduleInfo = loadModuleInfo()
+                    val zygiskImplement = try {
+                        getZygiskImplement()
+                    } catch (_: Exception) {
+                        "None"
+                    }
                     systemInfo = systemInfo.copy(
-                        moduleCount = moduleInfo.second,
-                        zygiskImplement = moduleInfo.third,
-                        metaModuleImplement = moduleInfo.fourth
+                        zygiskImplement = zygiskImplement
                     )
                 }
 
@@ -277,16 +277,6 @@ class HomeViewModel : ViewModel() {
                     return@withContext true
                 }
 
-                val currentModuleCount = try {
-                    getModuleCount()
-                } catch (_: Exception) {
-                    systemInfo.moduleCount
-                }
-
-                if (currentModuleCount != systemInfo.moduleCount) {
-                    return@withContext true
-                }
-
                 false
             } catch (_: Exception) {
                 false
@@ -339,30 +329,6 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    private suspend fun loadModuleInfo(): Tuple4<Int, Int, String, String> {
-        return withContext(Dispatchers.IO) {
-            val moduleCount = try {
-                getModuleCount()
-            } catch (_: Exception) {
-                0
-            }
-
-            val zygiskImplement = try {
-                getZygiskImplement()
-            } catch (_: Exception) {
-                "None"
-            }
-
-            val metaModuleImplement = try {
-                getMetaModuleImplement()
-            } catch (_: Exception) {
-                "None"
-            }
-
-            Tuple4(0, moduleCount, zygiskImplement, metaModuleImplement)
-        }
-    }
-
     private fun getManagerVersion(context: Context): Pair<String, Long> {
         return try {
             val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
@@ -380,13 +346,6 @@ class HomeViewModel : ViewModel() {
         val third: T3,
         val fourth: T4,
         val fifth: T5
-    )
-
-    data class Tuple4<T1, T2, T3, T4>(
-        val first: T1,
-        val second: T2,
-        val third: T3,
-        val fourth: T4
     )
 
     override fun onCleared() {

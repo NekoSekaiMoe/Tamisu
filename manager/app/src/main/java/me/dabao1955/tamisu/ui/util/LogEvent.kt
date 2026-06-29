@@ -97,9 +97,10 @@ fun getBugreportFile(context: Context): File {
         pw.println("LKM: true")
     }
 
-    // modules
+    // modules: ksud no longer exposes module management (zygisk provider scope);
+    // module list is owned by the external root solution, so emit an empty array.
     val modulesFile = File(bugreportDir, "modules.json")
-    modulesFile.writeText(listModules())
+    modulesFile.writeText("[]")
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
     val current = LocalDateTime.now().format(formatter)

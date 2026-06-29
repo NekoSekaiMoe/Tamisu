@@ -1,6 +1,5 @@
 package me.dabao1955.tamisu.ui.util
 
-import android.content.Context
 import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
@@ -18,8 +17,6 @@ import me.dabao1955.tamisu.ksu.KsuPaths
 import me.dabao1955.tamisu.tamisuApp
 import me.dabao1955.tamisu.utils.AssetsUtil
 import com.topjohnwu.superuser.io.SuFile
-import org.json.JSONArray
-import org.json.JSONObject
 import java.io.File
 import java.util.Properties
 
@@ -285,59 +282,6 @@ fun install() {
     Log.w(TAG, "install result: $result, cost: ${SystemClock.elapsedRealtime() - start}ms")
 }
 
-fun hasMetaModule(): Boolean {
-    // Treat both external metamodule and built-in Kasumi as valid metamodule implementations.
-    // External metamodule: /data/adb/metamodule/module.prop present and readable.
-    // Built-in Kasumi: /data/adb/hymo/config.json or /data/adb/hymo directory exists.
-    return try {
-        val hymoDir = SuFile.open("/data/adb/hymo")
-        val hymoConfig = SuFile.open("/data/adb/hymo/config.json")
-        if ((hymoDir.exists() && hymoDir.isDirectory) || hymoConfig.isFile) {
-            true
-        } else {
-            getMetaModuleImplement() != "None"
-        }
-    } catch (_: Throwable) {
-        getMetaModuleImplement() != "None"
-    }
-}
-
-fun listModules(): String =
-    ksudReadLines("module list").joinToString("\n").ifBlank { "[]" }
-
-fun getModuleCount(): Int {
-    val result = listModules()
-    runCatching {
-        val array = JSONArray(result)
-        return array.length()
-    }.getOrElse { return 0 }
-}
-
-fun toggleModule(id: String, enable: Boolean): Boolean {
-    val cmd = if (enable) {
-        "module enable $id"
-    } else {
-        "module disable $id"
-    }
-    val result = execKsud(cmd, true)
-    Log.i(TAG, "$cmd result: $result")
-    return result
-}
-
-fun uninstallModule(id: String): Boolean {
-    val cmd = "module uninstall $id"
-    val result = execKsud(cmd, true)
-    Log.i(TAG, "uninstall module $id result: $result")
-    return result
-}
-
-fun undoUninstallModule(id: String): Boolean {
-    val cmd = "module undo-uninstall $id"
-    val result = execKsud(cmd, true)
-    Log.i(TAG, "undo uninstall module $id result: $result")
-    return result
-}
-
 private fun flashWithIO(
     cmd: String,
     onStdout: (String) -> Unit,
@@ -363,53 +307,6 @@ private fun flashWithIO(
     return withNewRootShell {
         newJob().add(cmdWithEnv).to(stdoutCallback, stderrCallback).exec()
     }
-}
-
-fun flashModule(
-    uri: Uri,
-    onFinish: (Boolean, Int) -> Unit,
-    onStdout: (String) -> Unit,
-    onStderr: (String) -> Unit
-): Boolean {
-    val resolver = tamisuApp.contentResolver
-    with(resolver.openInputStream(uri)) {
-        val file = File(tamisuApp.cacheDir, "module.zip")
-        file.outputStream().use { output ->
-            this?.copyTo(output)
-        }
-        val cmd = "module install ${file.absolutePath}"
-        val result = flashWithIO(ksudCmd(cmd), onStdout, onStderr)
-        Log.i("Tamisu", "install module $uri result: $result")
-
-        file.delete()
-
-        onFinish(result.isSuccess, result.code)
-        return result.isSuccess
-    }
-}
-
-fun runModuleAction(
-    moduleId: String, onStdout: (String) -> Unit, onStderr: (String) -> Unit
-): Boolean {
-    val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
-        override fun onAddElement(s: String?) {
-            onStdout(s ?: "")
-        }
-    }
-
-    val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
-        override fun onAddElement(s: String?) {
-            onStderr(s ?: "")
-        }
-    }
-
-    val result = withNewRootShell(true) {
-        newJob().add(ksudCmd("module action $moduleId"))
-            .to(stdoutCallback, stderrCallback).exec()
-    }
-    Log.i("Tamisu", "Module runAction result: $result")
-
-    return result.isSuccess
 }
 
 fun restoreBoot(
@@ -625,26 +522,6 @@ fun runCmd(shell: Shell, cmd: String): String {
         .joinToString("\n")
 }
 
-
-fun getMetaModuleImplement(): String {
-    try {
-        val metaModuleProp = SuFile.open("/data/adb/metamodule/module.prop")
-        if (!metaModuleProp.isFile) {
-            Log.i(TAG, "Meta module implement: None")
-            return "None"
-        }
-
-        val prop = Properties()
-        prop.load(metaModuleProp.newInputStream())
-
-        val name = prop.getProperty("name")
-        Log.i(TAG, "Meta module implement: $name")
-        return name
-    } catch (_ : Throwable) {
-        Log.i(TAG, "Meta module implement: None")
-        return "None"
-    }
-}
 
 /** Module IDs of known third-party Zygisk implementations ("zygisksu" covers
  *  both ZygiskNext and NeoZygisk -- they share that id). Built-in YukiZygisk is

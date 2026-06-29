@@ -665,14 +665,6 @@ private fun InfoCard(
                 )
             }
 
-            if (!isSimpleMode && systemInfo.metaModuleImplement != "None") {
-                InfoCardItem(
-                    stringResource(R.string.home_meta_module_implement),
-                    systemInfo.metaModuleImplement,
-                    icon = Icons.Default.Extension,
-                )
-            }
-
             if (showKsudDialog) {
                 KsudVersionDialog(
                     onDismiss = { showKsudDialog = false },

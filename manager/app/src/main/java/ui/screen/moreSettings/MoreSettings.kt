@@ -173,15 +173,6 @@ private fun CustomizationSettings(
     SettingsCard(title = stringResource(R.string.custom_settings)) {
 
         SwitchSettingItem(
-            icon = Icons.Filled.Info,
-            title = stringResource(R.string.show_more_module_info),
-            summary = stringResource(R.string.show_more_module_info_summary),
-            checked = state.showMoreModuleInfo,
-            onChange = handlers::handleShowMoreModuleInfoChange
-        )
-
-
-        SwitchSettingItem(
             icon = Icons.Filled.Brush,
             title = stringResource(R.string.simple_mode),
             summary = stringResource(R.string.simple_mode_summary),

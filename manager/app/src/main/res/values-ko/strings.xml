@@ -13,12 +13,7 @@
     <string name="selinux_status_enforcing">시행 중</string>
     <string name="selinux_status_permissive">허용</string>
     <string name="selinux_status_unknown">알 수 없음</string>
-    <string name="module_failed_to_enable">모듈 활성화 실패: %s</string>
-    <string name="module_failed_to_disable">모듈 비활성화 실패: %s</string>
-    <string name="module_empty">설치된 모듈 없음</string>
-    <string name="module">모듈</string>
     <string name="uninstall">삭제</string>
-    <string name="module_install">설치</string>
     <string name="install">설치</string>
     <string name="reboot">다시 시작</string>
     <string name="settings">설정</string>
@@ -28,12 +23,6 @@
     <string name="reboot_bootloader">부트로더로 다시 시작</string>
     <string name="reboot_download">다운로드 모드로 다시 시작</string>
     <string name="reboot_edl">EDL 모드로 다시 시작</string>
-    <string name="module_uninstall_confirm">%s 모듈을 삭제할까요?</string>
-    <string name="metamodule_uninstall_confirm">모듈 %s을(를) 제거하시겠습니까? 이 작업은 모든 모듈에 영향을 주며, 메타모듈이 제공하는 일부 기능(마운트 등)이 더 이상 작동하지 않습니다</string>
-    <string name="module_uninstall_success">%s 모듈 삭제됨</string>
-    <string name="module_uninstall_failed">모듈 삭제 실패: %s</string>
-    <string name="module_version">버전</string>
-    <string name="module_author">제작자</string>
     <string name="refresh">새로고침</string>
     <string name="show_system_apps">시스템 앱 보이기</string>
     <string name="hide_system_apps">시스템 앱 숨기기</string>
@@ -41,9 +30,8 @@
     <string name="safe_mode">안전 모드</string>
     <string name="jailbreak_timeout">탈옥이 실패했을 수 있습니다. 로그를 확인하세요</string>
     <string name="reboot_to_apply">다시 시작하여 변경 사항 적용</string>
-    <string name="module_magisk_conflict">Magisk와 충돌로 모듈을 사용할 수 없습니다!</string>
     <string name="home_support_title">지원 개발</string>
-    <string name="about_source_code"><![CDATA[%1$s에서 소스 코드 보기<br/>%2$s 채널에 참여하기]]></string>
+    <string name="about_source_code">%1$s에서 소스 코드 보기&lt;br/&gt;%2$s 채널에 참여하기</string>
     <string name="profile_default">기본값</string>
     <string name="profile_template">템플릿</string>
     <string name="profile_custom">사용자 지정</string>
@@ -92,7 +80,7 @@
     <string name="action">동작</string>
     <string name="close">닫기</string>
     <string name="home_auth_signature_tag">Signature</string>
-    <!-- Kasumi toasts -->
+    
     <string name="direct_install">직접 설치 (권장)</string>
     <string name="select_file">패치가 필요한 이미지를 선택하세요</string>
     <string name="install_inactive_slot">비활성 슬롯에 설치 (OTA 이후)</string>
@@ -126,29 +114,15 @@
     <string name="selected_lkm">선택된 LKM: %s</string>
     <string name="save_log">로그 저장</string>
     <string name="log_saved">로그 저장됨</string>
-    <!-- Module related -->
-    <string name="module_install_confirm">%1$s 모듈을 설치하시겠습니까?</string>
-    <string name="unknown_module">알 수 없는 모듈</string>
-    <!-- Module shortcut related -->
-    <string name="module_action_success">모듈 작업이 완료되었습니다</string>
-    <!-- Restore related -->
-    <string name="restore_confirm_title">모듈 복원 확인</string>
-    <string name="restore_confirm_message">이 작업은 기존의 모든 모듈을 덮어씁니다. 계속하시겠습니까?</string>
+    
     <string name="confirm">확인</string>
     <string name="cancel">취소</string>
-    <!-- Backup related -->
-    <string name="backup_success">백업 성공 (tar.gz)</string>
-    <string name="backup_failed">백업 실패: %1$s</string>
-    <string name="backup_modules">모듈 백업</string>
-    <string name="restore_modules">모듈 복원</string>
-    <!-- Restore related messages -->
-    <string name="restore_success">모듈이 성공적으로 복원되었습니다. 재시작이 필요합니다</string>
-    <string name="restore_failed">복원 실패: %1$s</string>
+    
     <string name="restart_now">지금 재시작</string>
     <string name="unknown_error">알 수 없는 오류</string>
-    <!-- Command related -->
+    
     <string name="command_execution_failed">명령 실행 실패: %1$s</string>
-    <!-- Allowlist related -->
+    
     <string name="backup_allowlist">허용 목록 백업</string>
     <string name="restore_allowlist">허용 목록 복원</string>
     <string name="home_android_version">Android 버전</string>
@@ -156,7 +130,6 @@
     <string name="su_not_allowed">%s에 슈퍼유저 권한을 부여할 수 없습니다</string>
     <string name="feature_status_unsupported_summary">커널이 이 기능을 지원하지 않습니다</string>
     <string name="feature_status_managed_summary">이 기능은 모듈에 의해 관리됩니다</string>
-    <string name="module_install_multiple_confirm_with_names">다음 %1$d개의 모듈을 설치하시겠습니까? \n\n%2$s</string>
     <string name="more_settings">추가 설정</string>
     <string name="selinux">SELinux</string>
     <string name="selinux_enabled">활성화됨</string>
@@ -174,13 +147,13 @@
     <string name="yes">예</string>
     <string name="no">아니요</string>
     <string name="custom_settings">사용자 지정 설정</string>
-    <!-- Error Messages -->
-    <!-- lkm/gki install -->
+    
+    
     <string name="Lkm_install_methods">LKM 복구/설치</string>
     <string name="configuration">구성</string>
     <string name="app_settings">애플리케이션 설정</string>
     <string name="tools">도구</string>
-    <!--  String resources used in SuperUser -->
+    
     <string name="no_apps_found">애플리케이션을 찾을 수 없음</string>
     <string name="selinux_enabled_toast">SELinux 활성화됨</string>
     <string name="selinux_disabled_toast">SELinux 비활성화됨</string>
@@ -194,8 +167,8 @@
     <string name="advanced_settings">고급 설정</string>
     <string name="appearance_settings">도구 모음 사용자 지정</string>
     <string name="back">뒤로</string>
-    <!-- Webui X settings -->
-    <!-- DPI setting related strings -->
+    
+    
     <string name="app_dpi_title">적용된 DPI</string>
     <string name="app_dpi_summary">현재 애플리케이션에만 화면 표시 밀도를 조정합니다</string>
     <string name="dpi_size_small">작게</string>
@@ -208,23 +181,17 @@
     <string name="dpi_confirm_message">애플리케이션 DPI를 %1$d에서 %2$d(으)로 변경하시겠습니까?</string>
     <string name="dpi_confirm_summary">새 DPI 설정을 적용하려면 애플리케이션을 다시 시작해야 합니다. 시스템 상태 표시줄이나 다른 애플리케이션에는 영향을 주지 않습니다</string>
     <string name="dpi_applied_success">DPI가 %1$d(으)로 설정되었습니다. 애플리케이션 재시작 후 적용됩니다</string>
-    <!-- Language settings related strings -->
+    
     <string name="settings_language">앱 언어</string>
     <string name="language_system_default">시스템 설정 따르기</string>
-    <!-- Flash related -->
+    
     <string name="error_code">오류 코드</string>
     <string name="check_log">로그를 확인하세요</string>
-    <string name="installing_module">모듈 설치 중 %1$d/%2$d</string>
-    <string name="module_failed_count">새 모듈 %d개 설치 실패</string>
-    <!-- Kasumi status text -->
-    <string name="warning_of_meta_module_title">메타모듈 필요</string>
-    <string name="warning_of_meta_module_summary">이 모듈은 /system을 마운트하려고 합니다. 메타모듈이 이를 처리합니다. 그렇지 않으면 작동하지 않을 수 있습니다</string>
-    <!-- 分类相关 -->
     <string name="category_all_apps">전체</string>
     <string name="category_root_apps">Root</string>
     <string name="category_custom_apps">사용자 지정</string>
     <string name="category_default_apps">기본</string>
-    <!-- 排序相关 -->
+    
     <string name="sort_name_asc">이름 오름차순</string>
     <string name="sort_name_desc">이름 내림차순</string>
     <string name="sort_install_time_new">설치 시간(최신순)</string>
@@ -232,9 +199,9 @@
     <string name="sort_size_desc">크기(큰 것부터)</string>
     <string name="sort_size_asc">크기 오름차순</string>
     <string name="sort_usage_freq">가장 자주 사용되는</string>
-    <!-- 状态相关 -->
+    
     <string name="no_apps_in_category">이 카테고리에 애플리케이션이 없습니다</string>
-    <!-- 标签相关 -->
+    
     <string name="deny_authorization">권한 취소</string>
     <string name="grant_authorization">권한 부여</string>
     <string name="unmount_modules">모듈 마운트 해제</string>
@@ -245,27 +212,15 @@
     <string name="scroll_to_bottom">맨 아래</string>
     <string name="selected">선택됨</string>
     <string name="select">option</string>
-    <!-- BottomSheet相关 -->
+    
     <string name="menu_options">메뉴 옵션</string>
     <string name="sort_options">정렬 기준</string>
     <string name="app_categories">애플리케이션 유형 선택</string>
-    <string name="show_more_module_info">모듈 정보 더 보기</string>
-    <string name="show_more_module_info_summary">Update JSON URL 등 추가 모듈 정보를 표시합니다</string>
     <string name="kernel_simple_kernel">커널 버전 간단 모드</string>
     <string name="kernel_simple_kernel_summary">Tamisu 커널 버전 표시의 간단 모드를 활성화 또는 비활성화합니다</string>
     <string name="home_zygisk_implement">Zygisk 구현</string>
-    <string name="home_meta_module_implement">메타모듈 구현</string>
     <string name="home_hook_type">Hook 유형</string>
-    <!-- 确认安装相关字符串 -->
-    <string name="confirm_installation">설치 확인</string>
-    <string name="confirm_multiple_installation">설치 확인 (%d개 파일)</string>
-    <string name="install_confirm">설치</string>
-    <string name="module_package">모듈</string>
-    <string name="unknown_package">알 수 없음</string>
-    <string name="unknown_file">알 수 없는 파일</string>
-    <string name="version">버전</string>
-    <string name="author">제작자</string>
-    <string name="description">설명</string>
+    
     <string name="log_viewer_title">로그 뷰어</string>
     <string name="log_viewer_back">뒤로</string>
     <string name="log_viewer_search">검색</string>
@@ -321,21 +276,21 @@
     <string name="mnt_detach">MNT_DETACH</string>
     <string name="group_contains_apps">%d개의 앱 포함</string>
 
-    <!-- SuperKey authentication -->
+    
     <string name="show_password">비밀번호 표시</string>
     <string name="hide_password">비밀번호 숨기기</string>
 
-    <!-- SuperKey settings -->
+    
     <string name="signature_bypass_title">SuperKey 전용 모드</string>
     <string name="signature_bypass_desc">APK 서명 확인을 비활성화합니다. 관리자는 SuperKey 인증을 통해서만 인식됩니다.</string>
 
-    <!-- Kasumi Configuration -->
-    <!-- Kasumi uname spoofing -->
-    <!-- Kasumi user hide rules -->
+    
+    
+    
 
-    <!-- Kasumi per-module rules -->
+    
 
-    <!-- Partition Manager -->
+    
     <string name="partition_slot_info">슬롯 정보</string>
     <string name="partition_device_type">기기 유형</string>
     <string name="partition_current_slot">현재 슬롯</string>
@@ -397,9 +352,9 @@
     <string name="partition_no_selection">선택된 파티션 없음</string>
     <string name="partition_back">뒤로</string>
 
-    <!-- Advanced Tools -->
+    
 
-    <!-- ksud daemon version / update -->
+    
     <string name="home_ksud_daemon_title">ksud 데몬</string>
     <string name="home_ksud_daemon_apk_version">관리자 번들 ksud: %1$s</string>
     <string name="home_ksud_daemon_installed_version">설치된 ksud (/data/adb/ksud): %1$s</string>

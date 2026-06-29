@@ -19,12 +19,7 @@
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Unknown</string>
-    <string name="module_failed_to_enable">Failed to enable module: %s</string>
-    <string name="module_failed_to_disable">Failed to disable module: %s</string>
-    <string name="module_empty">No module installed</string>
-    <string name="module">Module</string>
     <string name="uninstall">Uninstall</string>
-    <string name="module_install">Install</string>
     <string name="install">Install</string>
     <string name="reboot">Reboot</string>
     <string name="settings">Settings</string>
@@ -35,19 +30,12 @@
     <string name="reboot_download">Reboot to Download</string>
     <string name="reboot_edl">Reboot to EDL</string>
     <string name="about">About</string>
-    <string name="module_uninstall_confirm">Are you sure you want to uninstall module %s?</string>
-    <string name="metamodule_uninstall_confirm">Are you sure you want to uninstall module %s? This action will affect all modules, and certain features provided by the metamodule (such as mounting) will no longer work</string>
-    <string name="module_uninstall_success">%s uninstalled</string>
-    <string name="module_uninstall_failed">Failed to uninstall: %s</string>
-    <string name="module_version">Version</string>
-    <string name="module_author">Author</string>
     <string name="refresh">Refresh</string>
     <string name="show_system_apps">Show system apps</string>
     <string name="hide_system_apps">Hide system apps</string>
     <string name="send_log">Send logs</string>
     <string name="safe_mode">Safe mode</string>
     <string name="reboot_to_apply">Reboot to take effect</string>
-    <string name="module_magisk_conflict">Modules are unavailable due to a conflict with Magisk!</string>
     <string name="home_support_title">Support Development</string>
     <string name="home_support_content">Tamisu will remain free and open source; donate to the project to show your support.</string>
     <string name="about_source_code"><![CDATA[View source code at %1$s<br/>Join our %2$s channel]]></string>
@@ -134,23 +122,9 @@
     <string name="selected_lkm">Selected LKM: %s</string>
     <string name="save_log">Save logs</string>
     <string name="log_saved">Logs saved</string>
-    <!-- Module related -->
-    <string name="module_install_confirm">Install module %1$s?</string>
-    <string name="unknown_module">Unknown module</string>
-    <string name="module_action_success">Module action finished</string>
-    <!-- Restore related -->
-    <string name="restore_confirm_title">Confirm Module Restoration</string>
-    <string name="restore_confirm_message">This operation will overwrite all existing modules. Continue?</string>
     <string name="confirm">Confirm</string>
     <string name="cancel">Cancel</string>
-    <!-- Backup related -->
-    <string name="backup_success">Backup successful (tar.gz)</string>
-    <string name="backup_failed">Backup failed: %1$s</string>
-    <string name="backup_modules">Backup modules</string>
-    <string name="restore_modules">Restore modules</string>
     <!-- Restore related messages -->
-    <string name="restore_success">Modules restored successfully, restart required</string>
-    <string name="restore_failed">Restore failed: %1$s</string>
     <string name="restart_now">Restart Now</string>
     <string name="unknown_error">Unknown error</string>
     <!-- Command related -->
@@ -163,7 +137,6 @@
     <string name="su_not_allowed">Granting superuser to %s is not allowed</string>
     <string name="feature_status_unsupported_summary">Kernel does not support this feature</string>
     <string name="feature_status_managed_summary">This feature is managed by a module</string>
-    <string name="module_install_multiple_confirm_with_names">Sure you want to install the following %1$d modules? \n\n%2$s</string>
     <string name="more_settings">More settings</string>
     <string name="selinux">SELinux</string>
     <string name="selinux_enabled">Enabled</string>
@@ -223,11 +196,6 @@
     <!-- Flash related -->
     <string name="error_code">error code</string>
     <string name="check_log">Please check the log</string>
-    <string name="installing_module">Module being installed %1$d/%2$d</string>
-    <string name="module_failed_count">%d Failed to install a new module</string>
-    <!-- Kasumi status text -->
-    <string name="warning_of_meta_module_title">Require Meta module</string>
-    <string name="warning_of_meta_module_summary">This module want to mount /system, meta module will handle that. Otherwise, it might not work</string>
     <!-- 分类相关 -->
     <string name="category_all_apps">All</string>
     <string name="category_root_apps">Root</string>
@@ -258,25 +226,10 @@
     <string name="menu_options">Menu Options</string>
     <string name="sort_options">Sort by</string>
     <string name="app_categories">Application Type Selection</string>
-    <string name="show_more_module_info">Show More Module Info</string>
-    <string name="show_more_module_info_summary">Display additional module information like update JSON URLs</string>
     <string name="kernel_simple_kernel">Kernel Version Concise Mode</string>
     <string name="kernel_simple_kernel_summary">Enable or disable the clean mode displayed by the Tamisu kernel version</string>
     <string name="home_zygisk_implement">Zygisk implement</string>
-    <string name="module_disabled_by_yukizygisk">YukiZygisk is enabled; this module is disabled to prevent conflicts</string>
-    <string name="home_meta_module_implement">Meta Module implement</string>
     <string name="home_hook_type">Hook type</string>
-    <!-- 确认安装相关字符串 -->
-    <string name="confirm_installation">Confirm Installation</string>
-    <string name="confirm_multiple_installation">Confirm Installation (%d files)</string>
-    <string name="install_confirm">Install</string>
-    <string name="module_package">Module</string>
-    <string name="unknown_package">Unknown</string>
-    <string name="unknown_file">Unknown File</string>
-    <string name="unsupported_file_format">Unsupported file format. Only Magisk / KernelSU / APatch module packages are supported.</string>
-    <string name="version">Version</string>
-    <string name="author">Author</string>
-    <string name="description">Description</string>
     <string name="log_viewer_title">Log Viewer</string>
     <string name="log_viewer_back">Back</string>
     <string name="log_viewer_search">Search</string>
@@ -463,7 +416,6 @@
     <string name="yukizygisk_log_dmesg_title">Log to dmesg</string>
     <string name="yukizygisk_log_dmesg_summary">Route YukiZygisk logs to the kernel ring buffer (visible via dmesg). Off keeps things quiet.</string>
     <string name="yukizygisk_uid_fallback">uid %1$d</string>
-    <string name="module_zygisk_loaded">Loaded</string>
 
     <!-- Install page: jailbreak (late-load trigger) and Kasumi integration.
          These UIs are still wired up in Install.kt and must not be deleted. -->

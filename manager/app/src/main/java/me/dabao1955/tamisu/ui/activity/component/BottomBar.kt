@@ -26,10 +26,6 @@ fun BottomBar(navController: NavHostController) {
     val isFullFeatured by AppData.DataRefreshManager.isFullFeatured.collectAsState()
     val cardColor = MaterialTheme.colorScheme.surfaceContainer
 
-    // 收集计数数据
-    val moduleCount by AppData.DataRefreshManager.moduleCount.collectAsState()
-
-
     NavigationBar(
         modifier = Modifier.windowInsetsPadding(
             WindowInsets.navigationBars.only(WindowInsetsSides.Horizontal)
