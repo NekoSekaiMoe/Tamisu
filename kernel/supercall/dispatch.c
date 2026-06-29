@@ -561,8 +561,8 @@ static int do_yz_patch_text(void __user *arg)
 			cmd.len, cmd.addr, cmd.pid);
 		return -EFAULT;
 	}
-	pr_info("yz_patch_text: %u byte(s) @0x%llx pid=%u\n", cmd.len,
-		cmd.addr, cmd.pid);
+	pr_info("yz_patch_text: %u byte(s) @0x%llx pid=%u\n", cmd.len, cmd.addr,
+		cmd.pid);
 	return 0;
 }
 
