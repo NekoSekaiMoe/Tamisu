@@ -16,3 +16,6 @@ build_ksud/
 
 out/
 ReZygisk/
+---
+log.txt
+warn.txt

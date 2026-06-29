@@ -960,7 +960,6 @@ fun ModuleItemPreview() {
         hasActionScript = true,
         metamodule = true,
         dirId = "dirId",
-        config = ModuleConfig()
     )
     ModuleItem(
         navigator = EmptyDestinationsNavigator,

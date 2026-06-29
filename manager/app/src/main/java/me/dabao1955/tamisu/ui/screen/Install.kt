@@ -396,15 +396,7 @@ fun InstallScreen(
                     }
                 }
 
-                // 高级功能入口：未选择安装方式时显示，选择后隐藏
                 AnimatedVisibility(
-                    visible = installMethod == null,
-                    enter = fadeIn() + expandVertically(),
-                    exit = shrinkVertically() + fadeOut()
-                ) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-
-                        AnimatedVisibility(
                     visible = !isManager,
                     enter = fadeIn() + expandVertically(),
                     exit = shrinkVertically() + fadeOut()

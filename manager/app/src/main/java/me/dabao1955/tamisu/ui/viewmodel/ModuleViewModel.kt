@@ -9,8 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dergoogler.mmrl.platform.model.ModuleConfig
-import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import me.dabao1955.tamisu.Natives
@@ -19,7 +17,6 @@ import me.dabao1955.tamisu.ui.util.getRootShell
 import me.dabao1955.tamisu.ui.util.getFeatureValue
 import me.dabao1955.tamisu.ui.util.toggleModule
 import me.dabao1955.tamisu.ui.util.ZYGISK_IMPL_MODULE_IDS
-import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.Collator
@@ -83,7 +80,6 @@ class ModuleViewModel : ViewModel() {
         val dirId: String, // real module id (dir name)
         val actionIconPath: String? = null,
         val webUiIconPath: String? = null,
-        var config: ModuleConfig? = null,
 
     )
 
@@ -183,37 +179,7 @@ class ModuleViewModel : ViewModel() {
                 }
 
                 launch {
-                    modules.forEach { module ->
-                        withContext(Dispatchers.IO) {
-                            try {
-                                runCatching {
-                                    module.config = module.id.asModuleConfig
-                                }.onFailure { e ->
-                                    Log.e(TAG, "Failed to load config from id for module ${module.id}", e)
-                                }
-                                if (module.config == null) {
-                                    runCatching {
-                                        module.config = module.name.asModuleConfig
-                                    }.onFailure { e ->
-                                        Log.e(TAG, "Failed to load config from name for module ${module.id}", e)
-                                    }
-                                }
-                                if (module.config == null) {
-                                    runCatching {
-                                        module.config = module.description.asModuleConfig
-                                    }.onFailure { e ->
-                                        Log.e(TAG, "Failed to load config from description for module ${module.id}", e)
-                                    }
-                                }
-                                if (module.config == null) {
-                                    module.config = ModuleConfig()
-                                }
-                            } catch (e: Exception) {
-                                Log.e(TAG, "Failed to load any config for module ${module.id}", e)
-                                module.config = ModuleConfig()
-                            }
-                        }
-                    }
+                    // config loading removed (WebUI dropped)
                 }
 
                 if (::moduleSizeCache.isInitialized) {
@@ -255,12 +221,11 @@ fun ModuleViewModel.ModuleInfo.copy(
     dirId: String = this.dirId,
     actionIconPath: String? = this.actionIconPath,
     webUiIconPath: String? = this.webUiIconPath,
-    config: ModuleConfig? = this.config,
 ): ModuleViewModel.ModuleInfo {
     return ModuleViewModel.ModuleInfo(
         id, name, author, version, versionCode, description,
         enabled, update, remove, hasWebUi, hasActionScript, metamodule,
-        dirId, actionIconPath, webUiIconPath, config
+        dirId, actionIconPath, webUiIconPath
     )
 }
 

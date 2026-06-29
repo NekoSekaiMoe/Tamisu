@@ -231,8 +231,6 @@ private fun AdvancedSettings(
         )
     }
 }
-    }
-}
 
 @Composable
 private fun DpiSettings(
