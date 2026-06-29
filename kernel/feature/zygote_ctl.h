@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * YukiZygisk - kernel control plane: zygiskd -> kernel handoff + fd brokering.
+ * Tamisu - kernel control plane: zygiskd -> kernel handoff + fd brokering.
  *
  * Author: Anatdx
  */

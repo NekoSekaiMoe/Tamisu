@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * YukiZygisk - kernel-side zygote detection and AT_ENTRY injection.
+ * Tamisu - kernel-side zygote detection and AT_ENTRY injection.
  *
  * Author: Anatdx
  */
@@ -43,9 +43,9 @@
 
 static const char app_process[] = "app_process";
 
-/* Gated by KSU_FEATURE_YUKIZYGISK (ksud's manager toggles it via set_feature).
+/* Gated by KSU_FEATURE_TAMISU (ksud's manager toggles it via set_feature).
  * Off by default; the AT_ENTRY redirect below only fires when this is on. */
-static bool yukizygisk_enabled;
+static bool tamisu_enabled;
 
 #define ZP_ENABLE_LSM_INJECTOR 1
 
@@ -69,10 +69,11 @@ void ksu_zygote_probe_set_dlopen_off(u64 dlopen_off, u64 dlsym_off)
 		dlsym_off);
 }
 
-/* yukilinker first-stage toggle (yzconfig.yukilinker), handed in by zygiskd.
- * ON: the stub dlopens libyukilinker, which anonymously loads the core. OFF
- * (default): the stub dlopens the core directly. Fixed at injection time, so a
- * change applies to the next zygote (module load mode still hot-reloads). */
+/* yukilinker first-stage toggle (tamisu_config.yukilinker), handed in by
+ * zygiskd. ON: the stub dlopens libyukilinker, which anonymously loads the
+ * core. OFF (default): the stub dlopens the core directly. Fixed at injection
+ * time, so a change applies to the next zygote (module load mode still
+ * hot-reloads). */
 static bool zp_yukilinker_enabled;
 
 void ksu_zygote_probe_set_yukilinker(bool enabled)
@@ -137,25 +138,25 @@ static struct ksu_lsm_hook zygote_probe_hook = KSU_LSM_HOOK_INIT(
 
 typedef void (*bprm_committed_creds_fn)(zp_bprm_arg_t *bprm);
 
-static int yukizygisk_feature_get(u64 *value)
+static int tamisu_feature_get(u64 *value)
 {
-	*value = READ_ONCE(yukizygisk_enabled) ? 1 : 0;
+	*value = READ_ONCE(tamisu_enabled) ? 1 : 0;
 	return 0;
 }
 
-static int yukizygisk_feature_set(u64 value)
+static int tamisu_feature_set(u64 value)
 {
-	WRITE_ONCE(yukizygisk_enabled, value != 0);
-	pr_info("zygote_probe: YukiZygisk %s\n",
-		yukizygisk_enabled ? "ENABLED" : "disabled");
+	WRITE_ONCE(tamisu_enabled, value != 0);
+	pr_info("zygote_probe: Tamisu %s\n",
+		tamisu_enabled ? "ENABLED" : "disabled");
 	return 0;
 }
 
-static const struct ksu_feature_handler yukizygisk_feature_handler = {
-    .feature_id = KSU_FEATURE_YUKIZYGISK,
-    .name = "yukizygisk",
-    .get_handler = yukizygisk_feature_get,
-    .set_handler = yukizygisk_feature_set,
+static const struct ksu_feature_handler tamisu_feature_handler = {
+    .feature_id = KSU_FEATURE_TAMISU,
+    .name = "tamisu",
+    .get_handler = tamisu_feature_get,
+    .set_handler = tamisu_feature_set,
 };
 
 static bool zp_is_app_process_path(const char *filename)
@@ -254,8 +255,8 @@ static bool zp_parse_zygote_args(struct mm_struct *mm, char *socket_name,
  * The injected stub hands that fd to android_dlopen_ext(USE_LIBRARY_FD): no
  * on-disk path the zygote could be SELinux-denied, and no namespace lookup.
  */
-#define ZP_LOADER_PATH "/data/adb/ksu/lib/yukizygisk/libyukilinker.so"
-#define ZP_CORE_PATH "/data/adb/ksu/lib/yukizygisk/libzygisk.so"
+#define ZP_LOADER_PATH "/data/adb/ksu/lib/tamisu/libyukilinker.so"
+#define ZP_CORE_PATH "/data/adb/ksu/lib/tamisu/libzygisk.so"
 /* The staged shmem images use an ART data-code-cache marker. They are mapped
  * file-backed by android_dlopen_ext(USE_LIBRARY_FD), so the name is visible in
  * /proc/pid/maps while the core remains resident. Avoid the primary JIT cache
@@ -523,7 +524,7 @@ static void zp_inject_tw_func(struct callback_head *cb)
 	/* [1c] real redirect, gated. Fail-safe: rewrite AT_ENTRY only once the
 	 * stub is fully staged. The stub (below) dlopens libzloader.so from a
 	 * kernel-provided fd, then chains to the saved entry. */
-	if (yukizygisk_enabled && at_entry_uaddr && at_entry_uval == saved &&
+	if (tamisu_enabled && at_entry_uaddr && at_entry_uval == saved &&
 	    saved) {
 #ifdef CONFIG_ARM64
 		/*
@@ -728,7 +729,7 @@ static void __nocfi my_bprm_committed_creds(zp_bprm_arg_t *bprm)
 	bool by_path;
 
 	((bprm_committed_creds_fn)zygote_probe_hook.original)(bprm);
-	if (unlikely(!READ_ONCE(yukizygisk_enabled)))
+	if (unlikely(!READ_ONCE(tamisu_enabled)))
 		return;
 
 	by_sid = is_zygote(current_cred());
@@ -778,16 +779,16 @@ void ksu_zygote_probe_init(void)
 	pr_info("zygote_probe: LSM injector disabled for bootloop isolation\n");
 #endif // #if ZP_ENABLE_LSM_INJECTOR
 
-	if (ksu_register_feature_handler(&yukizygisk_feature_handler))
-		pr_err("zygote_probe: failed to register YukiZygisk feature\n");
+	if (ksu_register_feature_handler(&tamisu_feature_handler))
+		pr_err("zygote_probe: failed to register Tamisu feature\n");
 	else
 		pr_info("zygote_probe: feature registered\n");
 }
 
 void ksu_zygote_probe_exit(void)
 {
-	ksu_unregister_feature_handler(KSU_FEATURE_YUKIZYGISK);
-	WRITE_ONCE(yukizygisk_enabled, false);
+	ksu_unregister_feature_handler(KSU_FEATURE_TAMISU);
+	WRITE_ONCE(tamisu_enabled, false);
 #if ZP_ENABLE_LSM_INJECTOR
 	ksu_unregister_lsm_hook(&zygote_probe_hook);
 #endif // #if ZP_ENABLE_LSM_INJECTOR
