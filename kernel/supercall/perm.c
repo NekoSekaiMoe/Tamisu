@@ -1,5 +1,4 @@
 #include <linux/cred.h>
-#include <linux/sched.h>
 
 #include "supercall/internal.h"
 
@@ -23,18 +22,8 @@ bool always_allow(void)
 {
 	return true; // No permission check
 }
+
 bool injected_app(void)
 {
 	return is_appuid(current_uid().val);
-}
-
-/*
- * Stub: real implementation will be a userspace fork+setns+umount in
- * zygiskd (ReZygisk-style). Returns -ENOSYS for now so the YZ_UMOUNT_PID
- * ioctl path in dispatch.c compiles but does nothing at runtime.
- */
-int ksu_umount_task_modules(struct task_struct *task)
-{
-	(void)task;
-	return -ENOSYS;
 }

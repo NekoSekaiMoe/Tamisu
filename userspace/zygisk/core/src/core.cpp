@@ -1090,7 +1090,7 @@ void zygisk_self_destruct(JNIEnv *env, bool isolated) {
   // handled by the kernel's per-process umount task_work. An isolated teardown
   // is purely unhook + munmap.
   if (!isolated) {
-    // Ask zygiskd (root) to revert our module mounts (YZ_UMOUNT_PID, pid
+    // Ask zygiskd (root) to revert our module mounts (UnmapPid (denylast umount via zygiskd)
     // resolved via SO_PEERCRED). This no longer carries the munmap: the async
     // kernel task_work raced our own execution and crashed the app (libc
     // returned into the just-unmapped core). We unmap ourselves synchronously

@@ -774,15 +774,17 @@ void handle_client(int client) {
           break;
         }
       if (good) {
-        // Revert the app's module mounts only. The core munmaps its OWN
-        // segments synchronously (tail-call munmap in zygisk_self_destruct); we
-        // must NOT kernel-munmap them here -- the async task_work raced the
-        // core's own execution and crashed it (libc returned into the
-        // just-unmapped core). ucmd.addr/size are read for ABI compat but no
-        // longer unmapped.
-        yz_umount_pid_cmd mcmd{};
-        mcmd.pid = ucmd.pid;
-        ok = ksud::ksuctl(KSU_IOCTL_YZ_UMOUNT_PID, &mcmd) == 0 ? 1 : 0;
+        // Revert the app's module mounts in-process (ReZygisk-style:
+        // fork + setns into the target's mount namespace + umount2 by
+        // source-name predicate). This is the sole umount path --
+        // tamisu no longer ships the kernel YZ_UMOUNT_PID ioctl.
+        //
+        // The core munmaps its OWN segments synchronously (tail-call
+        // munmap in zygisk_self_destruct); we do NOT kernel-munmap them
+        // here -- the async task_work raced the core's own execution
+        // and crashed it (libc returned into the just-unmapped core).
+        // ucmd.addr/size are read for ABI compat but otherwise unused.
+        ok = yz_revert_app_mounts(ucmd.pid) ? 1 : 0;
       }
     }
     write_exact(client, &ok, sizeof(ok));

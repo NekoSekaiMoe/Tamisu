@@ -370,41 +370,6 @@ static int do_yz_set_yukilinker(void __user *arg)
 	return 0;
 }
 
-/* zygiskd (root) -> kernel: schedule a mount-revert on TARGET app task, run in
- * that task's own (already unshare'd) namespace. core asks zygiskd over the
- * daemon socket after loading modules (denylist_mode==2); zygiskd resolves the
- * caller pid via SO_PEERCRED and issues this. Routed through zygiskd, not the
- * app, so the ksu driver fd never enters an app fd table (a "[ksu_driver]" link
- * there is exactly what detectors scan for). */
-static int do_yz_umount_pid(void __user *arg)
-{
-	struct yz_umount_pid_cmd cmd;
-	struct task_struct *task;
-	int ret;
-
-	if (copy_from_user(&cmd, arg, sizeof(cmd)))
-		return -EFAULT;
-
-	rcu_read_lock();
-	task = get_pid_task(find_vpid(cmd.pid), PIDTYPE_PID);
-	rcu_read_unlock();
-	if (!task)
-		return -ESRCH;
-
-	/* only revert for app processes; never a system/global-ns task */
-	if (!is_appuid(task_uid(task).val)) {
-		pr_info("yz_umount_pid: reject non-app pid=%u uid=%u\n",
-			cmd.pid, task_uid(task).val);
-		put_task_struct(task);
-		return -EPERM;
-	}
-
-	ret = ksu_umount_task_modules(task);
-	put_task_struct(task);
-	pr_info("yz_umount_pid: scheduled for pid=%u ret=%d\n", cmd.pid, ret);
-	return ret;
-}
-
 struct yz_unmap_tw {
 	struct callback_head cb;
 	unsigned long addr[YZ_MAX_UNMAP_SEGS];
@@ -608,10 +573,6 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     {.cmd = KSU_IOCTL_YZ_SET_YUKILINKER,
      .name = "YZ_SET_YUKILINKER",
      .handler = do_yz_set_yukilinker,
-     .perm_check = only_root},
-    {.cmd = KSU_IOCTL_YZ_UMOUNT_PID,
-     .name = "YZ_UMOUNT_PID",
-     .handler = do_yz_umount_pid,
      .perm_check = only_root},
     {.cmd = KSU_IOCTL_YZ_UNMAP_PID,
      .name = "YZ_UNMAP_PID",
