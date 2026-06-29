@@ -167,41 +167,6 @@ class MoreSettingsHandlers(
         state.isKernelSimpleMode = newValue
     }
 
-    fun handleHideVersionChange(newValue: Boolean) {
-        prefs.edit { putBoolean("is_hide_version", newValue) }
-        state.isHideVersion = newValue
-    }
-
-    fun handleHideOtherInfoChange(newValue: Boolean) {
-        prefs.edit { putBoolean("is_hide_other_info", newValue) }
-        state.isHideOtherInfo = newValue
-    }
-
-    fun handleHideZygiskImplementChange(newValue: Boolean) {
-        prefs.edit { putBoolean("is_hide_zygisk_Implement", newValue) }
-        state.isHideZygiskImplement = newValue
-    }
-
-    fun handleHideSeccompStatusChange(newValue: Boolean) {
-        prefs.edit { putBoolean("is_hide_seccomp_status", newValue) }
-        state.isHideSeccompStatus = newValue
-    }
-
-    fun handleHideMetaModuleImplementChange(newValue: Boolean) {
-        prefs.edit { putBoolean("is_hide_meta_module_Implement", newValue) }
-        state.isHideMetaModuleImplement = newValue
-    }
-
-    fun handleHideLinkCardChange(newValue: Boolean) {
-        prefs.edit { putBoolean("is_hide_link_card", newValue) }
-        state.isHideLinkCard = newValue
-    }
-
-    fun handleHideTagRowChange(newValue: Boolean) {
-        prefs.edit { putBoolean("is_hide_tag_row", newValue) }
-        state.isHideTagRow = newValue
-    }
-
     fun handleShowMoreModuleInfoChange(newValue: Boolean) {
         prefs.edit { putBoolean("show_more_module_info", newValue) }
         state.showMoreModuleInfo = newValue

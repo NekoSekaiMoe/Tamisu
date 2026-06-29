@@ -853,9 +853,9 @@ fun ModuleItem(
     onClick: (ModuleViewModel.ModuleInfo) -> Unit,
 ) {
     val context = LocalContext.current
-    val (isHideTagRow, showMoreModuleInfo) = remember {
+    val showMoreModuleInfo = remember {
         val p = context.getSharedPreferences("settings", MODE_PRIVATE)
-        Pair(p.getBoolean("is_hide_tag_row", false), p.getBoolean("show_more_module_info", false))
+        p.getBoolean("show_more_module_info", false)
     }
 
     // 剪贴板管理器和触觉反馈
@@ -1023,52 +1023,36 @@ fun ModuleItem(
                 )
             }
 
-            if (!isHideTagRow) {
-                Spacer(modifier = Modifier.height(12.dp))
-                // 文件夹名称和大小标签
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    if (module.dirId in viewModel.loadedZygiskModules) {
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = Color(0xFF2E7D32),
-                        ) {
-                            Text(
-                                text = stringResource(R.string.module_zygisk_loaded),
-                                style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
-                                color = Color.White,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+            Spacer(modifier = Modifier.height(12.dp))
+            // 文件夹名称和大小标签
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (module.dirId in viewModel.loadedZygiskModules) {
+                    Surface(
+                        shape = RoundedCornerShape(4.dp),
+                        color = Color(0xFF2E7D32),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.module_zygisk_loaded),
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
-                    if (module.metamodule) {
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                        ) {
-                            Text(
-                                text = "META",
-                                style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
+                }
+                if (module.metamodule) {
                     Surface(
                         shape = RoundedCornerShape(4.dp),
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
                     ) {
                         Text(
-                            text = module.dirId,
+                            text = "META",
                             style = MaterialTheme.typography.labelSmall,
                             modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
                             color = MaterialTheme.colorScheme.onPrimary,
@@ -1076,19 +1060,33 @@ fun ModuleItem(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
-                    Surface(
-                        shape = RoundedCornerShape(4.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        modifier = Modifier
-                    ) {
-                        Text(
-                            text = sizeStr,
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            maxLines = 1
-                        )
-                    }
+                }
+                Surface(
+                    shape = RoundedCornerShape(4.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                ) {
+                    Text(
+                        text = module.dirId,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Surface(
+                    shape = RoundedCornerShape(4.dp),
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    modifier = Modifier
+                ) {
+                    Text(
+                        text = sizeStr,
+                        style = MaterialTheme.typography.labelSmall,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        maxLines = 1
+                    )
                 }
             }
 

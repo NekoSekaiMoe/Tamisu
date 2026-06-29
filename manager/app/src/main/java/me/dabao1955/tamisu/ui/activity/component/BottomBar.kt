@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -15,7 +14,6 @@ import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.spec.RouteOrDirection
 import com.ramcosta.composedestinations.utils.isRouteOnBackStackAsState
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
-import me.dabao1955.tamisu.ui.MainActivity
 import me.dabao1955.tamisu.ui.activity.util.*
 import me.dabao1955.tamisu.ui.screen.BottomBarDestination
 import me.dabao1955.tamisu.ui.util.*
@@ -27,10 +25,6 @@ fun BottomBar(navController: NavHostController) {
     val navigator = navController.rememberDestinationsNavigator()
     val isFullFeatured by AppData.DataRefreshManager.isFullFeatured.collectAsState()
     val cardColor = MaterialTheme.colorScheme.surfaceContainer
-    val activity = LocalContext.current as MainActivity
-    val settings by activity.settingsStateFlow.collectAsState()
-
-    val isHideOtherInfo = settings.isHideOtherInfo
 
     // 收集计数数据
     val moduleCount by AppData.DataRefreshManager.moduleCount.collectAsState()

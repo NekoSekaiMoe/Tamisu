@@ -117,25 +117,6 @@ object DataRefreshUtils {
         }
     }
 
-    fun startSettingsMonitorCoroutine(
-        scope: LifecycleCoroutineScope,
-        activity: MainActivity,
-        settingsStateFlow: MutableStateFlow<MainActivity.SettingsState>
-    ) {
-        scope.launch(Dispatchers.IO) {
-            while (isActive) {
-                val prefs = activity.getSharedPreferences("settings", Context.MODE_PRIVATE)
-                val newState = MainActivity.SettingsState(
-                    isHideOtherInfo = prefs.getBoolean("is_hide_other_info", false)
-                )
-                if (settingsStateFlow.value != newState) {
-                    settingsStateFlow.value = newState
-                }
-                delay(5000) // 5s，减少轮询频率
-            }
-        }
-    }
-
     fun refreshData(scope: LifecycleCoroutineScope) {
         scope.launch {
             AppData.DataRefreshManager.refreshData()

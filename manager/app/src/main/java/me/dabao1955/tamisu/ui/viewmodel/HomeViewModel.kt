@@ -62,18 +62,6 @@ class HomeViewModel : ViewModel() {
         private set
     var isKernelSimpleMode by mutableStateOf(false)
         private set
-    var isHideVersion by mutableStateOf(false)
-        private set
-    var isHideOtherInfo by mutableStateOf(false)
-        private set
-    var isHideZygiskImplement by mutableStateOf(false)
-        private set
-    var isHideSeccompStatus by mutableStateOf(false)
-        private set
-    var isHideMetaModuleImplement by mutableStateOf(false)
-        private set
-    var isHideLinkCard by mutableStateOf(false)
-        private set
 
 
     var isCoreDataLoaded by mutableStateOf(false)
@@ -95,12 +83,6 @@ class HomeViewModel : ViewModel() {
             val settingsPrefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
             isSimpleMode = settingsPrefs.getBoolean("is_simple_mode", false)
             isKernelSimpleMode = settingsPrefs.getBoolean("is_kernel_simple_mode", false)
-            isHideVersion = settingsPrefs.getBoolean("is_hide_version", false)
-            isHideOtherInfo = settingsPrefs.getBoolean("is_hide_other_info", false)
-            isHideLinkCard = settingsPrefs.getBoolean("is_hide_link_card", false)
-            isHideZygiskImplement = settingsPrefs.getBoolean("is_hide_zygisk_Implement", false)
-            isHideSeccompStatus = settingsPrefs.getBoolean("is_hide_seccomp_status", false)
-            isHideMetaModuleImplement = settingsPrefs.getBoolean("is_hide_meta_module_Implement", false)
         }
     }
 

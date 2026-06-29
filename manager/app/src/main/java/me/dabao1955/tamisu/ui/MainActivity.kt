@@ -58,17 +58,11 @@ import me.dabao1955.tamisu.ui.util.LocalSnackbarHost
 import me.dabao1955.tamisu.ui.util.install
 import me.dabao1955.tamisu.ui.util.resetTaskDescriptionToAppName
 import me.dabao1955.tamisu.ui.viewmodel.HomeViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import ui.screen.moreSettings.util.LocaleHelper
 
 class MainActivity : ComponentActivity() {
     private lateinit var homeViewModel: HomeViewModel
-    internal val settingsStateFlow = MutableStateFlow(SettingsState())
-
-    data class SettingsState(
-        val isHideOtherInfo: Boolean = false
-    )
 
     private var showConfirmationDialog = mutableStateOf(false)
     private var pendingZipFiles = mutableStateOf<List<ZipFileInfo>>(emptyList())
@@ -276,9 +270,8 @@ class MainActivity : ComponentActivity() {
 
     private fun initializeData() {
         DataRefreshUtils.startDataRefreshCoroutine(lifecycleScope)
-        DataRefreshUtils.startSettingsMonitorCoroutine(lifecycleScope, this, settingsStateFlow)
 
-        ThemeUtils.initializeThemeSettings(this, settingsStateFlow)
+        ThemeUtils.initializeThemeSettings(this)
     }
 
     override fun onResume() {

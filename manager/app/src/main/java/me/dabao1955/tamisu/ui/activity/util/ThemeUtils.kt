@@ -7,7 +7,6 @@ import android.provider.Settings
 import androidx.core.content.edit
 import me.dabao1955.tamisu.ui.MainActivity
 import me.dabao1955.tamisu.ui.theme.CardConfig
-import kotlinx.coroutines.flow.MutableStateFlow
 
 class ThemeChangeContentObserver(
     handler: Handler,
@@ -21,13 +20,9 @@ class ThemeChangeContentObserver(
 
 object ThemeUtils {
 
-    fun initializeThemeSettings(activity: MainActivity, settingsStateFlow: MutableStateFlow<MainActivity.SettingsState>) {
+    fun initializeThemeSettings(activity: MainActivity) {
         val prefs = activity.getSharedPreferences("settings", Context.MODE_PRIVATE)
         val isFirstRun = prefs.getBoolean("is_first_run", true)
-
-        settingsStateFlow.value = MainActivity.SettingsState(
-            isHideOtherInfo = prefs.getBoolean("is_hide_other_info", false)
-        )
 
         if (isFirstRun) {
             prefs.edit { putBoolean("is_first_run", false) }

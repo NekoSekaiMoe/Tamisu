@@ -136,7 +136,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                     )
 
                     // 链接卡片
-                    if (!viewModel.isSimpleMode && !viewModel.isHideLinkCard) {
+                    if (!viewModel.isSimpleMode) {
                         ContributionCard()
                         DonateCard()
                     }
@@ -350,32 +350,22 @@ private fun StatusCard(
                             }
                         }
 
-                        val ctx = LocalContext.current
-                        val isHideVersion by produceState(initialValue = false) {
-                            value = withContext(Dispatchers.IO) {
-                                ctx.getSharedPreferences("settings", Context.MODE_PRIVATE)
-                                    .getBoolean("is_hide_version", false)
+                        Spacer(Modifier.height(4.dp))
+                        systemStatus.ksuFullVersion?.let {
+                            // version_full (…@Tamisu) + (内核ksuver[/uapi]) in parens,
+                            // matching the manager version's "(code/uapi)" style.
+                            val ksuver = systemStatus.ksuVersion
+                            val versionText = when {
+                                ksuver == null -> it
+                                systemStatus.kernelUapiVersion > 0 ->
+                                    "$it ($ksuver/${systemStatus.kernelUapiVersion})"
+                                else -> "$it ($ksuver)"
                             }
-                        }
-
-                        if (!isHideVersion) {
-                            Spacer(Modifier.height(4.dp))
-                            systemStatus.ksuFullVersion?.let {
-                                // version_full (…@Tamisu) + (内核ksuver[/uapi]) in parens,
-                                // matching the manager version's "(code/uapi)" style.
-                                val ksuver = systemStatus.ksuVersion
-                                val versionText = when {
-                                    ksuver == null -> it
-                                    systemStatus.kernelUapiVersion > 0 ->
-                                        "$it ($ksuver/${systemStatus.kernelUapiVersion})"
-                                    else -> "$it ($ksuver)"
-                                }
-                                Text(
-                                    text = stringResource(R.string.home_working_version, versionText),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                )
-                            }
+                            Text(
+                                text = stringResource(R.string.home_working_version, versionText),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.secondary,
+                            )
                         }
                     }
                 }
@@ -515,9 +505,6 @@ fun DonateCard() {
 private fun InfoCard(
     systemInfo: HomeViewModel.SystemInfo,
     isSimpleMode: Boolean,
-    isHideZygiskImplement: Boolean,
-    isHideMetaModuleImplement: Boolean,
-    isHideSeccompStatus: Boolean = false,
     onKernelClick: () -> Unit = {},
 ) {
     var showKsudDialog by remember { mutableStateOf(false) }
@@ -657,22 +644,20 @@ private fun InfoCard(
                 icon = Icons.Default.Security,
             )
 
-            if (!isHideSeccompStatus) {
-                val seccompText = when (systemInfo.seccompStatus) {
-                    -1 -> stringResource(R.string.seccomp_status_not_supported)
-                    0 -> stringResource(R.string.seccomp_status_disabled)
-                    1 -> stringResource(R.string.seccomp_status_strict)
-                    2 -> stringResource(R.string.seccomp_status_filter)
-                    else -> stringResource(R.string.seccomp_status_unknown)
-                }
-                InfoCardItem(
-                    stringResource(R.string.home_seccomp_status),
-                    seccompText,
-                    icon = Icons.Default.LocalPolice,
-                )
+            val seccompText = when (systemInfo.seccompStatus) {
+                -1 -> stringResource(R.string.seccomp_status_not_supported)
+                0 -> stringResource(R.string.seccomp_status_disabled)
+                1 -> stringResource(R.string.seccomp_status_strict)
+                2 -> stringResource(R.string.seccomp_status_filter)
+                else -> stringResource(R.string.seccomp_status_unknown)
             }
+            InfoCardItem(
+                stringResource(R.string.home_seccomp_status),
+                seccompText,
+                icon = Icons.Default.LocalPolice,
+            )
 
-            if (!isHideZygiskImplement && !isSimpleMode && systemInfo.zygiskImplement != "None") {
+            if (!isSimpleMode && systemInfo.zygiskImplement != "None") {
                 InfoCardItem(
                     stringResource(R.string.home_zygisk_implement),
                     systemInfo.zygiskImplement,
@@ -680,7 +665,7 @@ private fun InfoCard(
                 )
             }
 
-            if (!isHideMetaModuleImplement && !isSimpleMode && systemInfo.metaModuleImplement != "None") {
+            if (!isSimpleMode && systemInfo.metaModuleImplement != "None") {
                 InfoCardItem(
                     stringResource(R.string.home_meta_module_implement),
                     systemInfo.metaModuleImplement,

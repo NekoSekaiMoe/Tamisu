@@ -34,13 +34,6 @@ class MoreSettingsState(
     var showDpiConfirmDialog by mutableStateOf(false)
 
     var isSimpleMode by mutableStateOf(prefs.getBoolean("is_simple_mode", false))
-    var isHideVersion by mutableStateOf(prefs.getBoolean("is_hide_version", false))
-    var isHideOtherInfo by mutableStateOf(prefs.getBoolean("is_hide_other_info", false))
-    var isHideZygiskImplement by mutableStateOf(prefs.getBoolean("is_hide_zygisk_Implement", false))
-    var isHideSeccompStatus by mutableStateOf(prefs.getBoolean("is_hide_seccomp_status", false))
-    var isHideMetaModuleImplement by mutableStateOf(prefs.getBoolean("is_hide_meta_module_Implement", false))
-    var isHideLinkCard by mutableStateOf(prefs.getBoolean("is_hide_link_card", false))
-    var isHideTagRow by mutableStateOf(prefs.getBoolean("is_hide_tag_row", false))
     var isKernelSimpleMode by mutableStateOf(prefs.getBoolean("is_kernel_simple_mode", false))
     var showMoreModuleInfo by mutableStateOf(prefs.getBoolean("show_more_module_info", false))
 
