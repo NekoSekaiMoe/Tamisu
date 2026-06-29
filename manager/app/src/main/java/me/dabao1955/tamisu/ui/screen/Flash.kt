@@ -135,9 +135,6 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
     // ??????????????
     var hasFlashCompleted by rememberSaveable { mutableStateOf(false) }
     var hasExecuted by rememberSaveable { mutableStateOf(false) }
-    // ????????
-    var hasUpdateExecuted by rememberSaveable { mutableStateOf(false) }
-    var hasUpdateCompleted by rememberSaveable { mutableStateOf(false) }
 
     val snackBarHost = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -200,11 +197,6 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                     hasExecuted = false
                 }
             }
-            is FlashIt.FlashModuleUpdate -> {
-                shouldWarningUserMetaModule = false
-                hasUpdateCompleted = false
-                hasUpdateExecuted = false
-            }
             else -> {
                 shouldWarningUserMetaModule = false
                 hasFlashCompleted = false
@@ -213,73 +205,8 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
         }
     }
 
-    // ????????
-    LaunchedEffect(flashIt) {
-        if (flashIt !is FlashIt.FlashModuleUpdate) return@LaunchedEffect
-        if (hasUpdateExecuted || hasUpdateCompleted || text.isNotEmpty()) {
-            return@LaunchedEffect
-        }
-
-        hasUpdateExecuted = true
-
-        withContext(Dispatchers.IO) {
-            setFlashingStatus(FlashingStatus.FLASHING)
-
-            try {
-                logContent.append(text).append("\n")
-            } catch (_: Exception) {
-                logContent.append(text).append("\n")
-            }
-
-            flashModuleUpdate(flashIt.uri, onFinish = { showReboot, code ->
-                if (code != 0) {
-                    text += "$errorCodeString $code.\n$checkLogString\n"
-                    setFlashingStatus(FlashingStatus.FAILED)
-                } else {
-                    setFlashingStatus(FlashingStatus.SUCCESS)
-                    viewModel.markNeedRefresh()
-                }
-                if (showReboot) {
-                    text += "\n\n\n"
-                    showFloatAction = true
-
-                    // ????????????????????
-                    if (isExternalInstall) {
-                        return@flashModuleUpdate
-                    }
-                }
-                hasUpdateCompleted = true
-
-                if (!hasMetaModule() && code == 0) {
-                    // ????? MetaModule?????????????????????????
-                    scope.launch {
-                        val mountOldDirectory = SuFile.open("/data/adb/modules/${getModuleIdFromUri(context,flashIt.uri)}/system")
-                        val mountNewDirectory = SuFile.open("/data/adb/modules_update/${getModuleIdFromUri(context,flashIt.uri)}/system")
-                        if (!(mountNewDirectory.isDirectory) && !(mountOldDirectory.isDirectory)) return@launch
-                        shouldWarningUserMetaModule = true
-
-                        alertDialog.show()
-                        shouldWarningUserMetaModule = false
-                    }
-                }
-
-            }, onStdout = {
-                tempText = "$it\n"
-                if (tempText.startsWith("[H[J")) { // clear command
-                    text = tempText.substring(6)
-                } else {
-                    text += tempText
-                }
-                logContent.append(it).append("\n")
-            }, onStderr = {
-                logContent.append(it).append("\n")
-            })
-        }
-    }
-
     // ?????????
     LaunchedEffect(flashIt) {
-        if (flashIt is FlashIt.FlashModuleUpdate) return@LaunchedEffect
         if (hasExecuted || hasFlashCompleted || text.isNotEmpty()) {
             return@LaunchedEffect
         }
@@ -340,11 +267,6 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                                 mountNewDirectory = SuFile.open("/data/adb/modules_update/${getModuleIdFromUri(context,flashIt.uri)}/system")
                             }
 
-                            is FlashIt.FlashModuleUpdate -> {
-                                mountOldDirectory = SuFile.open("/data/adb/modules/${getModuleIdFromUri(context,flashIt.uri)}/system")
-                                mountNewDirectory = SuFile.open("/data/adb/modules_update/${getModuleIdFromUri(context,flashIt.uri)}/system")
-                            }
-
                             else -> return@launch
                         }
                         if (!mountNewDirectory.isDirectory && !mountOldDirectory.isDirectory) return@launch
@@ -381,16 +303,13 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
     }
 
     val onBack: () -> Unit = {
-        val canGoBack = when (flashIt) {
-            is FlashIt.FlashModuleUpdate -> currentFlashingStatus.value != FlashingStatus.FLASHING
-            else -> currentFlashingStatus.value != FlashingStatus.FLASHING
-        }
+        val canGoBack = currentFlashingStatus.value != FlashingStatus.FLASHING
 
         if (canGoBack) {
             if (isExternalInstall) {
                 (context as? ComponentActivity)?.finish()
             } else {
-                if (flashIt is FlashIt.FlashModules || flashIt is FlashIt.FlashModuleUpdate) {
+                if (flashIt is FlashIt.FlashModules) {
                     viewModel.markNeedRefresh()
                     viewModel.fetchModuleList()
                     navigator.navigate(ModuleScreenDestination)
@@ -731,21 +650,11 @@ sealed class FlashIt : Parcelable {
     ) : FlashIt()
     data class FlashModule(val uri: Uri) : FlashIt()
     data class FlashModules(val uris: List<Uri>, val currentIndex: Int = 0) : FlashIt()
-    data class FlashModuleUpdate(val uri: Uri) : FlashIt() // ????
     data object FlashRestore : FlashIt()
     data object FlashUninstall : FlashIt()
 }
 
 // ??????
-fun flashModuleUpdate(
-    uri: Uri,
-    onFinish: (Boolean, Int) -> Unit,
-    onStdout: (String) -> Unit,
-    onStderr: (String) -> Unit
-) {
-    flashModule(uri, onFinish, onStdout, onStderr)
-}
-
 fun flashIt(
     flashIt: FlashIt,
     onFinish: (Boolean, Int) -> Unit,
@@ -776,9 +685,6 @@ fun flashIt(
             onStdout("\n")
 
             flashModule(currentUri, onFinish, onStdout, onStderr)
-        }
-        is FlashIt.FlashModuleUpdate -> {
-            onFinish(false, 0)
         }
         FlashIt.FlashRestore -> restoreBoot(onFinish, onStdout, onStderr)
         FlashIt.FlashUninstall -> uninstallPermanently(onFinish, onStdout, onStderr)

@@ -38,8 +38,6 @@
     <string name="module_uninstall_failed">Deinstallation fehlgeschlagen: %s</string>
     <string name="module_version">Version</string>
     <string name="module_author">Autor</string>
-    <string name="module_update_json">Update JSON</string>
-    <string name="module_update_json_copied">Update-JSON-URL kopiert</string>
     <string name="refresh">Aktualisieren</string>
     <string name="show_system_apps">System-Apps anzeigen</string>
     <string name="hide_system_apps">System-Apps ausblenden</string>
@@ -77,8 +75,6 @@
     <string name="profile_selinux_domain">Domäne</string>
     <string name="profile_selinux_rules">Regeln</string>
     <string name="module_update">Aktualisieren</string>
-    <string name="module_downloading">Lädt Modul %s herunter</string>
-    <string name="module_start_downloading">Starte Download: %s</string>
     <string name="new_version_available">Neue Version %s verfügbar, tippen zum Aktualisieren.</string>
     <string name="launch_app">Starten</string>
     <string name="force_stop_app" formatted="false">Stopp erzwingen</string>
@@ -106,7 +102,6 @@
     <string name="app_profile_template_sync">Online-Vorlagen synchronisieren</string>
     <string name="app_profile_template_save_failed">Schlug beim Speichern der Vorlage fehl</string>
     <string name="app_profile_template_import_empty">Zwischenablage ist leer!</string>
-    <string name="module_changelog_failed">Konnte Veränderungs-Protokoll nicht laden: %s</string>
     <string name="settings_check_update">Auf Aktualisierung prüfen</string>
     <string name="settings_check_update_summary">Prüfe automatisch auf Aktualisierungen, wenn die App geöffnet wird</string>
     <string name="settings_auto_jailbreak">Automatischer Jailbreak</string>
@@ -310,7 +305,6 @@
     <string name="check_log">Bitte überprüfen Sie das Log</string>
     <string name="installing_module">Modul wird installiert %1$d/%2$d</string>
     <string name="module_failed_count">%d Fehler bei der Installation eines neuen Moduls</string>
-    <string name="module_download_error">Modul-Download fehlgeschlagen</string>
     <!-- Kasumi status text -->
     <string name="kasumi_status_available">Verfügbar</string>
     <string name="kasumi_status_builtin">Kasumi integriert</string>

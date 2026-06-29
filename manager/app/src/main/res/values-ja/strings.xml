@@ -38,8 +38,6 @@
     <string name="module_uninstall_failed">%s をアンインストールできませんでした</string>
     <string name="module_version">バージョン</string>
     <string name="module_author">作者</string>
-    <string name="module_update_json">Update JSON</string>
-    <string name="module_update_json_copied">Update JSON の URL をコピーしました</string>
     <string name="refresh">更新</string>
     <string name="show_system_apps">システムアプリを表示</string>
     <string name="hide_system_apps">システムアプリを非表示</string>
@@ -77,8 +75,6 @@
     <string name="profile_selinux_domain">ドメイン</string>
     <string name="profile_selinux_rules">ルール</string>
     <string name="module_update">更新</string>
-    <string name="module_downloading">モジュールをダウンロード中: %s</string>
-    <string name="module_start_downloading">ダウンロードを開始: %s</string>
     <string name="new_version_available">最新のバージョン「%s」が利用可能です。タップしてダウンロード。</string>
     <string name="launch_app">起動</string>
     <string name="force_stop_app" formatted="false">強制停止</string>
@@ -106,7 +102,6 @@
     <string name="app_profile_template_sync">オンラインテンプレートの同期</string>
     <string name="app_profile_template_save_failed">テンプレートの保存に失敗しました</string>
     <string name="app_profile_template_import_empty">クリップボードが空です！</string>
-    <string name="module_changelog_failed">変更ログの取得に失敗しました: %s</string>
     <string name="settings_check_update">更新を確認する</string>
     <string name="settings_check_update_summary">アプリの起動時に更新を自動で確認します。</string>
     <string name="settings_auto_jailbreak">自動脱獄</string>
@@ -310,7 +305,6 @@
     <string name="check_log">ログを確認してください</string>
     <string name="installing_module">モジュールをインストール中: %1$d/%2$d</string>
     <string name="module_failed_count">%d モジュールのインストールに失敗しました</string>
-    <string name="module_download_error">モデルのダウンロードに失敗しました</string>
     <!-- Kasumi status text -->
     <string name="kasumi_status_available">利用可能</string>
     <string name="kasumi_status_builtin">Kasumi 組み込み</string>

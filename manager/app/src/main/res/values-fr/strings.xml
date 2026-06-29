@@ -38,8 +38,6 @@
     <string name="module_uninstall_failed">Échec de la désinstallation : %s</string>
     <string name="module_version">Version</string>
     <string name="module_author">Auteur</string>
-    <string name="module_update_json">Update JSON</string>
-    <string name="module_update_json_copied">URL Update JSON copiée</string>
     <string name="refresh">Rafraîchir</string>
     <string name="show_system_apps">Afficher les applications système</string>
     <string name="hide_system_apps">Masquer les applications système</string>
@@ -77,8 +75,6 @@
     <string name="profile_selinux_domain">Domaine</string>
     <string name="profile_selinux_rules">Règles</string>
     <string name="module_update">Mettre à jour</string>
-    <string name="module_downloading">Téléchargement du module : %s</string>
-    <string name="module_start_downloading">Début du téléchargement de : %s</string>
     <string name="new_version_available">La nouvelle version %s est disponible, appuyez ici pour mettre à jour.</string>
     <string name="launch_app">Lancer</string>
     <string name="force_stop_app" formatted="false">Forcer l\'arrêt</string>
@@ -106,7 +102,6 @@
     <string name="app_profile_template_sync">Synchroniser les modèles en ligne</string>
     <string name="app_profile_template_save_failed">Échec de l\'enregistrement du modèle</string>
     <string name="app_profile_template_import_empty">Le presse-papiers est vide !</string>
-    <string name="module_changelog_failed">Échec de récupération du journal des modifications : %s</string>
     <string name="settings_check_update">Vérifier les mises à jour</string>
     <string name="settings_check_update_summary">Vérifier automatiquement les mises à jour à l\'ouverture de l\'application</string>
     <string name="settings_auto_jailbreak">Jailbreak automatique</string>
@@ -310,7 +305,6 @@
     <string name="check_log">Veuillez vérifier le journal</string>
     <string name="installing_module">Module en cours d\'installation %1$d/%2$d</string>
     <string name="module_failed_count">%d a échoué à installer un nouveau module</string>
-    <string name="module_download_error">Le téléchargement du modèle a échoué</string>
     <!-- Kasumi status text -->
     <string name="kasumi_status_available">Disponible</string>
     <string name="kasumi_status_builtin">Kasumi intégré</string>

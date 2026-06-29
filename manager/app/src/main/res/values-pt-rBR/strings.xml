@@ -38,8 +38,6 @@
     <string name="module_uninstall_failed">Não foi possível desinstalar %s</string>
     <string name="module_version">Versão</string>
     <string name="module_author">Autor</string>
-    <string name="module_update_json">Update JSON</string>
-    <string name="module_update_json_copied">URL do Update JSON copiada</string>
     <string name="refresh">Atualizar</string>
     <string name="show_system_apps">Mostrar apps do sistema</string>
     <string name="hide_system_apps">Ocultar apps do sistema</string>
@@ -77,8 +75,6 @@
     <string name="profile_selinux_domain">Domínio</string>
     <string name="profile_selinux_rules">Regras</string>
     <string name="module_update">Atualizar</string>
-    <string name="module_downloading">Baixando módulo %s</string>
-    <string name="module_start_downloading">Começando a baixar %s</string>
     <string name="new_version_available">Nova versão %s está disponível, clique para atualizar.</string>
     <string name="launch_app">Iniciar</string>
     <string name="force_stop_app" formatted="false">Forçar parada</string>
@@ -106,7 +102,6 @@
     <string name="app_profile_template_sync">Sincronizar modelos online</string>
     <string name="app_profile_template_save_failed">Falha ao salvar o modelo</string>
     <string name="app_profile_template_import_empty">A área de transferência está vazia!</string>
-    <string name="module_changelog_failed">Falha ao buscar o registro de alterações: %s</string>
     <string name="settings_check_update">Verificar por atualização</string>
     <string name="settings_check_update_summary">Verifique automaticamente se há atualizações ao abrir o app</string>
     <string name="settings_auto_jailbreak">Jailbreak automático</string>
@@ -310,7 +305,6 @@
     <string name="check_log">Verifique o registro</string>
     <string name="installing_module">Instalando módulo %1$d/%2$d</string>
     <string name="module_failed_count">%d novo módulo não instalado</string>
-    <string name="module_download_error">Falha no download do módulo</string>
     <!-- Kasumi status text -->
     <string name="kasumi_status_available">Disponível</string>
     <string name="kasumi_status_builtin">Kasumi integrado</string>

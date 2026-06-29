@@ -38,8 +38,6 @@
     <string name="module_uninstall_failed">卸載失敗：%s</string>
     <string name="module_version">版本</string>
     <string name="module_author">作者</string>
-    <string name="module_update_json">更新 JSON</string>
-    <string name="module_update_json_copied">更新 JSON 連結已複製</string>
     <string name="refresh">刷新</string>
     <string name="show_system_apps">顯示系統應用</string>
     <string name="hide_system_apps">隱藏系統應用</string>
@@ -77,8 +75,6 @@
     <string name="profile_selinux_domain">域</string>
     <string name="profile_selinux_rules">規則</string>
     <string name="module_update">更新</string>
-    <string name="module_downloading">正在下載模組：%s</string>
-    <string name="module_start_downloading">開始下載：%s</string>
     <string name="new_version_available">發現新版本：%s，點擊升級。</string>
     <string name="launch_app">啟動</string>
     <string name="force_stop_app" formatted="false">強制停止</string>
@@ -106,7 +102,6 @@
     <string name="app_profile_template_sync">同步在線規則</string>
     <string name="app_profile_template_save_failed">模版存儲失敗</string>
     <string name="app_profile_template_import_empty">剪貼板為空！</string>
-    <string name="module_changelog_failed">獲取更新日誌失敗：%s</string>
     <string name="settings_check_update">檢查更新</string>
     <string name="settings_check_update_summary">喺應用啟動後自動檢查是否有最新版</string>
     <string name="settings_auto_jailbreak">自動越獄</string>
@@ -308,7 +303,6 @@
     <string name="check_log">請查看日誌</string>
     <string name="installing_module">正在安裝模組 %1$d/%2$d</string>
     <string name="module_failed_count">%d 個模組安裝失敗</string>
-    <string name="module_download_error">模組下載失敗</string>
     <!-- Kasumi status text -->
     <string name="kasumi_status_available">可用</string>
     <string name="kasumi_status_builtin">Kasumi 內建</string>

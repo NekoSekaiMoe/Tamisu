@@ -13,7 +13,6 @@ import com.dergoogler.mmrl.platform.model.ModuleConfig
 import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import me.dabao1955.tamisu.BuildConfig
 import me.dabao1955.tamisu.Natives
 import me.dabao1955.tamisu.ui.util.listModules
 import me.dabao1955.tamisu.ui.util.getRootShell
@@ -26,7 +25,6 @@ import org.json.JSONObject
 import java.text.Collator
 import java.text.DecimalFormat
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 import kotlin.math.log10
 import kotlin.math.pow
 import androidx.core.content.edit
@@ -40,7 +38,6 @@ class ModuleViewModel : ViewModel() {
     companion object {
         private const val TAG = "ModuleViewModel"
         private var modules by mutableStateOf<List<ModuleInfo>>(emptyList())
-        private val CUSTOM_USER_AGENT = "Tamisu/${BuildConfig.VERSION_NAME}"
     }
 
     private lateinit var moduleSizeCache: ModuleSizeCache
@@ -80,7 +77,6 @@ class ModuleViewModel : ViewModel() {
         val enabled: Boolean,
         val update: Boolean,
         val remove: Boolean,
-        val updateJson: String,
         val hasWebUi: Boolean,
         val hasActionScript: Boolean,
         val metamodule: Boolean,
@@ -185,7 +181,6 @@ class ModuleViewModel : ViewModel() {
                             obj.getBooleanCompat("enabled") && !forceOff,
                             obj.getBooleanCompat("update"),
                             obj.getBooleanCompat("remove"),
-                            obj.optString("updateJson"),
                             obj.getBooleanCompat("web"),
                             obj.getBooleanCompat("action"),
                             obj.getBooleanCompat("metamodule"),
@@ -261,67 +256,6 @@ class ModuleViewModel : ViewModel() {
             Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}, modules: $modules")
         }
     }
-
-    private fun sanitizeVersionString(version: String): String {
-        return version.replace(Regex("[^a-zA-Z0-9.\\-_]"), "_")
-    }
-
-    fun checkUpdate(m: ModuleInfo): Triple<String, String, String> {
-        val empty = Triple("", "", "")
-        if (m.updateJson.isEmpty() || m.remove || m.update || !m.enabled) {
-            return empty
-        }
-        // download updateJson
-        val result = kotlin.runCatching {
-            val url = m.updateJson
-            Log.i(TAG, "checkUpdate url: $url")
-
-            val client = okhttp3.OkHttpClient.Builder()
-                .connectTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(15, TimeUnit.SECONDS)
-                .build()
-
-            val request = okhttp3.Request.Builder()
-                .url(url)
-                .header("User-Agent", CUSTOM_USER_AGENT)
-                .build()
-
-            val response = client.newCall(request).execute()
-
-            Log.d(TAG, "checkUpdate code: ${response.code}")
-            if (response.isSuccessful) {
-                response.body?.string() ?: ""
-            } else {
-                Log.d(TAG, "checkUpdate failed: ${response.message}")
-                ""
-            }
-        }.getOrElse { e ->
-            Log.e(TAG, "checkUpdate exception", e)
-            ""
-        }
-
-        Log.i(TAG, "checkUpdate result: $result")
-
-        if (result.isEmpty()) {
-            return empty
-        }
-
-        val updateJson = kotlin.runCatching {
-            JSONObject(result)
-        }.getOrNull() ?: return empty
-
-        var version = updateJson.optString("version", "")
-        version = sanitizeVersionString(version)
-        val versionCode = updateJson.optInt("versionCode", 0)
-        val zipUrl = updateJson.optString("zipUrl", "")
-        val changelog = updateJson.optString("changelog", "")
-        if (versionCode <= m.versionCode || zipUrl.isEmpty()) {
-            return empty
-        }
-
-        return Triple(zipUrl, version, changelog)
-    }
 }
 
 fun ModuleViewModel.ModuleInfo.copy(
@@ -334,7 +268,6 @@ fun ModuleViewModel.ModuleInfo.copy(
     enabled: Boolean = this.enabled,
     update: Boolean = this.update,
     remove: Boolean = this.remove,
-    updateJson: String = this.updateJson,
     hasWebUi: Boolean = this.hasWebUi,
     hasActionScript: Boolean = this.hasActionScript,
     metamodule: Boolean = this.metamodule,
@@ -345,7 +278,7 @@ fun ModuleViewModel.ModuleInfo.copy(
 ): ModuleViewModel.ModuleInfo {
     return ModuleViewModel.ModuleInfo(
         id, name, author, version, versionCode, description,
-        enabled, update, remove, updateJson, hasWebUi, hasActionScript, metamodule,
+        enabled, update, remove, hasWebUi, hasActionScript, metamodule,
         dirId, actionIconPath, webUiIconPath, config
     )
 }

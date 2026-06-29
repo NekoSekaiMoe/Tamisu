@@ -2,13 +2,10 @@ package me.dabao1955.tamisu.ui.screen
 
 import android.annotation.SuppressLint
 import android.app.Activity.*
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Spring
@@ -20,7 +17,6 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
@@ -51,10 +47,8 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -74,7 +68,6 @@ import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActi
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
-import me.dabao1955.tamisu.BuildConfig
 import me.dabao1955.tamisu.Natives
 import me.dabao1955.tamisu.R
 import me.dabao1955.tamisu.ui.component.*
@@ -87,8 +80,6 @@ import me.dabao1955.tamisu.ui.viewmodel.ModuleViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import java.util.concurrent.TimeUnit
 
 data class ModuleBottomSheetMenuItem(
     val icon: ImageVector,
@@ -344,9 +335,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     onInstallModule = {
                         navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(it)))
                     },
-                    onUpdateModule = {
-                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModuleUpdate(it)))
-                    },
                     onClickModule = { id, name, hasWebUi ->
                         val currentTime = System.currentTimeMillis()
                         if (currentTime - lastClickTime < 600) {
@@ -565,7 +553,6 @@ private fun ModuleList(
     modifier: Modifier = Modifier,
     boxModifier: Modifier = Modifier,
     onInstallModule: (Uri) -> Unit,
-    onUpdateModule: (Uri) -> Unit,
     onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit,
     context: Context,
     snackBarHost: SnackbarHostState
@@ -581,95 +568,10 @@ private fun ModuleList(
     val cancel = stringResource(android.R.string.cancel)
     val moduleUninstallConfirm = stringResource(R.string.module_uninstall_confirm)
     val metaModuleUninstallConfirm = stringResource(R.string.metamodule_uninstall_confirm)
-    val updateText = stringResource(R.string.module_update)
-    val changelogText = stringResource(R.string.module_changelog)
-    val downloadingText = stringResource(R.string.module_downloading)
-    val startDownloadingText = stringResource(R.string.module_start_downloading)
-    val fetchChangeLogFailed = stringResource(R.string.module_changelog_failed)
-    val downloadErrorText = stringResource(R.string.module_download_error)
 
     val loadingDialog = rememberLoadingDialog()
     val confirmDialog = rememberConfirmDialog()
     var lastRebootSnackbarTime by remember { mutableStateOf(0L) }
-
-    suspend fun onModuleUpdate(
-        module: ModuleViewModel.ModuleInfo,
-        changelogUrl: String,
-        downloadUrl: String,
-        fileName: String
-    ) {
-        val client = OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .build()
-
-        val request = okhttp3.Request.Builder()
-            .url(changelogUrl)
-            .header("User-Agent", "Tamisu/${BuildConfig.VERSION_NAME}")
-            .build()
-
-        val changelogResult = loadingDialog.withLoading {
-            withContext(Dispatchers.IO) {
-                runCatching {
-                    client.newCall(request).execute().body!!.string()
-                }
-            }
-        }
-
-        val showToast: suspend (String) -> Unit = { msg ->
-            withContext(Dispatchers.Main) {
-                Toast.makeText(
-                    context,
-                    msg,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        }
-
-        val changelog = changelogResult.getOrElse {
-            showToast(fetchChangeLogFailed.format(it.message))
-            return
-        }.ifBlank {
-            showToast(fetchChangeLogFailed.format(module.name))
-            return
-        }
-
-        val confirmResult = confirmDialog.awaitConfirm(
-            changelogText,
-            content = changelog,
-            markdown = true,
-            confirm = updateText,
-        )
-
-        if (confirmResult != ConfirmResult.Confirmed) {
-            return
-        }
-
-        showToast(startDownloadingText.format(module.name))
-
-        val downloading = downloadingText.format(module.name)
-        withContext(Dispatchers.IO) {
-            download(
-                context,
-                downloadUrl,
-                fileName,
-                downloading,
-                onDownloaded = { uri ->
-                    onUpdateModule(uri)
-                },
-                onDownloading = {
-                    launch(Dispatchers.Main) {
-                        Toast.makeText(context, downloading, Toast.LENGTH_SHORT).show()
-                    }
-                },
-                onError = { errorMsg ->
-                    launch(Dispatchers.Main) {
-                        Toast.makeText(context, "$downloadErrorText: $errorMsg", Toast.LENGTH_LONG).show()
-                    }
-                }
-            )
-        }
-    }
 
     suspend fun onModuleUninstallClicked(module: ModuleViewModel.ModuleInfo) {
         val isUninstall = !module.remove
@@ -776,16 +678,10 @@ private fun ModuleList(
                         key = { it.dirId }
                     ) { module ->
                         val scope = rememberCoroutineScope()
-                        val updatedModule by produceState(initialValue = Triple("", "", "")) {
-                            scope.launch(Dispatchers.IO) {
-                                value = viewModel.checkUpdate(module)
-                            }
-                        }
 
                         ModuleItem(
                             navigator = navigator,
                             module = module,
-                            updateUrl = updatedModule.first,
                             onUninstallClicked = {
                                 scope.launch { onModuleUninstallClicked(module) }
                             },
@@ -813,16 +709,6 @@ private fun ModuleList(
                                 }
                                 success
                             },
-                            onUpdate = {
-                                scope.launch {
-                                    onModuleUpdate(
-                                        module,
-                                        updatedModule.third,
-                                        updatedModule.first,
-                                        "${module.name}-${updatedModule.second}.zip"
-                                    )
-                                }
-                            },
                             onClick = { clickedModule: ModuleViewModel.ModuleInfo ->
                                 onClickModule(clickedModule.dirId, clickedModule.name, clickedModule.hasWebUi)
                             }
@@ -846,21 +732,11 @@ private fun ModuleList(
 fun ModuleItem(
     navigator: DestinationsNavigator,
     module: ModuleViewModel.ModuleInfo,
-    updateUrl: String,
     onUninstallClicked: (ModuleViewModel.ModuleInfo) -> Unit,
     onCheckChanged: suspend (Boolean) -> Boolean,
-    onUpdate: (ModuleViewModel.ModuleInfo) -> Unit,
     onClick: (ModuleViewModel.ModuleInfo) -> Unit,
 ) {
     val context = LocalContext.current
-    val showMoreModuleInfo = remember {
-        val p = context.getSharedPreferences("settings", MODE_PRIVATE)
-        p.getBoolean("show_more_module_info", false)
-    }
-
-    // 剪贴板管理器和触觉反馈
-    val clipboardManager = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-    val hapticFeedback = LocalHapticFeedback.current
 
     ElevatedCard(
         colors = getCardColors(MaterialTheme.colorScheme.surfaceContainerHigh),
@@ -940,40 +816,6 @@ fun ModuleItem(
                         fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
                         textDecoration = textDecoration,
                     )
-
-                    // 显示更多模块信息时添加updateJson
-                    if (showMoreModuleInfo && module.updateJson.isNotEmpty()) {
-                        val updateJsonLabel = stringResource(R.string.module_update_json)
-                        Text(
-                            text = "$updateJsonLabel: ${module.updateJson}",
-                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
-                            fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
-                            textDecoration = textDecoration,
-                            color = MaterialTheme.colorScheme.primary,
-                            maxLines = 5,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .combinedClickable(
-                                    onClick = { },
-                                    onLongClick = {
-                                        val clipData = ClipData.newPlainText(
-                                            "Update JSON URL",
-                                            module.updateJson
-                                        )
-                                        clipboardManager.setPrimaryClip(clipData)
-                                        hapticFeedback.performHapticFeedback(HapticFeedbackType.LongPress)
-
-                                        Toast.makeText(
-                                            context,
-                                            context.getString(R.string.module_update_json_copied),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                ),
-                        )
-                    }
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -1136,22 +978,6 @@ fun ModuleItem(
 
                 Spacer(modifier = Modifier.weight(1f, true))
 
-                if (updateUrl.isNotEmpty()) {
-                    Button(
-                        modifier = Modifier.defaultMinSize(minWidth = 52.dp, minHeight = 32.dp),
-                        enabled = !module.remove,
-                        onClick = { onUpdate(module) },
-                        shape = ButtonDefaults.textShape,
-                        contentPadding = ButtonDefaults.TextButtonContentPadding,
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = Icons.Outlined.Download,
-                            contentDescription = null
-                        )
-                    }
-                }
-
                 FilledTonalButton(
                     modifier = Modifier.defaultMinSize(minWidth = 52.dp, minHeight = 32.dp),
                     onClick = { onUninstallClicked(module) },
@@ -1189,7 +1015,6 @@ fun ModuleItemPreview() {
         enabled = true,
         update = true,
         remove = false,
-        updateJson = "",
         hasWebUi = true,
         hasActionScript = true,
         metamodule = true,
@@ -1199,10 +1024,8 @@ fun ModuleItemPreview() {
     ModuleItem(
         navigator = EmptyDestinationsNavigator,
         module = module,
-        updateUrl = "",
         onUninstallClicked = {},
         onCheckChanged = { true },
-        onUpdate = {},
         onClick = {}
     )
 }

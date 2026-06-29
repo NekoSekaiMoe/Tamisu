@@ -43,8 +43,6 @@
     <string name="module_uninstall_failed">Failed to uninstall: %s</string>
     <string name="module_version">Version</string>
     <string name="module_author">Author</string>
-    <string name="module_update_json">Update JSON</string>
-    <string name="module_update_json_copied">Update JSON URL copied</string>
     <string name="refresh">Refresh</string>
     <string name="show_system_apps">Show system apps</string>
     <string name="hide_system_apps">Hide system apps</string>
@@ -83,8 +81,6 @@
     <string name="profile_selinux_domain">Domain</string>
     <string name="profile_selinux_rules">Rules</string>
     <string name="module_update">Update</string>
-    <string name="module_downloading">Downloading module: %s</string>
-    <string name="module_start_downloading">Start downloading: %s</string>
     <string name="new_version_available">New version %s is available, click to upgrade</string>
     <string name="launch_app">Launch</string>
     <string name="force_stop_app" formatted="false">Force stop</string>
@@ -110,7 +106,6 @@
     <string name="app_profile_template_sync">Sync online templates</string>
     <string name="app_profile_template_save_failed">Failed to save template</string>
     <string name="app_profile_template_import_empty">Clipboard is empty!</string>
-    <string name="module_changelog_failed">Fetch changelog failed: %s</string>
     <string name="settings_check_update">Check for updates</string>
     <string name="settings_check_update_summary">Automatically check for updates when opening the app</string>
     <string name="grant_root_failed">Failed to grant root!</string>
@@ -235,7 +230,6 @@
     <string name="check_log">Please check the log</string>
     <string name="installing_module">Module being installed %1$d/%2$d</string>
     <string name="module_failed_count">%d Failed to install a new module</string>
-    <string name="module_download_error">Module download failed</string>
     <!-- Kasumi status text -->
     <string name="warning_of_meta_module_title">Require Meta module</string>
     <string name="warning_of_meta_module_summary">This module want to mount /system, meta module will handle that. Otherwise, it might not work</string>

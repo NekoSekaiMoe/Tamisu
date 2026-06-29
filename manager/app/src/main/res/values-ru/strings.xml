@@ -38,8 +38,6 @@
     <string name="module_uninstall_failed">Не удалось удалить %s</string>
     <string name="module_version">Версия</string>
     <string name="module_author">Автор</string>
-    <string name="module_update_json">Update JSON</string>
-    <string name="module_update_json_copied">URL Update JSON скопирован</string>
     <string name="refresh">Обновить</string>
     <string name="show_system_apps">Показать системные приложения</string>
     <string name="hide_system_apps">Скрыть системные приложения</string>
@@ -77,8 +75,6 @@
     <string name="profile_selinux_domain">Домен</string>
     <string name="profile_selinux_rules">Правила</string>
     <string name="module_update">Обновить</string>
-    <string name="module_downloading">Скачивание модуля: %s</string>
-    <string name="module_start_downloading">Начало скачивания: %s</string>
     <string name="new_version_available">Новая версия: %s доступна, нажмите чтобы скачать.</string>
     <string name="launch_app">Запустить</string>
     <string name="force_stop_app" formatted="false">Остановить принудительно</string>
@@ -106,7 +102,6 @@
     <string name="app_profile_template_sync">Синхронизировать онлайн-шаблоны</string>
     <string name="app_profile_template_save_failed">Не удалось сохранить шаблон</string>
     <string name="app_profile_template_import_empty">Буфер обмена пуст!</string>
-    <string name="module_changelog_failed">Не удалось получить список изменений: %s</string>
     <string name="settings_check_update">Проверка обновлений</string>
     <string name="settings_check_update_summary">Автоматически проверять обновления при открытии приложения</string>
     <string name="settings_auto_jailbreak">Автоматический джейлбрейк</string>
@@ -310,7 +305,6 @@
     <string name="check_log">Пожалуйста, проверьте журнал</string>
     <string name="installing_module">Модуль устанавливается %1$d/%2$d</string>
     <string name="module_failed_count">%d не удалось установить новый модуль</string>
-    <string name="module_download_error">Ошибка загрузки модуля</string>
     <!-- Kasumi status text -->
     <string name="kasumi_status_available">Доступно</string>
     <string name="kasumi_status_builtin">Kasumi встроен</string>
