@@ -262,7 +262,6 @@ set(KSUD_OUR_SOURCES
     src/core/assets.cpp
     src/module/module.cpp
     src/module/module_config.cpp
-    src/module/metamodule.cpp
     src/boot/boot_patch.cpp
     src/boot/tools.cpp
     src/boot/apk_sign.cpp

@@ -6,7 +6,6 @@
 #include "core/restorecon.hpp"
 #include "defs.hpp"
 #include "log.hpp"
-#include "module/metamodule.hpp"
 #include "module/module.hpp"
 #include "module/module_config.hpp"
 #include "utils.hpp"
@@ -96,9 +95,6 @@ void run_stage(const std::string& stage, bool block) {
 
     // Execute common scripts first
     exec_common_scripts(stage + ".d", block);
-
-    // Execute metamodule stage script (priority)
-    metamodule_exec_stage_script(stage, block);
 
     // Execute regular modules stage scripts
     exec_stage_script(stage, block);
@@ -280,16 +276,9 @@ int on_post_data_fs() {
 
     // if we are in safe mode, we should disable all modules
     if (safe_mode) {
-        LOGW("safe mode, skip post-fs-data scripts and disable all modules!");
-        disable_all_modules();
+        LOGW("safe mode, skip post-fs-data scripts!");
         return 0;
     }
-
-    // Handle updated modules
-    handle_updated_modules();
-
-    // Prune modules marked for removal
-    prune_modules();
 
     // Refresh custom init rc for the next boot. This also covers manual edits in
     // /data/adb/initrc.d.
@@ -307,20 +296,13 @@ int on_post_data_fs() {
     init_features();
     ensure_zygiskd_running_if_enabled();
 
-    // KernelSU execution order (https://kernelsu.org/guide/metamodule.html):
-    // 1. Common post-fs-data.d, prune, restorecon, sepolicy
-    // 2. Metamodule's post-fs-data.sh
-    // 3. Regular modules' post-fs-data.sh
-    // 4. Load system.prop
-    // 5. Metamodule's metamount.sh  <-- MUST run AFTER all post-fs-data
-    // 6. post-mount.d
-
-    metamodule_exec_stage_script("post-fs-data", true);
+    // Tamisu is a zygisk provider, not a mount solution. Module mounting
+    // (metamodule / metamount.sh / built-in mount) is owned by the root
+    // solution coexisting on the device (KernelSU/Magisk/APatch). Tamisu
+    // only runs regular module stage scripts so zygisk modules can react
+    // to boot phases.
     exec_stage_script("post-fs-data", true);
     load_system_prop();
-
-    // Metamodule metamount runs AFTER all post-fs-data (modules may load LKM in post-fs-data).
-    metamodule_exec_mount_script();
 
     run_stage("post-mount", true);
 

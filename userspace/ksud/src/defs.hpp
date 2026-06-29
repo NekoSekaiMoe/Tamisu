@@ -50,8 +50,6 @@ constexpr const char* YZCONFIG_PATH = "/data/adb/ksu/yukizygisk/yzconfig.json";
 constexpr const char* DAEMON_LINK_PATH = "/data/adb/ksu/bin/ksud";
 
 constexpr const char* MODULE_DIR = "/data/adb/modules/";
-constexpr const char* MODULE_UPDATE_DIR = "/data/adb/modules_update/";
-constexpr const char* METAMODULE_DIR = "/data/adb/metamodule/";
 constexpr const char* PREINIT_DIR_WATCHDOG = "/metadata/watchdog/ksu/";
 constexpr const char* PREINIT_DIR_DEFAULT = "/metadata/ksu/";
 constexpr const char* MODULES_RC_FILE = "modules.rc";
@@ -68,11 +66,6 @@ constexpr const char* MODULE_INIT_RC_DIR = "initrc";
 constexpr const char* MODULE_CONFIG_DIR = "/data/adb/ksu/module_configs/";
 constexpr const char* PERSIST_CONFIG_NAME = "persist.config";
 constexpr const char* TEMP_CONFIG_NAME = "tmp.config";
-
-// Metamodule support
-constexpr const char* METAMODULE_MOUNT_SCRIPT = "metamount.sh";
-constexpr const char* METAMODULE_METAINSTALL_SCRIPT = "metainstall.sh";
-constexpr const char* METAMODULE_METAUNINSTALL_SCRIPT = "metauninstall.sh";
 
 // Backup
 constexpr const char* KSU_BACKUP_DIR = "/data/adb/ksu/";

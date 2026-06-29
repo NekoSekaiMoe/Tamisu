@@ -8,7 +8,6 @@
 #include "init_event.hpp"
 #include "kernelsu_loader.hpp"
 #include "log.hpp"
-#include "module/metamodule.hpp"
 #include "module/module.hpp"
 #include "module/module_config.hpp"
 #include "utils.hpp"
@@ -104,7 +103,6 @@ void run_stage_scripts(const std::string& stage, bool block) {
     }
 
     exec_common_scripts(stage + ".d", block);
-    metamodule_exec_stage_script(stage, block);
     exec_stage_script(stage, block);
 }
 
@@ -160,14 +158,6 @@ int run(bool post_magica, bool allow_shell) {
         goto finalize;
     }
 
-    if (handle_updated_modules() != 0) {
-        LOGW("late-load: handle_updated_modules failed");
-    }
-
-    if (prune_modules() != 0) {
-        LOGW("late-load: prune_modules failed");
-    }
-
     if (!restorecon()) {
         LOGW("late-load: restorecon failed");
     }
@@ -186,9 +176,8 @@ int run(bool post_magica, bool allow_shell) {
         LOGW("late-load: load_system_prop failed");
     }
 
-    if (metamodule_exec_mount_script() != 0) {
-        LOGW("late-load: metamodule_exec_mount_script failed");
-    }
+    // Tamisu does not own module mounting — metamodule / built-in mount
+    // belongs to the coexisting root solution (KernelSU/Magisk/APatch).
 
     run_stage_scripts("post-mount", true);
     on_services();

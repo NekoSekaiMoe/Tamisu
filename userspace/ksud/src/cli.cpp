@@ -12,7 +12,6 @@
 #include "late_load.hpp"
 #include "log.hpp"
 #include "module/module.hpp"
-#include "module/module_config.hpp"
 #include "sepolicy/sepolicy.hpp"
 #include "utils.hpp"
 
@@ -135,7 +134,6 @@ void print_usage() {
     printf("YukiSU userspace daemon (zygisk-only)\n\n");
     printf("USAGE: ksud <COMMAND>\n\n");
     printf("COMMANDS:\n");
-    printf("  module         Manage KernelSU modules\n");
     printf("  insmod         Load a kernel module with kallsyms access\n");
     printf("  late-load      Load kernelsu.ko and execute late-load stage scripts\n");
     printf("  post-fs-data   Trigger post-fs-data event\n");
@@ -158,55 +156,6 @@ void print_usage() {
 
 void print_version() {
     printf("ksud version %s (code: %s)\n", VERSION_NAME, VERSION_CODE);
-}
-
-int cmd_module(const std::vector<std::string>& args) {
-    if (args.empty()) {
-        printf("USAGE: ksud module <SUBCOMMAND>\n\n");
-        printf("SUBCOMMANDS:\n");
-        printf("  install <ZIP>     Install module\n");
-        printf("  uninstall <ID>    Uninstall module\n");
-        printf("  enable <ID>       Enable module\n");
-        printf("  disable <ID>      Disable module\n");
-        printf("  action <ID>       Run module action\n");
-        printf("  list              List all modules\n");
-        printf("  config            Manage module config\n");
-        return 1;
-    }
-
-    // Switch to init mount namespace
-    if (!switch_mnt_ns(1)) {
-        LOGE("Failed to switch mount namespace");
-        return 1;
-    }
-
-    const std::string& subcmd = args[0];
-
-    if (subcmd == "install" && args.size() > 1) {
-        return module_install(args[1]);
-    } else if (subcmd == "uninstall" && args.size() > 1) {
-        return module_uninstall(args[1]);
-    } else if (subcmd == "undo-uninstall" && args.size() > 1) {
-        return module_undo_uninstall(args[1]);
-    } else if (subcmd == "enable" && args.size() > 1) {
-        return module_enable(args[1]);
-    } else if (subcmd == "disable" && args.size() > 1) {
-        return module_disable(args[1]);
-    } else if (subcmd == "action" && args.size() > 1) {
-        return module_run_action(args[1]);
-    } else if (subcmd == "list") {
-        return module_list();
-    } else if (subcmd == "config") {
-        // Handle module config subcommands
-        if (args.size() < 2) {
-            printf("USAGE: ksud module config <get|set|list|delete|clear> ...\n");
-            return 1;
-        }
-        return module_config_handle(std::vector<std::string>(args.begin() + 1, args.end()));
-    }
-
-    printf("Unknown module subcommand: %s\n", subcmd.c_str());
-    return 1;
 }
 
 int cmd_initrc(const std::vector<std::string>& args) {
@@ -682,8 +631,6 @@ int cli_run(int argc, char** argv) {
     } else if (cmd == "boot-completed") {
         on_boot_completed();
         return 0;
-    } else if (cmd == "module") {
-        return cmd_module(args);
     } else if (cmd == "install") {
         std::optional<std::string> magiskboot;
         std::optional<std::string> libadbroot;
