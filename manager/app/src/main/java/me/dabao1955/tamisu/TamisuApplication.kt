@@ -13,16 +13,16 @@ import okhttp3.OkHttpClient
 import java.io.File
 import java.util.Locale
 
-lateinit var ksuApp: KernelSUApplication
+lateinit var tamisuApp: TamisuApplication
 
-class KernelSUApplication : Application(), ViewModelStoreOwner {
+class TamisuApplication : Application(), ViewModelStoreOwner {
 
     lateinit var okhttpClient: OkHttpClient
     private val appViewModelStore by lazy { ViewModelStore() }
 
     override fun onCreate() {
         super.onCreate()
-        ksuApp = this
+        tamisuApp = this
 
         val context = this
         val iconSize = resources.getDimensionPixelSize(android.R.dimen.app_icon_size)

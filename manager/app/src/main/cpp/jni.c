@@ -1,4 +1,4 @@
-#include "ksu.h"
+#include "tamisu.h"
 #include "prelude.h"
 
 #include <android/log.h>
@@ -31,7 +31,7 @@ NativeBridgeNP(getHookType, jstring) {
   return GetEnvironment()->NewStringUTF(env, hook_type);
 }
 
-NativeBridgeNP(isKsuDriverPresent, jboolean) { return ksu_driver_present(); }
+NativeBridgeNP(isTamisuDriverPresent, jboolean) { return tamisu_driver_present(); }
 
 // --- YukiZygisk injection-status query ---
 #define YZ_REQ_GET_STATUS 7 /* == zygiskd::Request::GetStatus (zygiskd.hpp) */

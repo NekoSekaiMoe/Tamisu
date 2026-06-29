@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.dabao1955.tamisu.BuildConfig
 import me.dabao1955.tamisu.ksu.KsuPaths
-import me.dabao1955.tamisu.ksuApp
+import me.dabao1955.tamisu.tamisuApp
 import me.dabao1955.tamisu.utils.AssetsUtil
 import com.topjohnwu.superuser.io.SuFile
 import org.json.JSONArray
@@ -31,7 +31,7 @@ import java.util.Properties
 private const val TAG = "KsuCli"
 
 private fun getKsuDaemonPath(): String {
-    return ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud.so"
+    return tamisuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud.so"
 }
 
 /**
@@ -159,7 +159,7 @@ object KsuCli {
             return
         }
 
-        val nativeDir = ksuApp.applicationInfo.nativeLibraryDir
+        val nativeDir = tamisuApp.applicationInfo.nativeLibraryDir
         val ksudSo = File(nativeDir, "libksud.so")
         if (!ksudSo.exists()) {
             Log.e(TAG, "installOrUpdateKsudDaemon: libksud.so not found in $nativeDir")
@@ -278,7 +278,7 @@ fun install() {
     val start = SystemClock.elapsedRealtime()
     val ksudPath = getKsuDaemonPath()
     val libadbrootPath =
-        ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libadbroot.so"
+        tamisuApp.applicationInfo.nativeLibraryDir + File.separator + "libadbroot.so"
     // magiskboot is built into ksud (multi-call binary); pass ksud path so it can exec itself as magiskboot
     Log.i(TAG, "install: ksud=$ksudPath")
     val result = execKsud("install --magiskboot $ksudPath --libadbroot $libadbrootPath", true)
@@ -357,7 +357,7 @@ private fun flashWithIO(
     }
 
     // Set TMPDIR to app cache directory so ksud can create temp files without root
-    val tmpDir = ksuApp.cacheDir.absolutePath
+    val tmpDir = tamisuApp.cacheDir.absolutePath
     val cmdWithEnv = "TMPDIR=$tmpDir $cmd"
 
     return withNewRootShell {
@@ -371,15 +371,15 @@ fun flashModule(
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit
 ): Boolean {
-    val resolver = ksuApp.contentResolver
+    val resolver = tamisuApp.contentResolver
     with(resolver.openInputStream(uri)) {
-        val file = File(ksuApp.cacheDir, "module.zip")
+        val file = File(tamisuApp.cacheDir, "module.zip")
         file.outputStream().use { output ->
             this?.copyTo(output)
         }
         val cmd = "module install ${file.absolutePath}"
         val result = flashWithIO(ksudCmd(cmd), onStdout, onStderr)
-        Log.i("KernelSU", "install module $uri result: $result")
+        Log.i("Tamisu", "install module $uri result: $result")
 
         file.delete()
 
@@ -407,7 +407,7 @@ fun runModuleAction(
         newJob().add(ksudCmd("module action $moduleId"))
             .to(stdoutCallback, stderrCallback).exec()
     }
-    Log.i("KernelSU", "Module runAction result: $result")
+    Log.i("Tamisu", "Module runAction result: $result")
 
     return result.isSuccess
 }
@@ -454,11 +454,11 @@ fun installBoot(
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit,
 ): Boolean {
-    val resolver = ksuApp.contentResolver
+    val resolver = tamisuApp.contentResolver
 
     val bootFile = bootUri?.let { uri ->
         with(resolver.openInputStream(uri)) {
-            val bootFile = File(ksuApp.cacheDir, "boot.img")
+            val bootFile = File(tamisuApp.cacheDir, "boot.img")
             bootFile.outputStream().use { output ->
                 this?.copyTo(output)
             }
@@ -471,10 +471,10 @@ fun installBoot(
     var cmd = "boot-patch --magiskboot $ksudPath"
 
     // Extract kernel-version-specific mkbootfs tools for 5.10/5.15+ ramdisk format compatibility
-    val mkbootfsDir = File(ksuApp.cacheDir, "mkbootfs").apply { mkdirs() }
+    val mkbootfsDir = File(tamisuApp.cacheDir, "mkbootfs").apply { mkdirs() }
     try {
-        AssetsUtil.exportFiles(ksuApp, "5_10-mkbootfs", File(mkbootfsDir, "5_10-mkbootfs").absolutePath)
-        AssetsUtil.exportFiles(ksuApp, "5_15+-mkbootfs", File(mkbootfsDir, "5_15+-mkbootfs").absolutePath)
+        AssetsUtil.exportFiles(tamisuApp, "5_10-mkbootfs", File(mkbootfsDir, "5_10-mkbootfs").absolutePath)
+        AssetsUtil.exportFiles(tamisuApp, "5_15+-mkbootfs", File(mkbootfsDir, "5_15+-mkbootfs").absolutePath)
         File(mkbootfsDir, "5_10-mkbootfs").setExecutable(true, false)
         File(mkbootfsDir, "5_15+-mkbootfs").setExecutable(true, false)
         cmd += " --mkbootfs-dir ${mkbootfsDir.absolutePath}"
@@ -497,7 +497,7 @@ fun installBoot(
     when (lkm) {
         is LkmSelection.LkmUri -> {
             lkmFile = with(resolver.openInputStream(lkm.uri)) {
-                val file = File(ksuApp.cacheDir, "kernelsu-tmp-lkm.ko")
+                val file = File(tamisuApp.cacheDir, "tamisu-tmp-lkm.ko")
                 file.outputStream().use { output ->
                     this?.copyTo(output)
                 }
@@ -534,7 +534,7 @@ fun installBoot(
         cmd += " --kasumi"
         kasumiLkmUri?.let { uri ->
             val file = with(resolver.openInputStream(uri)) {
-                val f = File(ksuApp.cacheDir, "kasumi-tmp-lkm.ko")
+                val f = File(tamisuApp.cacheDir, "kasumi-tmp-lkm.ko")
                 f.outputStream().use { output ->
                     this?.copyTo(output)
                 }
@@ -546,7 +546,7 @@ fun installBoot(
     }
 
     val result = flashWithIO(ksudCmd(cmd), onStdout, onStderr)
-    Log.i("KernelSU", "install boot result: ${result.isSuccess}")
+    Log.i("Tamisu", "install boot result: ${result.isSuccess}")
 
     bootFile?.delete()
     lkmFile?.delete()

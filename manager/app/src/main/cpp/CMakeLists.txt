@@ -10,20 +10,20 @@ cmake_minimum_required(VERSION 3.18.1)
 get_filename_component(REPO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../../../.." ABSOLUTE)
 include_directories(${REPO_ROOT})
 
-project("kernelsu")
+project("tamisu")
 
 find_package(cxx REQUIRED CONFIG)
 link_libraries(cxx::cxx)
 
-add_library(kernelsu
+add_library(tamisu
         SHARED
         jni.c
-        ksu.c
+        tamisu.c
 )
 
 find_library(log-lib log)
 
-target_link_libraries(kernelsu ${log-lib})
+target_link_libraries(tamisu ${log-lib})
 
 add_library(adbroot
         SHARED

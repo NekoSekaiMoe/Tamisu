@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Theme.KernelSU" parent="android:Theme.Material.Light.NoActionBar">
+    <style name="Theme.Tamisu" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">shortEdges</item>
     </style>
 
-    <style name="Theme.KernelSU.Floating" parent="android:Theme.DeviceDefault.NoActionBar">
+    <style name="Theme.Tamisu.Floating" parent="android:Theme.DeviceDefault.NoActionBar">
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>

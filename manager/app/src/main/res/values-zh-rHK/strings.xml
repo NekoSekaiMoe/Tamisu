@@ -28,7 +28,6 @@
     <string name="reboot_bootloader">重新啟動到 Bootloader</string>
     <string name="reboot_download">重新啟動到 Download</string>
     <string name="reboot_edl">重新啟動到 EDL</string>
-    <string name="about">關於</string>
     <string name="module_uninstall_confirm">確定要卸載模組 %s 嗎？</string>
     <string name="metamodule_uninstall_confirm">確定要卸載模組 %s 嗎？此操作將影響所有模組，並且元模組提供的某些功能（如掛載）將不再運作。</string>
     <string name="module_uninstall_success">%s 已卸載</string>
@@ -44,7 +43,6 @@
     <string name="reboot_to_apply">重新啟動後生效</string>
     <string name="module_magisk_conflict">因同 Magisk 有衝突，所有模組唔可用！</string>
     <string name="home_support_title">支援開發</string>
-    <string name="home_support_content">KernelSU將保持免費開源，向官方KernelSU嘅開發者捐贈以表示支援</string>
     <string name="about_source_code"><![CDATA[喺 %1$s 查看源碼<br/>加入我哋嘅 %2$s 頻道]]></string>
     <string name="profile_default">默認</string>
     <string name="profile_template">模版</string>
@@ -60,8 +58,6 @@
     <string name="dynamic_manager_set_failed">將 %s 設為動態管理器失敗</string>
     <string name="dynamic_manager_del_failed">從動態管理器中移除 %s 失敗</string>
     <string name="dynamic_manager_signature_unavailable">無法擷取 %s 的動態管理器簽章</string>
-    <string name="require_kernel_version" formatted="false">當前 KernelSU 版本 %s 過低，管理器無法正常工作，請將核心 KernelSU 版本升級至 %s 或以上！</string>
-    <string name="profile_umount_modules_summary">啟用該選項後將允許 KernelSU 為本應用還原被模組修改過嘅文件。</string>
     <string name="profile_selinux_domain">域</string>
     <string name="profile_selinux_rules">規則</string>
     <string name="module_update">更新</string>
@@ -114,7 +110,6 @@
     <string name="enable_adb">啟動時強制啟用 ADB 偵錯</string>
     <string name="enable_adb_summary">強制允許 USB 偵錯並取消 adb 驗證，非必要請勿開啟。</string>
     <string name="kasumi_in_cpio_title">實驗：將 Kasumi 刷入 cpio</string>
-    <string name="kasumi_in_cpio_desc">開啟後，修補時會加入 Kasumi LKM，開機時緊隨 KernelSU 載入</string>
     <string name="kasumi_custom_lkm_title">自訂 Kasumi LKM</string>
     <string name="kasumi_custom_lkm_desc">點擊選擇自訂 .ko 檔案（可選，未選擇則使用內嵌）</string>
     <string name="kasumi_use_embedded">清除並使用內嵌 Kasumi</string>
@@ -125,8 +120,6 @@
     <string name="settings_uninstall">卸載</string>
     <string name="settings_uninstall_permanent">永久卸載</string>
     <string name="settings_restore_stock_image">恢復原廠鏡像</string>
-    <string name="settings_uninstall_permanent_message">完全並永久卸載 KernelSU（Root 權限和所有模組）。</string>
-    <string name="settings_restore_stock_image_message">還原原廠鏡像（若存在備份），一般喺 OTA 前使用；如果你需要卸載 KernelSU，請使用「永久卸載」。</string>
     <string name="flashing">刷寫中</string>
     <string name="flash_success">刷寫完成</string>
     <string name="flash_failed">刷寫失敗</string>
@@ -180,8 +173,6 @@
     <string name="reboot_complete_msg">是否立即重新啟動？</string>
     <string name="yes">係</string>
     <string name="no">否</string>
-    <string name="home_ContributionCard_kernelsu">Tamisu 願景</string>
-    <string name="home_click_to_ContributionCard_kernelsu">Tamisu 係一個極其激進且特立獨行嘅 KSU 分支，但仍然感謝官方 KernelSU 同 SukiSU、Magisk、APatch 等作出嘅貢獻</string>
     <string name="custom_settings">個性化配置</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
@@ -272,7 +263,6 @@
     <string name="module_package">模組</string>
     <string name="unknown_package">未知類型</string>
     <string name="unknown_file">未知檔案</string>
-    <string name="unsupported_file_format">不支援的檔案格式，僅支援 Magisk/KernelSU 模組包。</string>
     <string name="version">版本</string>
     <string name="author">作者</string>
     <string name="description">描述</string>
@@ -295,7 +285,6 @@
     <string name="log_viewer_search_placeholder">按 UID、指令或詳情搜尋…</string>
     <string name="log_viewer_clear_search">清除搜尋</string>
     <string name="log_viewer_view_logs">檢視使用日誌</string>
-    <string name="log_viewer_view_logs_summary">檢視 KernelSU 超級使用者存取日誌</string>
     <string name="log_viewer_exclude_subtypes">排除子類型</string>
     <string name="log_viewer_exclude_current_app">目前應用</string>
     <string name="log_viewer_exclude_viewer_refresh">日誌檢視器自動刷新</string>

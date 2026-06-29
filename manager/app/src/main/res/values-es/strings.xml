@@ -28,7 +28,6 @@
     <string name="reboot_bootloader">Reiniciar en modo de arranque</string>
     <string name="reboot_download">Reiniciar en modo Download</string>
     <string name="reboot_edl">Reiniciar en modo EDL</string>
-    <string name="about">Acerca de</string>
     <string name="module_uninstall_confirm">¿Está seguro de que desea desinstalar el módulo %s?</string>
     <string name="metamodule_uninstall_confirm">¿Seguro que quieres desinstalar el módulo %s? Esta acción afectará a todos los módulos, y ciertas funciones del metamódulo (como el montaje) dejarán de funcionar</string>
     <string name="module_uninstall_success">%s desinstalado</string>
@@ -44,7 +43,6 @@
     <string name="reboot_to_apply">Reinicia para aplicar cambios</string>
     <string name="module_magisk_conflict">¡Los módulos no están disponibles debido a un conflicto con Magisk!</string>
     <string name="home_support_title">Desarrollo de Apoyo</string>
-    <string name="home_support_content">KernelSU seguirá siendo gratuito y de código abierto. Haga una donación a los desarrolladores oficiales de KernelSU para mostrar su apoyo.</string>
     <string name="about_source_code"><![CDATA[Ver el código fuente en %1$s<br/>Únete a nuestro canal %2$s]]></string>
     <string name="profile_default">Predeterminado</string>
     <string name="profile_template">Plantilla</string>
@@ -60,8 +58,6 @@
     <string name="dynamic_manager_set_failed">No se pudo establecer %s como administrador dinámico</string>
     <string name="dynamic_manager_del_failed">No se pudo quitar %s de los administradores dinámicos</string>
     <string name="dynamic_manager_signature_unavailable">No se pudo extraer la firma del administrador dinámico para %s</string>
-    <string name="require_kernel_version" formatted="false">La versión %s actual de KernelSU es demasiado baja para que el gestor funcione correctamente. Por favor, ¡actualice a la versión %s o superior!</string>
-    <string name="profile_umount_modules_summary">Activar esta opción permitirá a KernelSU restaurar cualquier archivo modificado por los módulos para esta aplicación.</string>
     <string name="profile_selinux_domain">Dominio</string>
     <string name="profile_selinux_rules">Reglas</string>
     <string name="module_update">Actualizar</string>
@@ -114,7 +110,6 @@
     <string name="enable_adb">Forzar la activación de adb al arrancar</string>
     <string name="enable_adb_summary">Forzar la activación de la depuración USB y desactivar la autenticación de adb. No actives esto a menos que sea absolutamente necesario.</string>
     <string name="kasumi_in_cpio_title">Experimental: incrustar Kasumi en cpio</string>
-    <string name="kasumi_in_cpio_desc">Cuando está activado, el LKM de Kasumi se añade al cpio y se carga después de KernelSU al arrancar</string>
     <string name="kasumi_custom_lkm_title">LKM de Kasumi personalizado</string>
     <string name="kasumi_custom_lkm_desc">Toca para seleccionar un archivo .ko personalizado (opcional, usa el integrado si no se establece)</string>
     <string name="kasumi_use_embedded">Borrar y usar el Kasumi integrado</string>
@@ -125,8 +120,6 @@
     <string name="settings_uninstall">Desinstalar</string>
     <string name="settings_uninstall_permanent">Desinstalar permanentemente</string>
     <string name="settings_restore_stock_image">Restaurar imagen de archivo</string>
-    <string name="settings_uninstall_permanent_message">Desinstalar KernelSU (Root y todos los módulos) completa y permanentemente.</string>
-    <string name="settings_restore_stock_image_message">Restaurar la imagen de fábrica stock (Si existe una copia de seguridad), por lo general se utiliza antes de OTA; si necesita desinstalar KernelSU, por favor, utilice \"Desinstalar permanentemente\".</string>
     <string name="flashing">Intermitencia</string>
     <string name="flash_success">Éxito de Flash</string>
     <string name="flash_failed">Flash falló</string>
@@ -180,8 +173,6 @@
     <string name="reboot_complete_msg">¿Reiniciar inmediatamente?</string>
     <string name="yes">Si</string>
     <string name="no">No</string>
-    <string name="home_ContributionCard_kernelsu">Tamisu Visión</string>
-    <string name="home_click_to_ContributionCard_kernelsu">Tamisu es una rama KSU extremadamente agresiva e independiente, pero aún así agradecemos al proyecto oficial KernelSU, SukiSU, Magisk, APatch y otros por sus contribuciones.</string>
     <string name="custom_settings">Ajustes personalizados</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
@@ -272,7 +263,6 @@
     <string name="module_package">Módulo</string>
     <string name="unknown_package">Desconocido</string>
     <string name="unknown_file">Archivo desconocido</string>
-    <string name="unsupported_file_format">Formato de archivo no admitido. Solo se admiten paquetes de módulos de Magisk/KernelSU.</string>
     <string name="version">Versión</string>
     <string name="author">Autor</string>
     <string name="description">Descripción</string>
@@ -295,7 +285,6 @@
     <string name="log_viewer_search_placeholder">Buscar por UID, comando o detalles…</string>
     <string name="log_viewer_clear_search">Borrar búsqueda</string>
     <string name="log_viewer_view_logs">Ver registros de uso</string>
-    <string name="log_viewer_view_logs_summary">Ver los registros de acceso de superusuario de KernelSU</string>
     <string name="log_viewer_exclude_subtypes">Excluir subtipos</string>
     <string name="log_viewer_exclude_current_app">Aplicación actual</string>
     <string name="log_viewer_exclude_viewer_refresh">Autoactualización del visor de registros</string>

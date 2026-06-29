@@ -223,7 +223,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             onSaveLog = {
                                 val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
                                 val current = LocalDateTime.now().format(formatter)
-                                exportBugreportLauncher.launch("KernelSU_bugreport_${current}.tar.gz")
+                                exportBugreportLauncher.launch("Tamisu_bugreport_${current}.tar.gz")
                                 showBottomsheet = false
                             },
                             onShareLog = {

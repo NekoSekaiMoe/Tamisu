@@ -48,7 +48,6 @@
     <string name="reboot_to_apply">重启生效</string>
     <string name="module_magisk_conflict">因与 Magisk 有冲突，所有模块不可用！</string>
     <string name="home_support_title">支持开发</string>
-    <string name="home_support_content">KernelSU 将保持免费开源；向 KernelSU 官方开发者捐赠以表示支持。</string>
     <string name="about_source_code"><![CDATA[在 %1$s 查看源码<br/>加入我们的 %2$s 频道]]></string>
     <string name="profile_default">默认</string>
     <string name="profile_template">模版</string>
@@ -59,21 +58,18 @@
     <string name="profile_selinux_context">SELinux</string>
     <string name="profile_umount_modules">卸载模块</string>
     <string name="profile_no_new_privs">禁止再次提权</string>
-    <string name="profile_no_new_privs_summary">使用此配置提权的进程及其子进程将无法再通过 KernelSU 提权（如再次执行 su 或调用 GRANT_ROOT）。建议开启。</string>
     <string name="failed_to_update_app_profile">为 %s 更新 App Profile 失败</string>
     <string name="set_as_dynamic_manager">设为动态管理器</string>
     <string name="set_as_dynamic_manager_summary">持久化此应用签名并信任为动态管理器</string>
     <string name="dynamic_manager_set_failed">将 %s 设为动态管理器失败</string>
     <string name="dynamic_manager_del_failed">从动态管理器中移除 %s 失败</string>
     <string name="dynamic_manager_signature_unavailable">无法提取 %s 的动态管理器签名</string>
-    <string name="require_kernel_version" formatted="false">当前 KernelSU 版本 %s 过低，管理器无法正常工作，请将内核 KernelSU 版本升级至 %s 或以上！</string>
     <string name="uapi_mismatch">管理器 (UAPI %1$d) 与内核 (UAPI %2$d) 版本不匹配，请将内核与管理器同步更新到匹配的版本。</string>
     <string name="settings_yukizygisk">YukiZygisk</string>
     <string name="settings_yukizygisk_summary">捕获 zygote 并注入 Zygisk 模块，重启后生效。默认关闭。</string>
     <string name="settings_yukizygisk_toast_on">YukiZygisk 已开启 — 重启后生效</string>
     <string name="settings_yukizygisk_toast_off">YukiZygisk 已关闭 — 重启后生效</string>
     <string name="settings_yukizygisk_toast_failed">YukiZygisk 切换失败</string>
-    <string name="profile_umount_modules_summary">启用该选项后将允许 KernelSU 为本应用还原被模块修改过的文件。</string>
     <string name="profile_selinux_domain">域</string>
     <string name="profile_selinux_rules">规则</string>
     <string name="module_update">更新</string>
@@ -125,8 +121,6 @@
     <string name="settings_uninstall">卸载</string>
     <string name="settings_uninstall_permanent">永久卸载</string>
     <string name="settings_restore_stock_image">恢复原厂镜像</string>
-    <string name="settings_uninstall_permanent_message">完全并永久卸载 KernelSU（Root 权限和所有模块）。</string>
-    <string name="settings_restore_stock_image_message">恢复原厂镜像（若存在备份），一般在 OTA 前使用；如果你需要卸载 KernelSU，请使用"永久卸载"。</string>
     <string name="flashing">刷写中</string>
     <string name="flash_success">刷写完成</string>
     <string name="flash_failed">刷写失败</string>
@@ -179,8 +173,6 @@
     <string name="reboot_complete_msg">是否立即重启？</string>
     <string name="yes">是</string>
     <string name="no">否</string>
-    <string name="home_ContributionCard_kernelsu">Tamisu</string>
-    <string name="home_click_to_ContributionCard_kernelsu">Tamisu 是内核级 Zygisk 提供方（类似 ZygiskNext），而非 root 提供方。它与 KernelSU、Magisk 或 APatch 共存，只负责 zygote 注入，su / 应用档案 / 模块由 root 方案负责。</string>
     <string name="custom_settings">个性化设置</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
@@ -274,7 +266,6 @@
     <string name="module_package">模块</string>
     <string name="unknown_package">未知类型</string>
     <string name="unknown_file">未知文件</string>
-    <string name="unsupported_file_format">不支持的文件格式，仅支持 Magisk/KernelSU 模块包。</string>
     <string name="version">版本</string>
     <string name="author">作者</string>
     <string name="description">描述</string>
@@ -298,7 +289,6 @@
     <string name="log_viewer_search_placeholder">按 UID、命令或详情搜索…</string>
     <string name="log_viewer_clear_search">清除搜索</string>
     <string name="log_viewer_view_logs">查看使用日志</string>
-    <string name="log_viewer_view_logs_summary">查看 KernelSU 超级用户访问日志</string>
     <string name="log_viewer_exclude_subtypes">排除子类型</string>
     <string name="log_viewer_exclude_current_app">当前应用</string>
     <string name="log_viewer_exclude_viewer_refresh">日志查看器自刷新</string>
@@ -477,7 +467,6 @@
     <string name="install_jailbreak_button">触发 late-load</string>
     <string name="install_jailbreak_failed">触发 late-load 失败</string>
     <string name="kasumi_in_cpio_title">实验：将 Kasumi 刷入 cpio</string>
-    <string name="kasumi_in_cpio_desc">开启后，修补时会加入 Kasumi LKM，开机时紧随 KernelSU 加载</string>
     <string name="kasumi_custom_lkm_title">自定义 Kasumi LKM</string>
     <string name="kasumi_custom_lkm_desc">点击选择自定义 .ko 文件（可选，未选择则使用内嵌）</string>
     <string name="kasumi_use_embedded">清除并使用内嵌 Kasumi</string>

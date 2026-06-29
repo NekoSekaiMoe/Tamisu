@@ -28,7 +28,6 @@
     <string name="reboot_bootloader">In den Bootloader-Modus neustarten</string>
     <string name="reboot_download">In den Download-Modus neustarten</string>
     <string name="reboot_edl">In den EDL-Modus neustarten</string>
-    <string name="about">Über KernelSU</string>
     <string name="module_uninstall_confirm">Möchtest du wirklich Modul %s deinstallieren?</string>
     <string name="metamodule_uninstall_confirm">Möchtest du das Modul %s wirklich deinstallieren? Diese Aktion betrifft alle Module, und bestimmte vom Metamodul bereitgestellte Funktionen (wie das Einhängen) funktionieren nicht mehr</string>
     <string name="module_uninstall_success">%s deinstalliert</string>
@@ -44,7 +43,6 @@
     <string name="reboot_to_apply">Neustarten, damit Änderungen wirksam werden</string>
     <string name="module_magisk_conflict">Module sind aufgrund eines Konfliktes mit Magisk nicht verfügbar!</string>
     <string name="home_support_title">Unterstützen Sie die Entwicklung</string>
-    <string name="home_support_content">KernelSU bleibt kostenlos und Open Source. Spenden Sie an die offiziellen KernelSU-Entwickler, um Ihre Unterstützung zu zeigen.</string>
     <string name="about_source_code"><![CDATA[Den Quellcode finden Sie unter %1$s<br/>Begleiten Sie uns %2$s-Kanal]]></string>
     <string name="profile_default">Standard</string>
     <string name="profile_template">Vorlage</string>
@@ -60,8 +58,6 @@
     <string name="dynamic_manager_set_failed">%s konnte nicht als dynamischer Manager festgelegt werden</string>
     <string name="dynamic_manager_del_failed">%s konnte nicht aus den dynamischen Managern entfernt werden</string>
     <string name="dynamic_manager_signature_unavailable">Signatur des dynamischen Managers für %s konnte nicht ermittelt werden</string>
-    <string name="require_kernel_version" formatted="false">Die aktuelle KernelSU-Version %s ist zu alt für diese Manager-Version. Bitte auf Version %s oder höher aktualisieren!</string>
-    <string name="profile_umount_modules_summary">Wenn du diese Option aktivierst, kann KernelSU alle von den Modulen für diese App geänderten Dateien wiederherstellen.</string>
     <string name="profile_selinux_domain">Domäne</string>
     <string name="profile_selinux_rules">Regeln</string>
     <string name="module_update">Aktualisieren</string>
@@ -116,7 +112,6 @@
     <string name="enable_adb">adb beim Booten erzwingen</string>
     <string name="enable_adb_summary">USB-Debugging erzwingen und die adb-Authentifizierung deaktivieren. Aktiviere dies nur, wenn unbedingt nötig.</string>
     <string name="kasumi_in_cpio_title">Experimentell: Kasumi in cpio einbetten</string>
-    <string name="kasumi_in_cpio_desc">Wenn aktiviert, wird das Kasumi-LKM zur cpio hinzugefügt und beim Booten nach KernelSU geladen</string>
     <string name="kasumi_custom_lkm_title">Benutzerdefiniertes Kasumi-LKM</string>
     <string name="kasumi_custom_lkm_desc">Tippen, um eine benutzerdefinierte .ko-Datei auszuwählen (optional, verwendet die eingebettete, falls nicht festgelegt)</string>
     <string name="kasumi_use_embedded">Löschen und eingebettetes Kasumi verwenden</string>
@@ -127,8 +122,6 @@
     <string name="settings_uninstall">Deinstallieren</string>
     <string name="settings_uninstall_permanent">Permanent deinstallieren</string>
     <string name="settings_restore_stock_image">Standard-Abbild wiederherstellen</string>
-    <string name="settings_uninstall_permanent_message">KernelSU (Root und alle Module) vollständig und dauerhaft deinstallieren.</string>
-    <string name="settings_restore_stock_image_message">Das Standard Werksabbild wiederherstellen (falls ein Backup existiert), normalerweise vor einem OTA zu verwenden; falls Sie KernelSU deinstallieren müssen, nutzen Sie bitte \"Permanent deinstallieren\".</string>
     <string name="flashing">Schreibt</string>
     <string name="flash_success">Schreiben erfolgreich</string>
     <string name="flash_failed">Schreiben fehlgeschlagen</string>
@@ -182,8 +175,6 @@
     <string name="reboot_complete_msg">Ob sofort neu gestartet werden soll?</string>
     <string name="yes">Ja</string>
     <string name="no">Nein</string>
-    <string name="home_ContributionCard_kernelsu">Tamisu-Vision</string>
-    <string name="home_click_to_ContributionCard_kernelsu">Tamisu ist ein äußerst aggressiver und unabhängiger KSU-Zweig, aber wir danken dennoch dem offiziellen KernelSU-Projekt, SukiSU, Magisk, APatch und anderen für ihre Beiträge.</string>
     <string name="custom_settings">Eigene Einstellungen</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
@@ -274,7 +265,6 @@
     <string name="module_package">Modul</string>
     <string name="unknown_package">Unbekannt</string>
     <string name="unknown_file">Unbekannte Datei</string>
-    <string name="unsupported_file_format">Nicht unterstütztes Dateiformat. Es werden nur Magisk/KernelSU-Modulpakete unterstützt.</string>
     <string name="version">Version</string>
     <string name="author">Autor</string>
     <string name="description">Beschreibung</string>
@@ -297,7 +287,6 @@
     <string name="log_viewer_search_placeholder">Nach UID, Befehl oder Details suchen…</string>
     <string name="log_viewer_clear_search">Suche löschen</string>
     <string name="log_viewer_view_logs">Nutzungsprotokolle anzeigen</string>
-    <string name="log_viewer_view_logs_summary">KernelSU-Superuser-Zugriffsprotokolle anzeigen</string>
     <string name="log_viewer_exclude_subtypes">Untertypen ausschließen</string>
     <string name="log_viewer_exclude_current_app">Aktuelle App</string>
     <string name="log_viewer_exclude_viewer_refresh">Selbstaktualisierung der Protokollanzeige</string>

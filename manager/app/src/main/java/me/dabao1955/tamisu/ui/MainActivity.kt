@@ -52,7 +52,7 @@ import me.dabao1955.tamisu.ui.activity.util.UltraActivityUtils
 import me.dabao1955.tamisu.ui.component.InstallConfirmationDialog
 import me.dabao1955.tamisu.ui.component.ZipFileInfo
 import me.dabao1955.tamisu.ui.screen.BottomBarDestination
-import me.dabao1955.tamisu.ui.theme.KernelSUTheme
+import me.dabao1955.tamisu.ui.theme.TamisuTheme
 import me.dabao1955.tamisu.ui.util.KsuCli
 import me.dabao1955.tamisu.ui.util.LocalSnackbarHost
 import me.dabao1955.tamisu.ui.util.install
@@ -128,7 +128,7 @@ class MainActivity : ComponentActivity() {
             }
 
             setContent {
-                KernelSUTheme {
+                TamisuTheme {
                     val navController = rememberNavController()
                     val snackBarHostState = remember { SnackbarHostState() }
                     val currentDestination = navController.currentBackStackEntryAsState().value?.destination

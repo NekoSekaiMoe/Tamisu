@@ -1,6 +1,6 @@
 
-#ifndef KERNELSU_PRELUDE_H
-#define KERNELSU_PRELUDE_H
+#ifndef TAMISU_PRELUDE_H
+#define TAMISU_PRELUDE_H
 
 #include <android/log.h>
 #include <jni.h>
@@ -85,7 +85,7 @@
 #define LogDebug(...) (void)0
 #else
 #define LogDebug(...)                                                          \
-  __android_log_print(ANDROID_LOG_DEBUG, "KernelSU", __VA_ARGS__)
+  __android_log_print(ANDROID_LOG_DEBUG, "Tamisu", __VA_ARGS__)
 #endif // #ifdef NDEBUG
 
-#endif // #ifndef KERNELSU_PRELUDE_H
+#endif // TAMISU_PRELUDE_H

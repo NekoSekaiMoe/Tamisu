@@ -28,7 +28,6 @@
     <string name="reboot_bootloader">ブートローダーで再起動</string>
     <string name="reboot_download">ダウンロードモードで再起動</string>
     <string name="reboot_edl">EDL で再起動</string>
-    <string name="about">アプリについて</string>
     <string name="module_uninstall_confirm">%s モジュールをアンインストールしますか？</string>
     <string name="metamodule_uninstall_confirm">モジュール %s をアンインストールしてもよろしいですか？この操作はすべてのモジュールに影響し、メタモジュールが提供する一部の機能（マウントなど）が動作しなくなります</string>
     <string name="module_uninstall_success">%s をアンインストールしました</string>
@@ -44,7 +43,6 @@
     <string name="reboot_to_apply">再起動すると有効化されます</string>
     <string name="module_magisk_conflict">モジュールが Magisk との競合により利用できません！</string>
     <string name="home_support_title">サポート開発</string>
-    <string name="home_support_content">KernelSU は引き続き無料でオープンソースです。公式 KernelSU 開発者に寄付して、サポートを示してください。</string>
     <string name="about_source_code"><![CDATA[ソースコードは %1$s で確認できます<br/>%2$s チャンネルにご参加ください]]></string>
     <string name="profile_default">デフォルト</string>
     <string name="profile_template">テンプレート</string>
@@ -60,8 +58,6 @@
     <string name="dynamic_manager_set_failed">%s を動的マネージャーに設定できませんでした</string>
     <string name="dynamic_manager_del_failed">%s を動的マネージャーから削除できませんでした</string>
     <string name="dynamic_manager_signature_unavailable">%s の動的マネージャー署名を取得できませんでした</string>
-    <string name="require_kernel_version" formatted="false">現在の KernelSU のバージョン「%s」は低すぎるため、マネージャーは正常に動作しません。バージョン「%s」以上に更新してください！</string>
-    <string name="profile_umount_modules_summary">このオプションを有効にすると、KernelSU はこのアプリのモジュールによって変更されたファイルを復元できるようになります。</string>
     <string name="profile_selinux_domain">ドメイン</string>
     <string name="profile_selinux_rules">ルール</string>
     <string name="module_update">更新</string>
@@ -116,7 +112,6 @@
     <string name="enable_adb">起動時に adb を強制的に有効化</string>
     <string name="enable_adb_summary">USB デバッグを強制的に有効にし、adb 認証を無効にします。本当に必要な場合以外は有効にしないでください。</string>
     <string name="kasumi_in_cpio_title">実験的: Kasumi を cpio に組み込む</string>
-    <string name="kasumi_in_cpio_desc">有効にすると、Kasumi LKM が cpio に追加され、起動時に KernelSU の後に読み込まれます</string>
     <string name="kasumi_custom_lkm_title">カスタム Kasumi LKM</string>
     <string name="kasumi_custom_lkm_desc">タップしてカスタム .ko ファイルを選択（任意。設定しない場合は組み込みを使用）</string>
     <string name="kasumi_use_embedded">消去して組み込みの Kasumi を使用</string>
@@ -127,8 +122,6 @@
     <string name="settings_uninstall">アンインストール</string>
     <string name="settings_uninstall_permanent">完全にアンインストールする</string>
     <string name="settings_restore_stock_image">ストックイメージを復元</string>
-    <string name="settings_uninstall_permanent_message">KernelSU（root とすべてのモジュール）を完全かつ永続的にアンインストールします</string>
-    <string name="settings_restore_stock_image_message">純正イメージを復元します（バックアップがある場合）。通常 OTA の前に使用します。KernelSU をアンインストールする場合は「完全にアンインストール」を使用してください</string>
     <string name="flashing">フラッシュ</string>
     <string name="flash_success">フラッシュが成功しました</string>
     <string name="flash_failed">フラッシュに失敗しました</string>
@@ -182,8 +175,6 @@
     <string name="reboot_complete_msg">すぐに再起動しますか？</string>
     <string name="yes">はい</string>
     <string name="no">いいえ</string>
-    <string name="home_ContributionCard_kernelsu">Tamisu ビジョン</string>
-    <string name="home_click_to_ContributionCard_kernelsu">Tamisu は非常に積極的で独立した KSU ブランチですが、公式の KernelSU プロジェクト、SukiSU、Magisk、APatch などの貢献に今でも感謝しています。</string>
     <string name="custom_settings">カスタム設定</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
@@ -274,7 +265,6 @@
     <string name="module_package">モジュール</string>
     <string name="unknown_package">不明</string>
     <string name="unknown_file">不明なファイル</string>
-    <string name="unsupported_file_format">サポートされていないファイル形式です。Magisk/KernelSU モジュールパッケージのみサポートされています。</string>
     <string name="version">バージョン</string>
     <string name="author">作者</string>
     <string name="description">説明</string>
@@ -297,7 +287,6 @@
     <string name="log_viewer_search_placeholder">UID、コマンドまたは詳細で検索…</string>
     <string name="log_viewer_clear_search">検索を消去</string>
     <string name="log_viewer_view_logs">使用ログを表示</string>
-    <string name="log_viewer_view_logs_summary">KernelSU スーパーユーザーアクセスログを表示</string>
     <string name="log_viewer_exclude_subtypes">サブタイプを除外</string>
     <string name="log_viewer_exclude_current_app">現在のアプリ</string>
     <string name="log_viewer_exclude_viewer_refresh">ログビューアーの自動更新</string>

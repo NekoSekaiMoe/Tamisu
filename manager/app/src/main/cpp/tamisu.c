@@ -12,7 +12,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "ksu.h"
+#include "tamisu.h"
 #include "prelude.h"
 
 static int fd = -1;
@@ -113,7 +113,7 @@ void get_hook_type(char *hook_type) {
   }
 }
 
-bool ksu_driver_present(void) {
+bool tamisu_driver_present(void) {
   if (fd < 0) {
     fd = scan_driver_fd();
   }

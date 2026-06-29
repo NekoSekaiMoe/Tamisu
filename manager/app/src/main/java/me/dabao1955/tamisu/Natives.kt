@@ -39,7 +39,7 @@ object Natives {
     }
 
     init {
-        System.loadLibrary("kernelsu")
+        System.loadLibrary("tamisu")
     }
 
     val version: Int
@@ -49,18 +49,18 @@ object Natives {
         external get
 
     /** In the zygisk-only build there is no manager-app concept. "isManager"
-     *  is true when the KSU driver fd is accessible (i.e. the kernel module
+     *  is true when the Tamisu driver fd is accessible (i.e. the kernel module
      *  is loaded and this process is root). */
     val isManager: Boolean
-        get() = isKsuDriverPresent()
+        get() = isTamisuDriverPresent()
 
     external fun getHookType(): String
 
     /**
-     * Check if KSU driver is present.
+     * Check if Tamisu driver is present.
      * @return true if driver fd can be found, false otherwise
      */
-    external fun isKsuDriverPresent(): Boolean
+    external fun isTamisuDriverPresent(): Boolean
 
     /**
      * YukiZygisk injection status as a JSON string, or null when the daemon is

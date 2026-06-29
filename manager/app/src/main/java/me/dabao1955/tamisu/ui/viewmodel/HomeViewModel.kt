@@ -11,7 +11,7 @@ import androidx.lifecycle.viewModelScope
 import me.dabao1955.tamisu.KernelVersion
 import me.dabao1955.tamisu.Natives
 import me.dabao1955.tamisu.getKernelVersion
-import me.dabao1955.tamisu.ksuApp
+import me.dabao1955.tamisu.tamisuApp
 import me.dabao1955.tamisu.ui.util.*
 import me.dabao1955.tamisu.ui.util.module.LatestVersionInfo
 import kotlinx.coroutines.Dispatchers
@@ -324,7 +324,7 @@ class HomeViewModel : ViewModel() {
             }
 
             val seLinuxStatus = try {
-                getSELinuxStatus(ksuApp.applicationContext)
+                getSELinuxStatus(tamisuApp.applicationContext)
             } catch (_: Exception) {
                 "Unknown"
             }

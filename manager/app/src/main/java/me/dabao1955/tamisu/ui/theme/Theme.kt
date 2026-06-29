@@ -87,7 +87,7 @@ object ThemeManager {
 }
 
 @Composable
-fun KernelSUTheme(
+fun TamisuTheme(
     darkTheme: Boolean = when(ThemeConfig.forceDarkMode) {
         true -> true
         false -> false

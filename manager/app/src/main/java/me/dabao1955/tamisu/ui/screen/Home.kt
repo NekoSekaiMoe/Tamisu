@@ -454,13 +454,13 @@ fun ContributionCard() {
         ) {
             Column {
                 Text(
-                    text = stringResource(R.string.home_ContributionCard_kernelsu),
+                    text = stringResource(R.string.home_contribution_card),
                     style = MaterialTheme.typography.titleSmall,
                 )
 
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = stringResource(R.string.home_click_to_ContributionCard_kernelsu),
+                    text = stringResource(R.string.home_contribution_card_desc),
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }

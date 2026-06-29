@@ -2,8 +2,8 @@
 // Created by weishu on 2022/12/9.
 //
 
-#ifndef KERNELSU_KSU_H
-#define KERNELSU_KSU_H
+#ifndef TAMISU_H
+#define TAMISU_H
 
 #include "prelude.h"
 #include <stdint.h>
@@ -17,7 +17,7 @@
 #include "uapi/feature.h"
 #include "uapi/supercall.h"
 
-#define KSU_FULL_VERSION_STRING 255
+#define TAMISU_FULL_VERSION_STRING 255
 
 // --- Manager JNI helper declarations (zygisk-only) ---
 
@@ -28,7 +28,7 @@ bool is_safe_mode();
 void get_full_version(char *buff);
 void get_hook_type(char *hook_type);
 
-// Check if KSU driver is present (without authentication)
-bool ksu_driver_present(void);
+// Check if Tamisu driver is present (without authentication)
+bool tamisu_driver_present(void);
 
-#endif // #ifndef KERNELSU_KSU_H
+#endif // TAMISU_H
