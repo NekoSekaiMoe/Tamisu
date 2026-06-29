@@ -26,7 +26,6 @@ bool always_allow(void)
 bool injected_app(void)
 {
 	return is_appuid(current_uid().val);
-
 }
 
 /*

@@ -545,7 +545,6 @@ static int do_yz_unmap_self(void __user *arg)
 	pr_info("yz_unmap_self: pid=%d armed %u seg(s)\n", current->pid,
 		cmd.n_segs);
 	return 0;
-	
 }
 
 // IOCTL handlers mapping table
