@@ -522,14 +522,14 @@ fun runCmd(shell: Shell, cmd: String): String {
 
 
 /** Module IDs of known third-party Zygisk implementations ("zygisksu" covers
- *  both ZygiskNext and NeoZygisk -- they share that id). Built-in Tamisu is
+ *  both ZygiskNext and NeoZygisk -- they share that id). Built-in YukiZygisk is
  *  a kernel feature (detected via its flag), not a module, so it's not here.
- *  These are the implementations Tamisu force-disables to avoid conflicts. */
+ *  These are the implementations YukiZygisk force-disables to avoid conflicts. */
 val ZYGISK_IMPL_MODULE_IDS = listOf("zygisksu", "rezygisk")
 
 suspend fun getZygiskImplement(): String = withContext(Dispatchers.IO) {
-    // Built-in Tamisu wins: it's a kernel feature, not a /data/adb module.
-    if (getFeatureValue("tamisu")) return@withContext "Zygisk"
+    // Built-in YukiZygisk wins: it's a kernel feature, not a /data/adb module.
+    if (getFeatureValue("yukizygisk")) return@withContext "YukiZygisk"
 
     for (moduleId in ZYGISK_IMPL_MODULE_IDS) {
         // skip disabled / pending-removal modules

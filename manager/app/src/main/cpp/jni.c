@@ -33,17 +33,17 @@ NativeBridgeNP(getHookType, jstring) {
 
 NativeBridgeNP(isTamisuDriverPresent, jboolean) { return tamisu_driver_present(); }
 
-// --- Tamisu injection-status query ---
-#define TAMISU_REQ_GET_STATUS 7 /* == zygiskd::Request::GetStatus (zygiskd.hpp) */
-#define TAMISU_STATUS_MAX (1u << 20)
+// --- YukiZygisk injection-status query ---
+#define YZ_REQ_GET_STATUS 7 /* == zygiskd::Request::GetStatus (zygiskd.hpp) */
+#define YZ_STATUS_MAX (1u << 20)
 
 #if defined(__LP64__)
-#define TAMISU_ZYGISKD_SOCKET "zygiskd64"
+#define YZ_ZYGISKD_SOCKET "zygiskd64"
 #else
-#define TAMISU_ZYGISKD_SOCKET "zygiskd32"
+#define YZ_ZYGISKD_SOCKET "zygiskd32"
 #endif
 
-static bool tamisu_read_full(int fd, void *buf, size_t n) {
+static bool yz_read_full(int fd, void *buf, size_t n) {
   uint8_t *p = (uint8_t *)buf;
   while (n > 0) {
     ssize_t r = read(fd, p, n);
@@ -56,7 +56,7 @@ static bool tamisu_read_full(int fd, void *buf, size_t n) {
   return true;
 }
 
-NativeBridgeNP(tamisuQueryStatus, jstring) {
+NativeBridgeNP(yzQueryStatus, jstring) {
   int fd = socket(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
   if (fd < 0) {
     return NULL;
@@ -64,9 +64,8 @@ NativeBridgeNP(tamisuQueryStatus, jstring) {
 
   struct sockaddr_un addr = {0};
   addr.sun_family = AF_UNIX;
-  size_t nlen = strlen(TAMISU_ZYGISKD_SOCKET);
-  memcpy(addr.sun_path + 1, TAMISU_ZYGISKD_SOCKET,
-         nlen); // abstract: leading NUL
+  size_t nlen = strlen(YZ_ZYGISKD_SOCKET);
+  memcpy(addr.sun_path + 1, YZ_ZYGISKD_SOCKET, nlen); // abstract: leading NUL
   socklen_t alen =
       (socklen_t)(offsetof(struct sockaddr_un, sun_path) + 1 + nlen);
   if (connect(fd, (struct sockaddr *)&addr, alen) != 0) {
@@ -74,11 +73,10 @@ NativeBridgeNP(tamisuQueryStatus, jstring) {
     return NULL;
   }
 
-  uint8_t op = TAMISU_REQ_GET_STATUS;
+  uint8_t op = YZ_REQ_GET_STATUS;
   uint32_t len = 0;
-  if (write(fd, &op, 1) != 1 ||
-      !tamisu_read_full(fd, &len, sizeof(len)) || len == 0 ||
-      len > TAMISU_STATUS_MAX) {
+  if (write(fd, &op, 1) != 1 || !yz_read_full(fd, &len, sizeof(len)) ||
+      len == 0 || len > YZ_STATUS_MAX) {
     close(fd); // len 0 == denied (not the manager) or empty
     return NULL;
   }
@@ -89,7 +87,7 @@ NativeBridgeNP(tamisuQueryStatus, jstring) {
     return NULL;
   }
   jstring out = NULL;
-  if (tamisu_read_full(fd, buf, len)) {
+  if (yz_read_full(fd, buf, len)) {
     buf[len] = '\0';
     out = GetEnvironment()->NewStringUTF(env, buf);
   }
