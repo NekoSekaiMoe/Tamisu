@@ -63,7 +63,7 @@ object Natives {
     external fun isTamisuDriverPresent(): Boolean
 
     /**
-     * YukiZygisk injection status as a JSON string, or null when the daemon is
+     * Tamisu injection status as a JSON string, or null when the daemon is
      * down or this process is not the kernel-authenticated manager.
      *
      * Native (jni.c): connects straight to zygiskd's abstract socket and asks
@@ -75,7 +75,7 @@ object Natives {
      *    "modules": ["name"...], "yukilinker": Bool, "denylist_mode": Int,
      *    "dmesg_log": Bool }`.
      */
-    external fun yzQueryStatus(): String?
+    external fun tamisuQueryStatus(): String?
 
     fun requireNewKernel(): Boolean {
         if (version != -1 && version < MINIMAL_SUPPORTED_KERNEL) return true

@@ -54,7 +54,7 @@ private const val DEFAULT_LOG_PATH = ""
  *
  *  - File sources live under /data/adb/ksu/log (ksud writes there when it
  *    routes events via the `sulog` ksu tool, or via its own logging).
- *  - "dmesg" reads the kernel ring buffer directly. Tamisu's YukiZygisk
+ *  - "dmesg" reads the kernel ring buffer directly. Tamisu's zygisk
  *    dmesg_log feature routes zygisk events there, so this is the live
  *    injection log on devices without a separate sulog file.
  */
@@ -105,7 +105,7 @@ fun resolveSelectedSulogSource(
  *
  *  Always probes: ksud-written log files under /data/adb/ksu/log, plus a
  *  synthetic "dmesg" source that reads the kernel ring buffer (where
- *  YukiZygisk events land when dmesg_log is on). Sources whose backing
+ *  Tamisu/zygisk events land when dmesg_log is on). Sources whose backing
  *  file is absent are skipped so the picker only offers real data. */
 fun listSulogSources(shell: com.topjohnwu.superuser.Shell): List<SulogLogSource> {
     val out = mutableListOf<SulogLogSource>()

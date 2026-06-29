@@ -17,6 +17,6 @@ enum class BottomBarDestination(
     val rootRequired: Boolean,
 ) {
     Home(HomeScreenDestination, R.string.home, Icons.Filled.Home, Icons.Outlined.Home, false),
-    YukiZygisk(YukiZygiskScreenDestination, R.string.settings_yukizygisk, Icons.Filled.Memory, Icons.Outlined.Memory, true),
+    Zygisk(ZygiskScreenDestination, R.string.settings_zygisk, Icons.Filled.Memory, Icons.Outlined.Memory, true),
     Settings(SettingScreenDestination, R.string.settings, Icons.Filled.Settings, Icons.Outlined.Settings, false),
 }

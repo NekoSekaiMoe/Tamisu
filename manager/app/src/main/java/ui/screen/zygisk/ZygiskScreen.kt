@@ -1,4 +1,4 @@
-package ui.screen.yukizygisk
+package ui.screen.zygisk
 
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -71,14 +71,14 @@ import org.json.JSONObject
 import ui.screen.moreSettings.component.SettingsCard
 import ui.screen.moreSettings.component.SwitchSettingItem
 
-private const val YZCONFIG_DIR = "/data/adb/ksu/yukizygisk"
-private const val YZCONFIG_PATH = "$YZCONFIG_DIR/yzconfig.json"
+private const val TAMISU_CONFIG_DIR = "/data/adb/ksu/tamisu"
+private const val TAMISU_CONFIG_PATH = "$TAMISU_CONFIG_DIR/tamisu_config.json"
 
-/** Mirrors uapi/yukizygisk.h yz_config + the yzconfig.json schema.
+/** Mirrors uapi/tamisu.h tamisu_config + the tamisu_config.json schema.
  *  zygoteModules: when grantFilterActive is true, only modules whose id is in
  *  this list are loaded into zygote. grantFilterActive=false (the
  *  "zygote_modules" key absent) means load everything (back-compat). */
-data class YzConfig(
+data class TamisuConfig(
     val yukilinker: Boolean = false,
     val denylistMode: Int = 0, // 0=off, 1=force-umount+no-inject, 2=inject+umount
     val dmesgLog: Boolean = false,
@@ -86,9 +86,9 @@ data class YzConfig(
     val zygoteModules: List<String> = emptyList(),
 )
 
-private suspend fun readYzConfig(): YzConfig = withContext(Dispatchers.IO) {
-    val raw = ShellUtils.fastCmd(getRootShell(), "cat $YZCONFIG_PATH 2>/dev/null")
-    if (raw.isNullOrBlank()) return@withContext YzConfig()
+private suspend fun readTamisuConfig(): TamisuConfig = withContext(Dispatchers.IO) {
+    val raw = ShellUtils.fastCmd(getRootShell(), "cat $TAMISU_CONFIG_PATH 2>/dev/null")
+    if (raw.isNullOrBlank()) return@withContext TamisuConfig()
     try {
         val o = JSONObject(raw)
         val hasGrant = o.has("zygote_modules")
@@ -97,7 +97,7 @@ private suspend fun readYzConfig(): YzConfig = withContext(Dispatchers.IO) {
                 (0 until a.length()).map { a.getString(it) }
             } ?: emptyList()
         } else emptyList()
-        YzConfig(
+        TamisuConfig(
             yukilinker = o.optBoolean("yukilinker", false),
             denylistMode = o.optInt("denylist_mode", 0),
             dmesgLog = o.optBoolean("dmesg_log", false),
@@ -105,12 +105,12 @@ private suspend fun readYzConfig(): YzConfig = withContext(Dispatchers.IO) {
             zygoteModules = granted,
         )
     } catch (_: Exception) {
-        YzConfig()
+        TamisuConfig()
     }
 }
 
-/** Write yzconfig.json then fire a netlink reload so it applies immediately. */
-private suspend fun writeYzConfig(cfg: YzConfig) = withContext(Dispatchers.IO) {
+/** Write tamisu_config.json then fire a netlink reload so it applies immediately. */
+private suspend fun writeTamisuConfig(cfg: TamisuConfig) = withContext(Dispatchers.IO) {
     val json = JSONObject().apply {
         put("yukilinker", cfg.yukilinker)
         put("denylist_mode", cfg.denylistMode)
@@ -120,12 +120,12 @@ private suspend fun writeYzConfig(cfg: YzConfig) = withContext(Dispatchers.IO) {
         }
     }.toString()
     withNewRootShell {
-        newJob().add("mkdir -p $YZCONFIG_DIR").exec()
-        newJob().add("echo '$json' > $YZCONFIG_PATH").exec()
+        newJob().add("mkdir -p $TAMISU_CONFIG_DIR").exec()
+        newJob().add("echo '$json' > $TAMISU_CONFIG_PATH").exec()
     }
-    // Fires KSU_IOCTL_YZ_RELOAD -> kernel multicasts YZ_EV_RELOAD -> zygiskd
+    // Fires KSU_IOCTL_TAMISU_RELOAD -> kernel multicasts TAMISU_EV_RELOAD -> zygiskd
     // re-reads the file; takes effect on the next specialize, no reboot.
-    execKsud("yukizygisk reload")
+    execKsud("tamisu reload")
 }
 
 /** One injected app for the recent list: appid + resolved package identity. */
@@ -143,15 +143,15 @@ private data class InjectedZygote(
     val abi: String,
 )
 
-/** Parsed view of zygiskd's status JSON (Natives.yzQueryStatus). */
-private data class YzStatus(
+/** Parsed view of zygiskd's status JSON (Natives.tamisuQueryStatus). */
+private data class TamisuStatus(
     val count: Int,
     val recent: List<Int>, // appids, most-recent first
     val zygotes: List<InjectedZygote>,
     val modules: List<String>,
 )
 
-private fun parseYzStatus(json: String): YzStatus? = runCatching {
+private fun parseTamisuStatus(json: String): TamisuStatus? = runCatching {
     val o = JSONObject(json)
     val recent = o.optJSONArray("recent")?.let { a ->
         (0 until a.length()).map { a.getInt(it) }
@@ -169,7 +169,7 @@ private fun parseYzStatus(json: String): YzStatus? = runCatching {
             )
         }
     } ?: emptyList()
-    YzStatus(o.optInt("count", 0), recent, zygotes, modules)
+    TamisuStatus(o.optInt("count", 0), recent, zygotes, modules)
 }.getOrNull()
 
 /**
@@ -185,26 +185,26 @@ private fun resolveRecentApp(pm: PackageManager, appId: Int): RecentApp {
     return RecentApp(appId, label, pkg, info)
 }
 
-private data class YzSnapshot(
+private data class TamisuSnapshot(
     val count: Int,
     val recentApps: List<RecentApp>,
     val zygotes: List<InjectedZygote>,
     val modulesLoadedCount: Int,
 )
 
-private const val YZ_POLL_INTERVAL_MS = 2000L
+private const val TAMISU_POLL_INTERVAL_MS = 2000L
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
 @Composable
-fun YukiZygiskScreen(navigator: DestinationsNavigator) {
+fun ZygiskScreen(navigator: DestinationsNavigator) {
     val scrollBehavior =
         TopAppBarDefaults.pinnedScrollBehavior(androidx.compose.material3.rememberTopAppBarState())
     val scope = rememberCoroutineScope()
     val snackBarHost = remember { SnackbarHostState() }
 
     val context = LocalContext.current
-    var config by remember { mutableStateOf(YzConfig()) }
+    var config by remember { mutableStateOf(TamisuConfig()) }
     var injectionActive by remember { mutableStateOf(false) }
     var injectionCount by remember { mutableIntStateOf(0) }
     var recentApps by remember { mutableStateOf<List<RecentApp>>(emptyList()) }
@@ -212,9 +212,9 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
     var modulesLoadedCount by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
-        config = readYzConfig()
+        config = readTamisuConfig()
         injectionActive =
-            ShellUtils.fastCmd(getRootShell(), "ksud feature get yukizygisk 2>/dev/null")
+            ShellUtils.fastCmd(getRootShell(), "ksud feature get tamisu 2>/dev/null")
                 ?.contains("enabled", ignoreCase = true) == true
     }
 
@@ -227,10 +227,10 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
         val pm = context.packageManager
         while (true) {
             val snapshot = withContext(Dispatchers.IO) {
-                val json = runCatching { Natives.yzQueryStatus() }.getOrNull()
+                val json = runCatching { Natives.tamisuQueryStatus() }.getOrNull()
                     ?: return@withContext null
-                val st = parseYzStatus(json) ?: return@withContext null
-                YzSnapshot(
+                val st = parseTamisuStatus(json) ?: return@withContext null
+                TamisuSnapshot(
                     count = st.count,
                     recentApps = st.recent.map { resolveRecentApp(pm, it) },
                     zygotes = st.zygotes,
@@ -244,13 +244,13 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
                 injectedZygotes = snapshot.zygotes
                 modulesLoadedCount = snapshot.modulesLoadedCount
             }
-            delay(YZ_POLL_INTERVAL_MS)
+            delay(TAMISU_POLL_INTERVAL_MS)
         }
     }
 
-    fun save(newCfg: YzConfig) {
+    fun save(newCfg: TamisuConfig) {
         config = newCfg
-        scope.launch { writeYzConfig(newCfg) }
+        scope.launch { writeTamisuConfig(newCfg) }
     }
 
     Scaffold(
@@ -259,7 +259,7 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
             TopAppBar(
                 title = {
                     Text(
-                        stringResource(R.string.settings_yukizygisk),
+                        stringResource(R.string.settings_zygisk),
                         style = MaterialTheme.typography.titleLarge,
                     )
                 },
@@ -283,36 +283,36 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
                 .padding(top = 8.dp),
         ) {
             // --- Injection status ---
-            SettingsCard(title = stringResource(R.string.yukizygisk_injection_status)) {
+            SettingsCard(title = stringResource(R.string.zygisk_injection_status)) {
                 StatusRow(
-                    stringResource(R.string.yukizygisk_kernel_injection),
-                    if (injectionActive) stringResource(R.string.yukizygisk_status_active)
-                    else stringResource(R.string.yukizygisk_status_off),
+                    stringResource(R.string.zygisk_kernel_injection),
+                    if (injectionActive) stringResource(R.string.zygisk_status_active)
+                    else stringResource(R.string.zygisk_status_off),
                 )
                 StatusRow(
-                    stringResource(R.string.yukizygisk_module_loader),
-                    if (config.yukilinker) stringResource(R.string.yukizygisk_loader_anon)
-                    else stringResource(R.string.yukizygisk_loader_system),
+                    stringResource(R.string.zygisk_module_loader),
+                    if (config.yukilinker) stringResource(R.string.zygisk_loader_anon)
+                    else stringResource(R.string.zygisk_loader_system),
                 )
                 StatusRow(
-                    stringResource(R.string.yukizygisk_denylist_behaviour),
+                    stringResource(R.string.zygisk_denylist_behaviour),
                     when (config.denylistMode) {
-                        1 -> stringResource(R.string.yukizygisk_denylist_force_long)
-                        2 -> stringResource(R.string.yukizygisk_denylist_restore_long)
-                        else -> stringResource(R.string.yukizygisk_status_off)
+                        1 -> stringResource(R.string.zygisk_denylist_force_long)
+                        2 -> stringResource(R.string.zygisk_denylist_restore_long)
+                        else -> stringResource(R.string.zygisk_status_off)
                     },
                 )
                 StatusRow(
-                    stringResource(R.string.yukizygisk_injections_session),
+                    stringResource(R.string.zygisk_injections_session),
                     injectionCount.toString(),
                 )
             }
 
             // --- Injected zygotes ---
-            SettingsCard(title = stringResource(R.string.yukizygisk_injected_zygotes)) {
+            SettingsCard(title = stringResource(R.string.zygisk_injected_zygotes)) {
                 if (injectedZygotes.isEmpty()) {
                     Text(
-                        stringResource(R.string.yukizygisk_no_zygotes),
+                        stringResource(R.string.zygisk_no_zygotes),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
@@ -323,10 +323,10 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
             }
 
             // --- Recent injections ---
-            SettingsCard(title = stringResource(R.string.yukizygisk_recent_injections)) {
+            SettingsCard(title = stringResource(R.string.zygisk_recent_injections)) {
                 if (recentApps.isEmpty()) {
                     Text(
-                        stringResource(R.string.yukizygisk_no_injections),
+                        stringResource(R.string.zygisk_no_injections),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
@@ -337,16 +337,16 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
             }
 
             // --- Module loading ---
-            SettingsCard(title = stringResource(R.string.yukizygisk_module_loading)) {
+            SettingsCard(title = stringResource(R.string.zygisk_module_loading)) {
                 SwitchSettingItem(
                     icon = Icons.Filled.Memory,
-                    title = stringResource(R.string.yukizygisk_anon_loading_title),
-                    summary = stringResource(R.string.yukizygisk_anon_loading_summary),
+                    title = stringResource(R.string.zygisk_anon_loading_title),
+                    summary = stringResource(R.string.zygisk_anon_loading_summary),
                     checked = config.yukilinker,
                     onChange = { save(config.copy(yukilinker = it)) },
                 )
                 Text(
-                    stringResource(R.string.yukizygisk_loaded_modules_count, modulesLoadedCount),
+                    stringResource(R.string.zygisk_loaded_modules_count, modulesLoadedCount),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
@@ -357,11 +357,11 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
             }
 
             // --- Per-module zygote grant ---
-            SettingsCard(title = stringResource(R.string.yukizygisk_grant_title)) {
+            SettingsCard(title = stringResource(R.string.zygisk_grant_title)) {
                 SwitchSettingItem(
                     icon = Icons.Filled.Memory,
-                    title = stringResource(R.string.yukizygisk_grant_filter_title),
-                    summary = stringResource(R.string.yukizygisk_grant_filter_summary),
+                    title = stringResource(R.string.zygisk_grant_filter_title),
+                    summary = stringResource(R.string.zygisk_grant_filter_summary),
                     checked = config.grantFilterActive,
                     onChange = { save(config.copy(grantFilterActive = it)) },
                 )
@@ -382,9 +382,9 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
             }
 
             // --- Denylist behaviour ---
-            SettingsCard(title = stringResource(R.string.yukizygisk_denylist_behaviour)) {
+            SettingsCard(title = stringResource(R.string.zygisk_denylist_behaviour)) {
                 Text(
-                    stringResource(R.string.yukizygisk_denylist_desc),
+                    stringResource(R.string.zygisk_denylist_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
@@ -400,11 +400,11 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
             }
 
             // --- Logging ---
-            SettingsCard(title = stringResource(R.string.yukizygisk_log_dmesg_title)) {
+            SettingsCard(title = stringResource(R.string.zygisk_log_dmesg_title)) {
                 SwitchSettingItem(
                     icon = Icons.AutoMirrored.Filled.Article,
-                    title = stringResource(R.string.yukizygisk_log_dmesg_title),
-                    summary = stringResource(R.string.yukizygisk_log_dmesg_summary),
+                    title = stringResource(R.string.zygisk_log_dmesg_title),
+                    summary = stringResource(R.string.zygisk_log_dmesg_summary),
                     checked = config.dmesgLog,
                     onChange = { save(config.copy(dmesgLog = it)) },
                 )
@@ -432,7 +432,7 @@ private fun RecentAppRow(app: RecentApp) {
         headlineContent = {
             Text(
                 if (app.label.isNotEmpty()) app.label
-                else stringResource(R.string.yukizygisk_uid_fallback, app.uid),
+                else stringResource(R.string.zygisk_uid_fallback, app.uid),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -440,7 +440,7 @@ private fun RecentAppRow(app: RecentApp) {
         supportingContent = {
             Text(
                 app.packageName?.let { "$it  ·  uid ${app.uid}" }
-                    ?: stringResource(R.string.yukizygisk_uid_fallback, app.uid),
+                    ?: stringResource(R.string.zygisk_uid_fallback, app.uid),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
@@ -464,7 +464,7 @@ private fun InjectedZygoteRow(zygote: InjectedZygote) {
         supportingContent = {
             Text(
                 stringResource(
-                    R.string.yukizygisk_zygote_detail,
+                    R.string.zygisk_zygote_detail,
                     zygote.abi,
                     zygote.pid,
                 ),
@@ -509,9 +509,9 @@ private fun DenylistModeSelector(
     onSelect: (Int) -> Unit,
 ) {
     val options = listOf(
-        stringResource(R.string.yukizygisk_denylist_off),
-        stringResource(R.string.yukizygisk_denylist_force),
-        stringResource(R.string.yukizygisk_denylist_restore),
+        stringResource(R.string.zygisk_denylist_off),
+        stringResource(R.string.zygisk_denylist_force),
+        stringResource(R.string.zygisk_denylist_restore),
     )
     SingleChoiceSegmentedButtonRow(modifier = modifier) {
         options.forEachIndexed { index, label ->
@@ -552,7 +552,7 @@ private fun ZygoteModuleGrantList(
     ) {
         if (modules.isEmpty()) {
             Text(
-                stringResource(R.string.yukizygisk_grant_empty),
+                stringResource(R.string.zygisk_grant_empty),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 8.dp),
