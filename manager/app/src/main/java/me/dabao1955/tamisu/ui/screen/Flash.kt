@@ -2,6 +2,7 @@ package me.dabao1955.tamisu.ui.screen
 
 import android.os.Environment
 import android.net.Uri
+import android.os.Parcelable
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
