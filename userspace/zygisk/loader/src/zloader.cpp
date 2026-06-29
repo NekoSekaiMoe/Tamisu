@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk - libzloader.so: thin first-stage loader; dlopens the core by fd.
+ * Tamisu - libzloader.so: thin first-stage loader; dlopens the core by fd.
  *
  * Author: Anatdx
  */
@@ -15,7 +15,7 @@ namespace {
 
 constexpr char kLogTag[] = "zloader";
 constexpr char kCoreSoname[] = "libzygisk.so";
-constexpr char kCoreSelfPath[] = "/data/adb/ksu/lib/yukizygisk/libzygisk.so";
+constexpr char kCoreSelfPath[] = "/data/adb/ksu/lib/tamisu/libzygisk.so";
 constexpr char kCoreEntrySym[] = "zygisk_core_entry";
 
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, kLogTag, __VA_ARGS__)

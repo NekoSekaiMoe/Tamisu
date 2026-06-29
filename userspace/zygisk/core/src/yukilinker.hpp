@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk yukilinker: load a Zygisk module from an app-owned memfd, so the
+ * Tamisu yukilinker: load a Zygisk module from an app-owned memfd, so the
  * module leaves no /data/adb/modules fd or path. The full loader can either
  * keep the memfd as a closed file-backed code-cache mapping or copy segments
  * into anonymous memory, depending on the caller's detection surface.

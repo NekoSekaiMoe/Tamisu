@@ -16,7 +16,7 @@
 #include "utils.hpp"
 
 extern "C" {
-#include "uapi/yukizygisk.h"
+#include "uapi/tamisu.h"
 }
 
 #include <unistd.h>
@@ -175,15 +175,17 @@ int cmd_initrc(const std::vector<std::string>& args) {
     return 1;
 }
 
-int cmd_yukizygisk(const std::vector<std::string>& args) {
+int cmd_tamisu(const std::vector<std::string>& args) {
     if (args.empty() || args[0] != "reload") {
-        printf("Usage: ksud yukizygisk reload\n");
+        printf("Usage: ksud tamisu reload\n");
         return 1;
     }
-    // Fires KSU_IOCTL_YZ_RELOAD -> kernel multicasts YZ_EV_RELOAD -> zygiskd
-    // re-reads yzconfig.json. Applies on the next specialize, no reboot.
-    const int rc = ksud::ksuctl(KSU_IOCTL_YZ_RELOAD, nullptr);
-    printf(rc == 0 ? "yzconfig reload signalled\n" : "yzconfig reload failed\n");
+    // Fires KSU_IOCTL_TAMISU_RELOAD -> kernel multicasts TAMISU_EV_RELOAD ->
+    // zygiskd re-reads tamisu_config.json. Applies on the next specialize,
+    // no reboot.
+    const int rc = ksud::ksuctl(KSU_IOCTL_TAMISU_RELOAD, nullptr);
+    printf(rc == 0 ? "tamisu_config reload signalled\n"
+                   : "tamisu_config reload failed\n");
     return rc == 0 ? 0 : 1;
 }
 
@@ -651,8 +653,8 @@ int cli_run(int argc, char** argv) {
         return cmd_sepolicy(args);
     } else if (cmd == "feature") {
         return cmd_feature(args);
-    } else if (cmd == "yukizygisk") {
-        return cmd_yukizygisk(args);
+    } else if (cmd == "tamisu") {
+        return cmd_tamisu(args);
     } else if (cmd == "initrc") {
         return cmd_initrc(args);
     } else if (cmd == "boot-patch") {

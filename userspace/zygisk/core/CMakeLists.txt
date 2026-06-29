@@ -41,7 +41,7 @@ set_target_properties(zygisk PROPERTIES PREFIX "lib" OUTPUT_NAME zygisk)
 target_include_directories(zygisk PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../include
     ${CMAKE_CURRENT_SOURCE_DIR}/../loader/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../..)  # repo root for uapi/yukizygisk.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../..)  # repo root for uapi/tamisu.h
 
 target_compile_options(zygisk PRIVATE
     -Os -fno-exceptions -fno-rtti

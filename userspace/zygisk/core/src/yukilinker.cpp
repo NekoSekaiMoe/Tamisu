@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk - yukilinker: anonymous in-memory module loader implementation.
+ * Tamisu - yukilinker: anonymous in-memory module loader implementation.
  * See yukilinker.hpp + design doc. Every failure path returns nullptr/false --
  * this code NEVER aborts the host.
  *
@@ -339,7 +339,7 @@ uintptr_t tlsdesc_resolver_weak(uintptr_t *desc) {
   return desc[1] - get_tpidr_el0();
 }
 
-extern "C" int yz_module_thread_atexit_noop(void (* /*dtor*/)(void *),
+extern "C" int tamisu_module_thread_atexit_noop(void (* /*dtor*/)(void *),
                                             void * /*obj*/,
                                             void * /*dso_handle*/) {
   return 0;
@@ -444,7 +444,7 @@ const ElfW(Sym) * sysv_lookup(const SoHandle *h, const char *name) {
  * The cost is module static destructors never run, which is fine -- modules
  * live for the app process lifetime and the OS reclaims the whole address
  * space at exit. */
-extern "C" int yz_module_atexit_noop(void (* /*dtor*/)(void *), void * /*obj*/,
+extern "C" int tamisu_module_atexit_noop(void (* /*dtor*/)(void *), void * /*obj*/,
                                      void * /*dso_handle*/) {
   return 0;
 }
@@ -466,16 +466,16 @@ void *resolve(const SoHandle *h, uint32_t symidx, bool *ok) {
     return (void *)&dl_iterate_phdr_hook;
 
   /* 1b. swallow __cxa_atexit so the module's C++ static-destructor registry
-   *     never enters libc's atexit table (see yz_module_atexit_noop above). */
+   *     never enters libc's atexit table (see tamisu_module_atexit_noop above). */
   if (strcmp(name, "__cxa_atexit") == 0)
-    return (void *)&yz_module_atexit_noop;
+    return (void *)&tamisu_module_atexit_noop;
 
 #if YUKILINKER_FULL
   if (strcmp(name, "__tls_get_addr") == 0)
     return (void *)&custom_tls_get_addr;
 
   if (strcmp(name, "__cxa_thread_atexit_impl") == 0)
-    return (void *)&yz_module_thread_atexit_noop;
+    return (void *)&tamisu_module_thread_atexit_noop;
 #endif // #if YUKILINKER_FULL
 
   /* 2. module's own definition (an ifunc symbol's st_value is a resolver to
@@ -1150,7 +1150,7 @@ static inline void yuki_raw_close(int fd) {
 /* core's on-disk identity (matches the kernel-staged path), handed to the core
  * entry as self_path; the core is loaded anonymously from the fd, not by path.
  */
-static constexpr char kCorePath[] = "/data/adb/ksu/lib/yukizygisk/libzygisk.so";
+static constexpr char kCorePath[] = "/data/adb/ksu/lib/tamisu/libzygisk.so";
 
 /* ---- C ABI exported from libyukilinker.so ------------------------------- *
  * core dlopen()s libyukilinker.so and dlsym()s these. The handle is an opaque

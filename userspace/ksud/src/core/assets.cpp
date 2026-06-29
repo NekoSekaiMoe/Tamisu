@@ -15,13 +15,13 @@ namespace ksud {
 // generated/assets_data.cpp (scripts/embed_assets.py at build time). This file
 // holds hand-written asset helpers.
 
-// Stage the YukiZygisk payload into /data/adb/ksu/lib/yukizygisk/. The kernel
+// Stage the Tamisu payload into /data/adb/ksu/lib/tamisu/. The kernel
 // later reads libzloader.so from there (as ksu_cred) and hands it to the zygote
 // through a memfd, so these files only need to be writable by ksud and readable
 // by the privileged kernel path -- the zygote never opens them. Labeled
 // adb_data_file like the rest of /data/adb/ksu. No-op for builds that don't
 // embed the payload.
-int ensure_yukizygisk(bool ignore_if_exist) {
+int ensure_tamisu(bool ignore_if_exist) {
     struct Payload {
         const char* asset;
         const char* dest;
@@ -46,8 +46,8 @@ int ensure_yukizygisk(bool ignore_if_exist) {
     }
 
     // copy_asset_to_file() won't create parent dirs, so do it first.
-    if (!ensure_dir_exists(YUKIZYGISK_DIR)) {
-        LOGE("yukizygisk: failed to create %s", YUKIZYGISK_DIR);
+    if (!ensure_dir_exists(TAMISU_DIR)) {
+        LOGE("tamisu: failed to create %s", TAMISU_DIR);
         return 1;
     }
 
@@ -63,12 +63,12 @@ int ensure_yukizygisk(bool ignore_if_exist) {
         // no skip-if-exists). copy_asset_to_file removes the dest first.
         (void)ignore_if_exist;
         if (!copy_asset_to_file(p.asset, p.dest)) {
-            LOGE("yukizygisk: failed to stage %s", p.dest);
+            LOGE("tamisu: failed to stage %s", p.dest);
             continue;
         }
         chmod(p.dest, 0644);
         lsetfilecon(p.dest, ADB_CON);
-        LOGI("yukizygisk: staged %s", p.dest);
+        LOGI("tamisu: staged %s", p.dest);
     }
     return 0;
 }

@@ -27,15 +27,15 @@ constexpr uint32_t FEATURE_VERSION = 1;
 
 const std::map<std::string, uint32_t>& get_feature_map() {
     static const std::map<std::string, uint32_t> map = {
-        {"yukizygisk", KSU_FEATURE_YUKIZYGISK},
+        {"tamisu", KSU_FEATURE_TAMISU},
     };
     return map;
 }
 
 const std::map<uint32_t, const char*>& get_feature_descriptions() {
     static const std::map<uint32_t, const char*> desc = {
-        {KSU_FEATURE_YUKIZYGISK,
-         "YukiZygisk - kernel captures zygote and injects Zygisk modules; the daemon is brought "
+        {KSU_FEATURE_TAMISU,
+         "Tamisu - kernel captures zygote and injects Zygisk modules; the daemon is brought "
          "up at post-fs-data when enabled (off by default)"},
     };
     return desc;

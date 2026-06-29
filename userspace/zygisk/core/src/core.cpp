@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk - libzygisk.so: the Zygisk core (api_table + lifecycle entry).
+ * Tamisu - libzygisk.so: the Zygisk core (api_table + lifecycle entry).
  *
  * Author: Anatdx
  */
@@ -12,7 +12,7 @@
 #include "zygisk.hpp"
 
 #include "uapi/supercall.h"
-#include "uapi/yukizygisk.h"
+#include "uapi/tamisu.h"
 
 #include <android/dlext.h>
 #include <dlfcn.h>
@@ -355,18 +355,19 @@ int make_app_memfd(int src_fd) {
   return mfd;
 }
 
-/* Runtime config, fetched from zygiskd (which parsed yzconfig.json). Re-fetched
- * each load_modules so a netlink reload takes effect on the next specialize. */
-yz_config g_yz_config{};
+/* Runtime config, fetched from zygiskd (which parsed tamisu_config.json).
+ * Re-fetched each load_modules so a netlink reload takes effect on the next
+ * specialize. */
+tamisu_config g_tamisu_config{};
 
 void zd_load_config() {
   int s = connect_zygiskd();
   if (s < 0)
     return;
   uint8_t req = static_cast<uint8_t>(ZdRequest::GetConfig);
-  yz_config cfg{};
+  tamisu_config cfg{};
   if (write(s, &req, 1) == 1 && read_all(s, &cfg, sizeof(cfg)))
-    g_yz_config = cfg;
+    g_tamisu_config = cfg;
   close(s);
 }
 
@@ -383,10 +384,11 @@ void zd_report_zygote() {
 
 /* Route a formatted line to dmesg via zygiskd (root), gated on dmesg_log -- the
  * app/zygote domain can't write /dev/kmsg, so the root daemon does it. Strong
- * definition of the weak yz_klog declared in log.hpp; the loader's solist build
- * (no zygiskd channel) links it as null and its log macros become no-ops. */
-extern "C" void yz_klog(const char *fmt, ...) {
-  if (g_yz_config.dmesg_log == 0)
+ * definition of the weak tamisu_klog declared in log.hpp; the loader's solist
+ * build (no zygiskd channel) links it as null and its log macros become no-ops.
+ */
+extern "C" void tamisu_klog(const char *fmt, ...) {
+  if (g_tamisu_config.dmesg_log == 0)
     return;
   char buf[224];
   va_list ap;
@@ -434,7 +436,8 @@ size_t g_self_size = 0;
 void load_modules_impl(JNIEnv *env) {
   if (!g_modules.empty())
     return;         // already loaded in this process (called per-specialize)
-  zd_load_config(); // refresh yukilinker/denylist_mode/dmesg from yzconfig.json
+  zd_load_config(); // refresh yukilinker/denylist_mode/dmesg from
+                    // tamisu_config.json
   int sock = connect_zygiskd();
   if (sock < 0) {
     LOGE("cannot connect zygiskd");
@@ -469,7 +472,8 @@ void load_modules_impl(JNIEnv *env) {
     module_entry_fn entry = nullptr;
     if (g_yuki_dlopen != nullptr && g_yuki_dlsym != nullptr) {
       // yukilinker is live (the core itself was loaded by libyukilinker, so the
-      // pointers are set -- no need to re-check g_yz_config, which can race
+      // pointers are set -- no need to re-check g_tamisu_config, which can
+      // race
       // with GetConfig). Stage the module into an anonymous app memfd FIRST,
       // then close the real /data/adb/modules fd immediately: feeding lib_fd
       // straight to the loader would make its source mmap file-backed (the
@@ -624,7 +628,7 @@ void hide_injection() {
  * is exactly what detectors scan for. Modules stay loaded (anonymous), but
  * /proc/self/mountinfo no longer exposes /data/adb/modules. We're
  * post-specialize: single-threaded and already unshare(CLONE_NEWNS)'d. */
-static void yz_revert_self_mounts() {
+static void tamisu_revert_self_mounts() {
   int s = connect_zygiskd();
   if (s < 0)
     return;
@@ -667,7 +671,7 @@ void run_app_post_impl(const zygisk::AppSpecializeArgs *args) {
   // faulted resident (inherited COW from the zygote): they inflate the
   // library's r--p Rss/Pss into an smaps anomaly. Restores it to the pristine
   // baseline.
-  yz_drop_runtime_header_pages();
+  tamisu_drop_runtime_header_pages();
 }
 
 void run_server_pre_impl(zygisk::ServerSpecializeArgs *args) {
@@ -707,7 +711,7 @@ void run_server_post_impl(const zygisk::ServerSpecializeArgs *args) {
  * executable VMA never splits. Used at install (in the zygote body) and would
  * be used at restore (we instead madvise the page clean). extern "C" so the
  * inline_hook.hpp header in the hook.cpp TU links to this definition. */
-extern "C" bool yz_patch_text(uintptr_t addr, const void *bytes,
+extern "C" bool tamisu_patch_text(uintptr_t addr, const void *bytes,
                               unsigned int len) {
   if (bytes == nullptr || len == 0 || len > 64)
     return false;
@@ -945,19 +949,19 @@ int zygisk_inject_decision(int uid) {
   uint32_t flags = zd_get_flags(uid);
   int dec = 0;
   if (flags & zygisk::PROCESS_ON_DENYLIST) {
-    if (g_yz_config.denylist_mode == 1)
+    if (g_tamisu_config.denylist_mode == 1)
       dec = 2;
-    else if (g_yz_config.denylist_mode == 2)
+    else if (g_tamisu_config.denylist_mode == 2)
       dec = 1;
   }
   LOGI("inject_decision: uid=%d flags=0x%x mode=%d -> decision=%d", uid, flags,
-       g_yz_config.denylist_mode, dec);
+       g_tamisu_config.denylist_mode, dec);
   return dec;
 }
 
 /* Revert this process's module mounts (denylist mode 1/2). The hook gates this
  * via the inject decision; here we just drive it. */
-void zygisk_revert_mounts() { yz_revert_self_mounts(); }
+void zygisk_revert_mounts() { tamisu_revert_self_mounts(); }
 
 /* denylist mode 1 (force-hide): the app must end up with NO trace of us. Module
  * loading was already skipped; now undo every hook, then report our own
@@ -970,7 +974,7 @@ void zygisk_revert_mounts() { yz_revert_self_mounts(); }
  * self-destruct BEFORE hide_from_solist, while libzygisk is still on the
  * solist. Anchored on a core code address. Page-aligned for vm_munmap. false if
  * not found. */
-static bool yz_find_self_range(uintptr_t *base, size_t *size) {
+static bool tamisu_find_self_range(uintptr_t *base, size_t *size) {
   // Use the base+span the first-stage loader handed us at zygisk_core_entry,
   // NOT dl_iterate_phdr: importing dl_iterate_phdr would make the loader (which
   // maps us) bind that GOT slot to its in-mapping hook, and unmapping the spent
@@ -988,7 +992,7 @@ static bool yz_find_self_range(uintptr_t *base, size_t *size) {
 }
 
 /* denylist mode-1: report our segments to zygiskd (root), which drives the
- * kernel vm_munmap (YZ_UNMAP_PID, task_work after we return to the JVM). core
+ * kernel vm_munmap (TAMISU_UNMAP_PID, task_work after we return to the JVM). core
  * runs as an untrusted_app and CANNOT get the ksu driver fd itself (prctl
  * GET_FD is manager/root only) -- so it MUST go through zygiskd, which already
  * brokers this and resolves our pid via SO_PEERCRED. Collect everything duck's
@@ -999,15 +1003,15 @@ static bool yz_find_self_range(uintptr_t *base, size_t *size) {
  * The staged code-cache memfd is file-backed and non-anonymous, but we drop it
  * too. Returns false if zygiskd declined. Call after unhook, while still on
  * solist. */
-static bool yz_report_self_unmap() {
-  uint64_t addr[YZ_MAX_UNMAP_SEGS];
-  uint64_t size[YZ_MAX_UNMAP_SEGS];
+static bool tamisu_report_self_unmap() {
+  uint64_t addr[TAMISU_MAX_UNMAP_SEGS];
+  uint64_t size[TAMISU_MAX_UNMAP_SEGS];
   int n = 0;
   // core: exact phdr span (libzygisk is anon, so it can only be found by an
   // address anchor, not by path). One munmap covers all its VMAs.
   uintptr_t cbase = 0;
   size_t csize = 0;
-  if (yz_find_self_range(&cbase, &csize) && cbase != 0 && csize != 0) {
+  if (tamisu_find_self_range(&cbase, &csize) && cbase != 0 && csize != 0) {
     addr[n] = cbase;
     size[n] = csize;
     n++;
@@ -1019,7 +1023,7 @@ static bool yz_report_self_unmap() {
   // contiguous-anon walk merged a 10KB loader seg with ~630KB of app heap and
   // dropped it).
   int got = zygisk_collect_path_segs(kExecMemfdName, addr + n, size + n,
-                                     YZ_MAX_UNMAP_SEGS - n);
+                                     TAMISU_MAX_UNMAP_SEGS - n);
   if (got > 0)
     n += got;
   if (n == 0)
@@ -1044,9 +1048,9 @@ static bool yz_report_self_unmap() {
 }
 
 /* synchronous self-unmap (self_unmap.S): restore the specialize hook's
- * captured entry frame (g_yz_ret_ctx) and tail-call munmap, so munmap's ret
+ * captured entry frame (g_tamisu_ret_ctx) and tail-call munmap, so munmap's ret
  * lands straight in ART -- no core code runs after the unmap. [[noreturn]]. */
-extern "C" [[noreturn]] void yz_self_unmap_tail(void *base, size_t size);
+extern "C" [[noreturn]] void tamisu_self_unmap_tail(void *base, size_t size);
 
 /* Run + unregister every atexit handler libc has registered against this dso.
  * Each C++ static-global ctor calls __cxa_atexit(dtor, obj, &__dso_handle); if
@@ -1062,13 +1066,13 @@ extern "C" void __cxa_finalize(void *);
 // EVERYTHING" -- it would drain libc's entire atexit table inside the zygote
 // pre-fork, which kills boot (cf. the boot loop the weak version caused).
 extern "C" __attribute__((visibility("hidden"))) void *__dso_handle;
-static inline void yz_finalize_self_dso() { __cxa_finalize(&__dso_handle); }
+static inline void tamisu_finalize_self_dso() { __cxa_finalize(&__dso_handle); }
 
 void zygisk_self_destruct(JNIEnv *env, bool isolated) {
   // Whether the tail-call munmap is usable -- snapshot BEFORE unhooking
   // clears the hook records. Safe only if every specialize native was inline-
   // hooked: then the capture stub saved THIS specialize's ART entry frame (x30,
-  // sp, callee-saved) into g_yz_ret_ctx. A RegisterNatives fallback leaves it
+  // sp, callee-saved) into g_tamisu_ret_ctx. A RegisterNatives fallback leaves it
   // stale, so we must disguise instead of tail-calling munmap.
   bool can_unmap = zygisk_specialize_fully_inline_hooked();
   zygisk_self_unhook(env);
@@ -1077,12 +1081,12 @@ void zygisk_self_destruct(JNIEnv *env, bool isolated) {
   // those pages (plus the set inherited from the zygote) so the library's r--p
   // Rss/Pss returns to the pristine baseline -- the force-hide process must
   // look untouched.
-  yz_drop_runtime_header_pages();
+  tamisu_drop_runtime_header_pages();
   // Our own contiguous image range, resolved while still on the solist.
   uintptr_t cbase = 0;
   size_t csize = 0;
   bool have_range =
-      yz_find_self_range(&cbase, &csize) && cbase != 0 && csize != 0;
+      tamisu_find_self_range(&cbase, &csize) && cbase != 0 && csize != 0;
   // Mount/solist cleanup goes through zygiskd (mount revert) -- skip it
   // entirely for an isolated process: its tight SELinux domain CANNOT reach
   // zygiskd, so the connect attempt only emits an avc denial (which can surface
@@ -1095,11 +1099,11 @@ void zygisk_self_destruct(JNIEnv *env, bool isolated) {
     // kernel task_work raced our own execution and crashed the app (libc
     // returned into the just-unmapped core). We unmap ourselves synchronously
     // below instead.
-    bool reverted = yz_report_self_unmap();
+    bool reverted = tamisu_report_self_unmap();
     zloader::hide_from_solist("libzygisk");
     zloader::hide_from_solist("libyukilinker");
     if (!reverted)
-      yz_revert_self_mounts(); // zygiskd unreachable: revert in-app as a
+      tamisu_revert_self_mounts(); // zygiskd unreachable: revert in-app as a
                                // fallback
   }
   if (have_range && can_unmap) {
@@ -1112,9 +1116,9 @@ void zygisk_self_destruct(JNIEnv *env, bool isolated) {
     // and reports "found_injection". __cxa_finalize(&__dso_handle) walks libc's
     // list, runs and unregisters every entry whose dso_handle matches ours.
     yukilinker::shutdown();
-    yz_finalize_self_dso();
+    tamisu_finalize_self_dso();
     // Restore the specialize hook's entry frame (captured by the inline-hook
-    // capture stub into g_yz_ret_ctx) and tail-call munmap. munmap runs in
+    // capture stub into g_tamisu_ret_ctx) and tail-call munmap. munmap runs in
     // libc, drops the whole core image, and rets straight back into ART. The
     // core call stack is discarded atomically -- not one core instruction runs
     // after the unmap, so there is no dangling-PC SIGSEGV (the bug the async
@@ -1123,7 +1127,7 @@ void zygisk_self_destruct(JNIEnv *env, bool isolated) {
     //   zygisk_self_unhook
     //   - the loader's code-cache memfd stays mapped on purpose: it is
     //     file-backed and non-anonymous.
-    yz_self_unmap_tail(reinterpret_cast<void *>(cbase), csize); // [[noreturn]]
+    tamisu_self_unmap_tail(reinterpret_cast<void *>(cbase), csize); // [[noreturn]]
   }
   // Fallback (a specialize method used the RegisterNatives path, or our range
   // was not found): a tail-call munmap would dangle -> disguise the exec
