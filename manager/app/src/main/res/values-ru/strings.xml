@@ -13,7 +13,6 @@
     <string name="selinux_status_enforcing">Принудительный</string>
     <string name="selinux_status_permissive">Разрешающий</string>
     <string name="selinux_status_unknown">Неизвестно</string>
-    <string name="superuser">Рут-доступ</string>
     <string name="module_failed_to_enable">Не удалось включить модуль %s</string>
     <string name="module_failed_to_disable">Не удалось отключить модуль %s</string>
     <string name="module_empty">Нет установленных модулей</string>
@@ -41,9 +40,6 @@
     <string name="hide_system_apps">Скрыть системные приложения</string>
     <string name="send_log">Отправить логи</string>
     <string name="safe_mode">Безопасный режим</string>
-    <string name="jailbreak_mode">Режим джейлбрейка</string>
-    <string name="home_jailbreak">Джейлбрейк</string>
-    <string name="home_jailbreak_failed">Не удалось запустить службу джейлбрейка</string>
     <string name="jailbreak_timeout">Джейлбрейк, возможно, не удался, проверьте журналы</string>
     <string name="reboot_to_apply">Перезагрузите, чтобы изменения вступили в силу</string>
     <string name="module_magisk_conflict">Модули недоступны из-за конфликта с Magisk!</string>
@@ -64,11 +60,7 @@
     <string name="dynamic_manager_set_failed">Не удалось назначить %s динамическим менеджером</string>
     <string name="dynamic_manager_del_failed">Не удалось удалить %s из динамических менеджеров</string>
     <string name="dynamic_manager_signature_unavailable">Не удалось извлечь подпись динамического менеджера для %s</string>
-    <string name="allow_any_dynamic_manager">Разрешить любое приложение как динамический менеджер</string>
-    <string name="allow_any_dynamic_manager_summary">Экспериментально. Показывать переключатель динамического менеджера для каждого приложения, а не только для предустановленных подписей менеджеров.</string>
     <string name="require_kernel_version" formatted="false">Текущая версия KernelSU %s слишком низкая для правильной работы менеджера. Пожалуйста, обновите до версии %s или выше!</string>
-    <string name="settings_umount_modules_default">Размонтировать модули по умолчанию</string>
-    <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для настройки «Отключить модули» в App Profile. Если этот параметр включен, изменения модуля удаляются для приложений без профиля. По умолчанию этот параметр отключен, поэтому новые или неизвестные приложения сохраняют изменения модуля.</string>
     <string name="profile_umount_modules_summary">Включение этой опции позволит KernelSU восстанавливать любые измененные модулями файлы для данного приложения.</string>
     <string name="profile_selinux_domain">Домен</string>
     <string name="profile_selinux_rules">Правила</string>
@@ -79,8 +71,6 @@
     <string name="restart_app">Перезапустить</string>
     <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для %s</string>
     <string name="module_changelog">Список изменений</string>
-    <string name="settings_profile_template">Шаблон профиля приложения</string>
-    <string name="settings_profile_template_summary">Управление локальным и онлайн-шаблоном профиля приложения</string>
     <string name="app_profile_template_create">Создать шаблон</string>
     <string name="app_profile_template_edit">Редактирование шаблона</string>
     <string name="app_profile_template_id">Идентификационный номер</string>
@@ -102,51 +92,11 @@
     <string name="app_profile_template_import_empty">Буфер обмена пуст!</string>
     <string name="settings_check_update">Проверка обновлений</string>
     <string name="settings_check_update_summary">Автоматически проверять обновления при открытии приложения</string>
-    <string name="settings_auto_jailbreak">Автоматический джейлбрейк</string>
-    <string name="settings_auto_jailbreak_summary">Автоматически использовать Magica для запуска поздней загрузки при обнаружении разрешающего (Permissive) SELinux при загрузке. Требуется разрешение на автозапуск для этого приложения.</string>
-    <string name="settings_adb_root">ADB Root</string>
-    <string name="settings_adb_root_summary">Запускать adbd с правами root</string>
     <string name="grant_root_failed">Не удалось выдать root!</string>
     <string name="action">Действие</string>
     <string name="close">Закрыть</string>
-    <string name="home_auth_superkey_tag">SuperKey</string>
     <string name="home_auth_signature_tag">Signature</string>
     <!-- Kasumi toasts -->
-    <string name="kasumi_toast_load_error">Ошибка загрузки данных: %s</string>
-    <string name="kasumi_toast_settings_saved">Настройки сохранены</string>
-    <string name="kasumi_toast_settings_failed">Не удалось сохранить настройки</string>
-    <string name="kasumi_saving">Сохранение…</string>
-    <string name="kasumi_toast_kernel_debug_enabled">Отладка ядра включена</string>
-    <string name="kasumi_toast_kernel_debug_disabled">Отладка ядра отключена</string>
-    <string name="kasumi_toast_stealth_enabled">Скрытный режим включён</string>
-    <string name="kasumi_toast_stealth_disabled">Скрытный режим отключён</string>
-    <string name="kasumi_toast_mounts_fixed">ID монтирований переупорядочены</string>
-    <string name="kasumi_toast_mounts_failed">Не удалось исправить монтирования</string>
-    <string name="kasumi_toast_builtin_enabled">Встроенное монтирование включено. Перезагрузите для применения.</string>
-    <string name="kasumi_toast_builtin_disabled">Встроенное монтирование отключено. Перезагрузите для применения.</string>
-    <string name="kasumi_toast_builtin_failed">Не удалось изменить настройку встроенного монтирования</string>
-    <string name="kasumi_features_title">Функции ядра</string>
-    <string name="kasumi_features_none">Ничего не сообщено</string>
-    <string name="kasumi_feature_mount_hide">Скрытие монтирования</string>
-    <string name="kasumi_feature_mount_hide_desc">Скрывать overlay из /proc/mounts и mountinfo</string>
-    <string name="kasumi_feature_maps_spoof">Подмена Maps</string>
-    <string name="kasumi_feature_maps_spoof_desc">Подменять ino/dev/path в /proc/pid/maps. Добавьте правила ниже.</string>
-    <string name="kasumi_feature_statfs_spoof">Подмена Statfs</string>
-    <string name="kasumi_feature_statfs_spoof_desc">Автоматически вместе со скрытием монтирования; приводит statfs() в соответствие с mountinfo (избегает INCONSISTENT_MOUNT)</string>
-    <string name="kasumi_maps_title">Подмена Maps (/proc/pid/maps)</string>
-    <string name="kasumi_maps_desc">Подменять inode/устройство/путь в maps процессов. Правила можно добавлять через overlay-монтирование; при необходимости очистите все правила здесь.</string>
-    <string name="kasumi_maps_clear">Очистить правила maps</string>
-    <string name="kasumi_maps_clear_confirm">Очистить все правила подмены maps?</string>
-    <string name="kasumi_maps_cleared">Правила maps очищены</string>
-    <string name="kasumi_maps_clear_failed">Не удалось очистить правила maps</string>
-    <string name="kasumi_maps_add_rule">Добавить правило</string>
-    <string name="kasumi_maps_add_success">Правило maps добавлено</string>
-    <string name="kasumi_maps_add_failed">Не удалось добавить правило maps</string>
-    <string name="kasumi_maps_target_ino">Целевой inode</string>
-    <string name="kasumi_maps_target_dev">Целевое устройство (0=любое)</string>
-    <string name="kasumi_maps_spoof_ino">Подменный inode</string>
-    <string name="kasumi_maps_spoof_dev">Подменное устройство</string>
-    <string name="kasumi_maps_spoof_path">Подменный путь</string>
     <string name="direct_install">Прямая установка (Рекомендуется)</string>
     <string name="select_file">Выберите изображение, которое необходимо пропатчить.</string>
     <string name="install_inactive_slot">Установка в неактивный слот (После OTA)</string>
@@ -190,18 +140,6 @@
     <string name="unknown_module">неизвестный модуль</string>
     <!-- Module shortcut related -->
     <string name="module_action_success">Действие модуля завершено</string>
-    <string name="module_shortcut_type_title">Выберите тип ярлыка</string>
-    <string name="module_shortcut_title">Ярлык модуля</string>
-    <string name="module_shortcut_icon_pick">Выбрать значок</string>
-    <string name="module_shortcut_name_label">Имя ярлыка</string>
-    <string name="module_shortcut_delete">Удалить ярлык</string>
-    <string name="module_shortcut_add">Добавить ярлык модуля</string>
-    <string name="module_shortcut_updated">Ярлык обновлён</string>
-    <string name="module_shortcut_not_supported">Лаунчер не поддерживает закреплённые ярлыки</string>
-    <string name="module_shortcut_created">Ярлык создан</string>
-    <string name="module_shortcut_permission_tip_xiaomi">Разрешите этому приложению создавать ярлыки на рабочем столе в настройках MIUI, затем повторите попытку</string>
-    <string name="module_shortcut_permission_tip_oppo">Разрешите этому приложению создавать ярлыки на рабочем столе в настройках системы, затем повторите попытку</string>
-    <string name="module_shortcut_permission_tip_default">Проверьте разрешения лаунчера и разрешите создание ярлыков на рабочем столе, затем повторите попытку</string>
     <!-- Restore related -->
     <string name="restore_confirm_title">Подтвердите восстановление модуля</string>
     <string name="restore_confirm_message">Эта операция перезапишет все существующие модули. Продолжить?</string>
@@ -220,25 +158,11 @@
     <!-- Command related -->
     <string name="command_execution_failed">Выполнение команды не удалось: %1$s</string>
     <!-- Allowlist related -->
-    <string name="allowlist_backup_success">Резервная копия создана успешно</string>
-    <string name="allowlist_backup_failed">Ошибка резервного копирования списка: %1$s</string>
-    <string name="allowlist_restore_confirm_title">Подтвердите восстановление списка</string>
-    <string name="allowlist_restore_confirm_message">Эта операция перезапишет текущий список разрешений. Продолжить?</string>
-    <string name="allowlist_restore_success">Список успешно восстановлен</string>
-    <string name="allowlist_restore_failed">Не удалось восстановить список: %1$s</string>
     <string name="backup_allowlist">Резервное копирование списка</string>
     <string name="restore_allowlist">Восстановить список</string>
     <string name="home_android_version">Версия Android</string>
     <string name="home_device_model">Модель устройства</string>
     <string name="su_not_allowed">Предоставление рут-доступа %s запрещено</string>
-    <string name="settings_disable_su">Отключить su совместимость</string>
-    <string name="settings_disable_su_summary">Запретите каждому приложению получать привилегии root с помощью команды su. Существующие процессы root не затрагиваются.</string>
-    <string name="settings_disable_kernel_umount">Отключить размонтирование ядра</string>
-    <string name="settings_disable_kernel_umount_summary">Отключить поведение размонтирования на уровне ядра, контролируемое KernelSU.</string>
-    <string name="settings_enable_enhanced_security">Использовать строгую политику безопасности</string>
-    <string name="settings_enable_enhanced_security_summary">Блокирует повышение привилегий вне домена KernelSU и неразрешенное понижение UID приложений</string>
-    <string name="settings_selinux_hide">Включить скрытие SELinux</string>
-    <string name="settings_selinux_hide_summary">Скрывать изменения политики SELinux KernelSU от проверок со стороны приложений.</string>
     <string name="feature_status_unsupported_summary">Ядро не поддерживает эту функцию</string>
     <string name="feature_status_managed_summary">Эта функция управляется модулем</string>
     <string name="module_install_multiple_confirm_with_names">Уверены, что хотите установить следующие %1$d модули? \n\n%2$s</string>
@@ -304,11 +228,6 @@
     <string name="installing_module">Модуль устанавливается %1$d/%2$d</string>
     <string name="module_failed_count">%d не удалось установить новый модуль</string>
     <!-- Kasumi status text -->
-    <string name="kasumi_status_available">Доступно</string>
-    <string name="kasumi_status_builtin">Kasumi встроен</string>
-    <string name="kasumi_status_not_present">Отсутствует</string>
-    <string name="kasumi_status_kernel_too_old">Ядро слишком старое</string>
-    <string name="kasumi_status_module_too_old">Модуль слишком старый</string>
     <string name="warning_of_meta_module_title">Требуется Мета-модуль</string>
     <string name="warning_of_meta_module_summary">Этот модуль хочет смонтировать /system, метамодуль выполнит это. Иначе он может не работать</string>
     <!-- 分类相关 -->
@@ -396,8 +315,6 @@
     <string name="log_viewer_all_logs_loaded">Все логи отображаются</string>
     <string name="incompatible_kernel_msg">    Текущий менеджер несовместим с этим ядром! Пожалуйста, обновите ядро до версии %2$d или выше (сейчас %1$d)
     </string>
-    <string name="umount_path_manager">Управление путями размонтирования</string>
-    <string name="umount_path_manager_summary">Управления путями размонтирования ядра</string>
     <string name="umount_path_restart_notice">Для применения изменений необходима перезагрузка. Система применит новый конфиг при следующем запуске.</string>
     <string name="add_umount_path">Добавить путь размонтирования</string>
     <string name="mount_path">Смонтировать путь</string>
@@ -417,186 +334,22 @@
     <string name="config_applied">Конфигурация применена к ядру</string>
     <string name="mnt_detach">MNT_DETACH</string>
     <string name="group_contains_apps">Содержит %d приложений</string>
-    <string name="settings_disable_sulog">Журнал суперпользователя</string>
-    <string name="settings_disable_sulog_summary">Записывать доступ суперпользователя KernelSU</string>
 
     <!-- SuperKey authentication -->
-    <string name="superkey_auth_title">Аутентификация по СуперКлючу</string>
-    <string name="superkey_auth_subtitle">Введите СуперКлюч для аутентификации в качестве менеджера</string>
-    <string name="superkey_input_hint">СуперКлюч</string>
-    <string name="superkey_input_placeholder">Введите СуперКлюч</string>
-    <string name="superkey_authenticate">Аутентифицировать</string>
-    <string name="superkey_auth_failed">Аутентификация не удалась</string>
     <string name="show_password">Показать пароль</string>
     <string name="hide_password">Скрыть пароль</string>
-    <string name="superkey_optional_title">СуперКлюч (необязательно)</string>
-    <string name="superkey_optional_desc">Задайте СуперКлюч для аутентификации в стиле APatch. Оставьте пустым для аутентификации по подписи.</string>
 
     <!-- SuperKey settings -->
-    <string name="settings_donot_store_superkey">Не хранить СуперКлюч</string>
-    <string name="settings_donot_store_superkey_summary">Когда включено, менеджер не будет сохранять ваш СуперКлюч. Вам нужно будет вводить его вручную после каждой перезагрузки.</string>
-    <string name="clear_super_key">Очистить СуперКлюч</string>
-    <string name="settings_clear_super_key_dialog">Вы действительно хотите очистить сохранённый СуперКлюч?</string>
     <string name="signature_bypass_title">Режим только СуперКлюча</string>
     <string name="signature_bypass_desc">Отключить проверку подписи APK. Менеджер будет распознаваться только через аутентификацию по СуперКлючу.</string>
 
     <!-- Kasumi Configuration -->
-    <string name="kasumi_title">Конфигурация Kasumi</string>
-    <string name="kasumi_settings_summary">Монтирование модулей, подмена Maps, LKM, правила</string>
-    <string name="kasumi_tab_status">Статус</string>
-    <string name="kasumi_tab_settings">Настройки</string>
-    <string name="kasumi_tab_rules">Правила</string>
-    <string name="kasumi_tab_logs">Журналы</string>
-    <string name="kasumi_tab_lkm">Модуль ядра</string>
-    <string name="kasumi_lkm_card_title">Загружаемый модуль ядра Kasumi</string>
-    <string name="kasumi_lkm_loading_card_title">Загрузка</string>
-    <string name="kasumi_lkm_loading_desc">ksud автоматически загружает подходящий модуль ядра Kasumi (.ko) на этапе post-fs-data в зависимости от текущего KMI ядра. Ручные действия не требуются.</string>
-    <string name="kasumi_lkm_autoload_hint">Когда включено: загружать LKM при загрузке; сбои записываются в /data/adb/hymo/lkm_autoload.log. Когда отключено: пропускать загрузку при запуске.</string>
-    <string name="kasumi_lkm_autoload_enabled">Автозагрузка LKM при запуске включена</string>
-    <string name="kasumi_lkm_autoload_disabled">Автозагрузка LKM при запуске отключена</string>
-    <string name="kasumi_lkm_autoload_failed">Не удалось установить</string>
-    <string name="kasumi_lkm_kernel_label">Ядро (SYS)</string>
-    <string name="kasumi_lkm_kmi_label">подмена uname</string>
-    <string name="kasumi_lkm_kmi_override_desc">Переопределить KMI для загрузки LKM, если автоопределение не удалось (например, 6.6.30-android15)</string>
-    <string name="kasumi_lkm_kmi_set_success">Переопределение KMI задано</string>
-    <string name="kasumi_lkm_kmi_cleared">Переопределение KMI очищено</string>
-    <string name="kasumi_lkm_kmi_failed">Не удалось задать переопределение KMI</string>
-    <string name="kasumi_lkm_load">Загрузить LKM</string>
-    <string name="kasumi_lkm_unload">Выгрузить LKM</string>
-    <string name="kasumi_lkm_load_success">LKM загружен</string>
-    <string name="kasumi_lkm_load_failed">Не удалось загрузить LKM</string>
-    <string name="kasumi_lkm_unload_success">LKM выгружен</string>
-    <string name="kasumi_lkm_unload_failed">Не удалось выгрузить LKM</string>
-    <string name="kasumi_lkm_hooks_title">Текущие хуки LKM</string>
-    <string name="kasumi_lkm_hooks_refresh">Обновить</string>
-    <string name="kasumi_lkm_hooks_empty">Нет хуков (разверните и обновите для получения)</string>
-    <string name="kasumi_lkm_kmi_selection_title">Выбор KMI</string>
-    <string name="kasumi_lkm_kmi_selection_label">Выбрать KMI</string>
-    <string name="kasumi_lkm_kmi_selection_placeholder">Выбрать KMI (по умолчанию отключено)</string>
-    <string name="kasumi_lkm_kmi_selection_empty">Нет поддерживаемых KMI</string>
-    <string name="kasumi_storage">Хранилище</string>
-    <string name="kasumi_modules_count">Модули</string>
-    <string name="kasumi_system_info">Сведения о системе</string>
-    <string name="kasumi_builtin_mount">Встроенное монтирование</string>
-    <string name="kasumi_builtin_mount_desc">Использовать встроенное монтирование hymo вместо внешней метамодуля. Отключите, если хотите использовать другую метамодуль.</string>
-    <string name="kasumi_debug">Журнал отладки</string>
-    <string name="kasumi_debug_desc">Записывать дополнительную отладочную информацию hymo</string>
-    <string name="kasumi_verbose">Подробный журнал</string>
-    <string name="kasumi_verbose_desc">Включить подробные журналы демона</string>
-    <string name="kasumi_disable_umount">Отключить размонтирование</string>
-    <string name="kasumi_disable_umount_desc">Не размонтировать при изоляции процессов</string>
-    <string name="kasumi_kernel_debug">Отладка ядра</string>
-    <string name="kasumi_kernel_debug_desc">Включить журнал отладки ядра Kasumi</string>
-    <string name="kasumi_stealth">Скрытный режим</string>
-    <string name="kasumi_stealth_desc">Скрывать следы монтирования и переупорядочивать ID монтирований</string>
-    <string name="kasumi_hidexattr">Скрыть расширенные атрибуты</string>
-    <string name="kasumi_hidexattr_desc">Включите mount_hide, maps_spoof, statfs_spoof, selinux_fix и скрытность, чтобы скрыть следы от обнаружения.</string>
-    <string name="kasumi_selinux_fix">Защита SELinux</string>
-    <string name="kasumi_selinux_fix_desc">Блокировать проверки политики SELinux со стороны app_zygote (DirtySepolicy / Duck Detector)</string>
-    <string name="kasumi_enable_nuke">Включить Nuke</string>
-    <string name="kasumi_enable_nuke_desc">Разрешить удаление записей sysfs ext4</string>
-    <string name="kasumi_ignore_protocol">Игнорировать несоответствие протокола</string>
-    <string name="kasumi_ignore_protocol_desc">Продолжать, даже если версии ядра и пользовательского пространства не совпадают</string>
-    <string name="kasumi_moduledir">Каталог модулей</string>
-    <string name="kasumi_moduledir_desc">Базовый каталог для модулей (по умолчанию: /data/adb/modules)</string>
-    <string name="kasumi_tempdir">Временная точка монтирования</string>
-    <string name="kasumi_tempdir_desc">Базовый путь для временных монтирований (оставьте пустым для авто)</string>
-    <string name="kasumi_mountsource">Источник монтирования OverlayFS</string>
-    <string name="kasumi_mountsource_desc">Имя для источника монтирования overlayfs (по умолчанию: KSU)</string>
-    <string name="kasumi_logs_copy">Копировать</string>
-    <string name="kasumi_logs_copy_success">Журнал скопирован в буфер обмена</string>
-    <string name="kasumi_logs_filter">Фильтр</string>
-    <string name="kasumi_logs_filter_all">Все</string>
-    <string name="kasumi_logs_filter_verbose">Подробно</string>
-    <string name="kasumi_logs_filter_debug">Отладка</string>
-    <string name="kasumi_logs_filter_info">Инфо</string>
-    <string name="kasumi_logs_filter_warn">Предупреждение</string>
-    <string name="kasumi_logs_filter_error">Ошибка</string>
-    <string name="kasumi_partitions">Активные разделы</string>
-    <string name="kasumi_partitions_desc">Разделы для сканирования изменений модулей (через запятую)</string>
-    <string name="kasumi_partitions_scan">Сканировать разделы</string>
-    <string name="kasumi_partitions_add">Добавить раздел</string>
-    <string name="kasumi_partitions_placeholder">Введите имена разделов (например, mi_ext, my_stock)</string>
-    <string name="kasumi_general">Общие</string>
-    <string name="kasumi_advanced">Дополнительно</string>
-    <string name="kasumi_fix_mounts">Исправить ID монтирований</string>
-    <string name="kasumi_rules_clear_all">Очистить все правила</string>
-    <string name="kasumi_rules_clear_confirm">Вы уверены, что хотите очистить все активные правила Kasumi? Это вступит в силу немедленно.</string>
-    <string name="kasumi_rules_clear">Очистить</string>
-    <string name="kasumi_rules_cancel">Отмена</string>
-    <string name="kasumi_rules_not_available">Ядро Kasumi недоступно. Вкладка правил требует поддержки ядра Kasumi.</string>
-    <string name="kasumi_rules_refresh">Обновить</string>
-    <string name="kasumi_rules_count">%d активных правил</string>
-    <string name="kasumi_rules_empty">Нет активных правил</string>
-    <string name="kasumi_rule_mount_hide">Скрывать overlay-монтирования из /proc/mounts</string>
-    <string name="kasumi_rule_maps_spoof">Подменять ino/dev/pathname в /proc/pid/maps</string>
-    <string name="kasumi_rule_statfs_spoof">Подменять f_type statfs для обхода обнаружения</string>
-    <string name="kasumi_rule_stealth">Скрытный режим: скрывать следы монтирования, переупорядочивать mnt_id</string>
-    <string name="kasumi_logs_daemon">Журнал демона</string>
-    <string name="kasumi_logs_kernel">Журнал ядра</string>
-    <string name="kasumi_kernel_title">Ядро Kasumi</string>
-    <string name="kasumi_version_label">Версия: %s</string>
-    <string name="kasumi_stats_kasumi">Kasumi</string>
-    <string name="kasumi_info_kernel">Ядро</string>
-    <string name="kasumi_info_selinux">SELinux</string>
-    <string name="kasumi_info_mount_base">База монтирования</string>
-    <string name="kasumi_info_active_mounts">Активные монтирования:</string>
-    <string name="kasumi_info_more_mounts">… и ещё %d</string>
-    <string name="kasumi_mismatch_default">Обнаружено несоответствие протокола. Обновите ядро или модуль.</string>
-    <string name="kasumi_enable_title">Включить Kasumi</string>
-    <string name="kasumi_enable_desc">Управляет включением Kasumi при загрузке (вступает в силу после перезапуска демона)</string>
     <!-- Kasumi uname spoofing -->
-    <string name="kasumi_uname_title">Подмена версии ядра</string>
-    <string name="kasumi_uname_release">Имя версии</string>
-    <string name="kasumi_uname_release_desc">Релиз ядра (например, 5.15.0-generic). Когда задано, Kasumi подменит это значение.</string>
-    <string name="kasumi_uname_version">Время сборки</string>
-    <string name="kasumi_uname_version_desc">Версия ядра / метка времени сборки. Когда задано, Kasumi подменит это значение.</string>
-    <string name="kasumi_uname_use_current">Использовать сведения текущего ядра</string>
-    <string name="kasumi_uname_mode">Режим подмены</string>
-    <string name="kasumi_uname_mode_scoped">Ограниченный</string>
-    <string name="kasumi_uname_mode_global">Глобальный</string>
-    <string name="kasumi_uname_mode_scoped_desc">Для каждого процесса: только скрытые hymo UID видят поддельные значения (безопасно по умолчанию).</string>
-    <string name="kasumi_uname_mode_global_desc">Системный: переписывает init_uts_ns, все задачи видят поддельные значения.</string>
-    <string name="kasumi_uname_restore">Восстановить оригинал (глобально)</string>
-    <string name="kasumi_uname_restored">Оригинальный uname ядра восстановлен.</string>
-    <string name="kasumi_uname_restore_failed">Восстановление не удалось (требуется предыдущее глобальное применение).</string>
-    <string name="kasumi_fs_type_title">Файловая система хранилища</string>
-    <string name="kasumi_fs_type_auto">Авто (пусть hymo выбирает)</string>
-    <string name="kasumi_fs_type_ext4">Образ EXT4</string>
-    <string name="kasumi_fs_type_erofs">Образ EROFS</string>
-    <string name="kasumi_fs_type_tmpfs">Tmpfs (ОЗУ)</string>
-    <string name="kasumi_mirror_path">База монтирования / путь зеркала</string>
-    <string name="kasumi_mirror_path_desc">Авто: использовать /dev/kasumi_mirror, когда Kasumi включён, и /data/adb/hymo/img_mnt, когда отключён. Либо выберите предустановленный / пользовательский путь (переопределяет авто).</string>
-    <string name="kasumi_mirror_preset_auto">Авто</string>
-    <string name="kasumi_mirror_preset_img_mnt">img_mnt</string>
-    <string name="kasumi_mirror_preset_debug_ramdisk">debug_ramdisk</string>
-    <string name="kasumi_mirror_preset_dev_mirror">kasumi_mirror</string>
-    <string name="kasumi_mirror_preset_custom">Пользовательский</string>
     <!-- Kasumi user hide rules -->
-    <string name="kasumi_user_hide_title">Пользовательские правила скрытия</string>
-    <string name="kasumi_user_hide_empty">Нет пользовательских правил скрытия. Добавьте абсолютные пути, чтобы скрыть их от всех модулей.</string>
-    <string name="kasumi_user_hide_placeholder">/абсолютный/путь/для/скрытия</string>
-    <string name="kasumi_user_hide_add">Добавить</string>
-    <string name="kasumi_user_hide_add_failed">Не удалось добавить правило скрытия</string>
-    <string name="kasumi_user_hide_remove_failed">Не удалось удалить правило скрытия</string>
 
     <!-- Kasumi per-module rules -->
-    <string name="kasumi_module_rules_title">Пользовательские правила для этого модуля</string>
-    <string name="kasumi_module_rules_placeholder">/путь/внутри/system/или/vendor</string>
-    <string name="kasumi_mount_config">Конфигурация монтирования</string>
-    <string name="kasumi_mount_mode">Режим монтирования</string>
-    <string name="kasumi_mount_mode_auto">Авто</string>
-    <string name="kasumi_mount_mode_kasumi">Kasumi</string>
-    <string name="kasumi_mount_mode_overlay">Overlay</string>
-    <string name="kasumi_mount_mode_magic">Magic</string>
-    <string name="kasumi_mount_mode_none">Нет</string>
-    <string name="kasumi_strategy_magic_mount">Magic Mount</string>
-    <string name="kasumi_strategy_not_mounted">Не смонтировано</string>
-    <string name="kasumi_module_rules_add">Добавить</string>
-    <string name="kasumi_module_rules_add_failed">Не удалось добавить правило модуля</string>
 
     <!-- Partition Manager -->
-    <string name="partition_manager">Менеджер разделов</string>
     <string name="partition_slot_info">Сведения о слотах</string>
     <string name="partition_device_type">Тип устройства</string>
     <string name="partition_current_slot">Текущий слот</string>
@@ -659,8 +412,6 @@
     <string name="partition_back">Назад</string>
 
     <!-- Advanced Tools -->
-    <string name="install_advanced_tools">Дополнительные инструменты</string>
-    <string name="partition_manager_desc">Резервное копирование/восстановление разделов, управление слотами</string>
 
     <!-- ksud daemon version / update -->
     <string name="home_ksud_daemon_title">демон ksud</string>
@@ -679,6 +430,4 @@
     <string name="su_request_allow_once">Разрешить один раз</string>
     <string name="su_request_deny">Отклонить</string>
     <string name="su_request_deny_hide">Отклонить и скрыть</string>
-    <string name="magisk_compat_title">Запрос su в стиле Magisk</string>
-    <string name="magisk_compat_summary">Показывать приложениям видимый su и запрашивать авторизацию при первом использовании, вместо тихого отказа su для приложений, которых нет в списке разрешённых.</string>
 </resources>

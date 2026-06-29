@@ -13,7 +13,6 @@
     <string name="selinux_status_enforcing">嚴格模式</string>
     <string name="selinux_status_permissive">寬鬆模式</string>
     <string name="selinux_status_unknown">未知</string>
-    <string name="superuser">超級使用者</string>
     <string name="module_failed_to_enable">無法啟用模組：%s</string>
     <string name="module_failed_to_disable">無法禁用模組：%s</string>
     <string name="module_empty">尚未安裝任何模組</string>
@@ -41,9 +40,6 @@
     <string name="hide_system_apps">隱藏系統應用程式</string>
     <string name="send_log">傳送日誌</string>
     <string name="safe_mode">安全模式</string>
-    <string name="jailbreak_mode">越獄模式</string>
-    <string name="home_jailbreak">越獄</string>
-    <string name="home_jailbreak_failed">啟動越獄服務失敗</string>
     <string name="jailbreak_timeout">越獄可能失敗了，請檢查日誌</string>
     <string name="reboot_to_apply">重新啟動以生效</string>
     <string name="module_magisk_conflict">因與 Magisk 衝突，所有模組將無法使用！</string>
@@ -64,11 +60,7 @@
     <string name="dynamic_manager_set_failed">將 %s 設為動態管理器失敗</string>
     <string name="dynamic_manager_del_failed">從動態管理器中移除 %s 失敗</string>
     <string name="dynamic_manager_signature_unavailable">無法擷取 %s 的動態管理器簽章</string>
-    <string name="allow_any_dynamic_manager">允許授權任何應用程式為動態管理器</string>
-    <string name="allow_any_dynamic_manager_summary">實驗性功能。開啟後會在所有應用程式的 App Profile 中顯示動態管理器開關，而非僅顯示預設簽章管理器。</string>
     <string name="require_kernel_version" formatted="false">目前 KernelSU 版本 %s 過低，管理器無法正常運作，請將內核 KernelSU 版本升級至 %s 或以上！</string>
-    <string name="settings_umount_modules_default">預設卸載模組</string>
-    <string name="settings_umount_modules_default_summary">應用程式設定檔中「卸載模組」的全域預設值。啟用後，未設定個別 Profile 的應用程式會移除所有模組對系統的修改。此選項預設關閉，因此新的或未知的應用程式仍會保留模組修改。</string>
     <string name="profile_umount_modules_summary">啟用此選項後，將允許 KernelSU 為此應用程式還原被模組修改的檔案。</string>
     <string name="profile_selinux_domain">域</string>
     <string name="profile_selinux_rules">規則</string>
@@ -79,8 +71,6 @@
     <string name="restart_app">重新啟動應用程式</string>
     <string name="failed_to_update_sepolicy">為 %s 更新 SELinux 規則失敗</string>
     <string name="module_changelog">更新日誌</string>
-    <string name="settings_profile_template">應用程式設定檔模板</string>
-    <string name="settings_profile_template_summary">管理本地和線上的應用程式設定檔模板</string>
     <string name="app_profile_template_create">建立模板</string>
     <string name="app_profile_template_edit">編輯模板</string>
     <string name="app_profile_template_id">模板 ID</string>
@@ -102,51 +92,11 @@
     <string name="app_profile_template_import_empty">剪貼簿為空！</string>
     <string name="settings_check_update">檢查更新</string>
     <string name="settings_check_update_summary">在應用程式啟動後自動檢查是否有最新版本</string>
-    <string name="settings_auto_jailbreak">自動越獄</string>
-    <string name="settings_auto_jailbreak_summary">開機偵測到 Permissive SELinux 時自動使用 Magica 引導 late-load。需要授予本應用程式自動啟動權限。</string>
-    <string name="settings_adb_root">ADB Root</string>
-    <string name="settings_adb_root_summary">讓 adbd 以 root 權限執行</string>
     <string name="grant_root_failed">獲取 root 權限失敗！</string>
     <string name="action">執行</string>
     <string name="close">關閉</string>
-    <string name="home_auth_superkey_tag">SuperKey</string>
     <string name="home_auth_signature_tag">Signature</string>
     <!-- Kasumi toasts -->
-    <string name="kasumi_toast_load_error">載入資料時發生錯誤：%s</string>
-    <string name="kasumi_toast_settings_saved">設定已儲存</string>
-    <string name="kasumi_toast_settings_failed">儲存設定失敗</string>
-    <string name="kasumi_saving">儲存中…</string>
-    <string name="kasumi_toast_kernel_debug_enabled">內核偵錯已啟用</string>
-    <string name="kasumi_toast_kernel_debug_disabled">內核偵錯已停用</string>
-    <string name="kasumi_toast_stealth_enabled">隱身模式已啟用</string>
-    <string name="kasumi_toast_stealth_disabled">隱身模式已停用</string>
-    <string name="kasumi_toast_mounts_fixed">掛載 ID 已重新排序</string>
-    <string name="kasumi_toast_mounts_failed">修復掛載 ID 失敗</string>
-    <string name="kasumi_toast_builtin_enabled">內置掛載已啟用，重啟後生效</string>
-    <string name="kasumi_toast_builtin_disabled">內置掛載已停用，重啟後生效</string>
-    <string name="kasumi_toast_builtin_failed">更新內置掛載設定失敗</string>
-    <string name="kasumi_features_title">內核功能</string>
-    <string name="kasumi_features_none">未報告任何功能</string>
-    <string name="kasumi_feature_mount_hide">掛載隱藏</string>
-    <string name="kasumi_feature_mount_hide_desc">從 /proc/mounts 和 mountinfo 隱藏 overlay 掛載</string>
-    <string name="kasumi_feature_maps_spoof">Maps 偽裝</string>
-    <string name="kasumi_feature_maps_spoof_desc">偽裝 /proc/pid/maps 中的 ino/dev/path。在下方新增規則。</string>
-    <string name="kasumi_feature_statfs_spoof">Statfs 偽裝</string>
-    <string name="kasumi_feature_statfs_spoof_desc">隨掛載隱藏自動啟用；使 statfs() 與 mountinfo 一致（避免 INCONSISTENT_MOUNT）</string>
-    <string name="kasumi_maps_title">Maps 偽裝（/proc/pid/maps）</string>
-    <string name="kasumi_maps_desc">偽裝程序 maps 中的 inode/裝置/路徑。規則可透過 overlay 掛載新增；如有需要可在此清除所有規則。</string>
-    <string name="kasumi_maps_clear">清除 maps 規則</string>
-    <string name="kasumi_maps_clear_confirm">確定要清除所有 maps 偽裝規則嗎？</string>
-    <string name="kasumi_maps_cleared">maps 規則已清除</string>
-    <string name="kasumi_maps_clear_failed">清除 maps 規則失敗</string>
-    <string name="kasumi_maps_add_rule">新增規則</string>
-    <string name="kasumi_maps_add_success">maps 規則已新增</string>
-    <string name="kasumi_maps_add_failed">新增 maps 規則失敗</string>
-    <string name="kasumi_maps_target_ino">目標 inode</string>
-    <string name="kasumi_maps_target_dev">目標裝置號（0=任意）</string>
-    <string name="kasumi_maps_spoof_ino">偽裝 inode</string>
-    <string name="kasumi_maps_spoof_dev">偽裝裝置號</string>
-    <string name="kasumi_maps_spoof_path">偽裝路徑</string>
     <string name="direct_install">直接安裝（推薦）</string>
     <string name="select_file">選擇需要修補的映像檔</string>
     <string name="install_inactive_slot">安裝至未使用的槽位（OTA 後）</string>
@@ -188,18 +138,6 @@
     <string name="unknown_module">未知模組</string>
     <!-- Module shortcut related -->
     <string name="module_action_success">模組操作已完成</string>
-    <string name="module_shortcut_type_title">選擇捷徑類型</string>
-    <string name="module_shortcut_title">模組捷徑</string>
-    <string name="module_shortcut_icon_pick">選擇圖示</string>
-    <string name="module_shortcut_name_label">捷徑名稱</string>
-    <string name="module_shortcut_delete">刪除捷徑</string>
-    <string name="module_shortcut_add">新增模組捷徑</string>
-    <string name="module_shortcut_updated">捷徑已更新</string>
-    <string name="module_shortcut_not_supported">目前啟動器不支援釘選捷徑</string>
-    <string name="module_shortcut_created">已建立桌面捷徑</string>
-    <string name="module_shortcut_permission_tip_xiaomi">請在 MIUI 設定中為本應用開啟桌面捷徑權限後重試</string>
-    <string name="module_shortcut_permission_tip_oppo">請在系統設定中為本應用開啟桌面捷徑權限後重試</string>
-    <string name="module_shortcut_permission_tip_default">請檢查啟動器權限，允許本應用建立桌面捷徑後重試</string>
     <!-- Restore related -->
     <string name="restore_confirm_title">確定還原模組</string>
     <string name="restore_confirm_message">此操作將覆蓋所有現有模組，是否繼續？</string>
@@ -218,25 +156,11 @@
     <!-- Command related -->
     <string name="command_execution_failed">命令執行失敗：%1$s</string>
     <!-- Allowlist related -->
-    <string name="allowlist_backup_success">應用程式清單備份成功</string>
-    <string name="allowlist_backup_failed">應用程式清單備份失敗：%1$s</string>
-    <string name="allowlist_restore_confirm_title">確定還原應用程式清單</string>
-    <string name="allowlist_restore_confirm_message">此操作將覆蓋目前的應用程式清單，是否繼續？</string>
-    <string name="allowlist_restore_success">應用程式清單還原成功</string>
-    <string name="allowlist_restore_failed">應用程式清單還原失敗：%1$s</string>
     <string name="backup_allowlist">備份應用程式清單</string>
     <string name="restore_allowlist">還原應用程式清單</string>
     <string name="home_android_version">Android 版本</string>
     <string name="home_device_model">裝置型號</string>
     <string name="su_not_allowed">不允許授予 %s 超級使用者權限</string>
-    <string name="settings_disable_su">禁用 su 相容性</string>
-    <string name="settings_disable_su_summary">禁止任何應用程式透過 su 命令取得 Root 權限（現有的 Root 處理程序不受影響）。</string>
-    <string name="settings_disable_kernel_umount">停用核心卸載</string>
-    <string name="settings_disable_kernel_umount_summary">停用由 KernelSU 控制的核心等級卸載</string>
-    <string name="settings_enable_enhanced_security">使用嚴格安全性策略</string>
-    <string name="settings_enable_enhanced_security_summary">阻止非 KernelSU 域的提權及未授權 app UID 降低行為</string>
-    <string name="settings_selinux_hide">啟用 SELinux 隱藏</string>
-    <string name="settings_selinux_hide_summary">對應用程式端 SELinux 探測隱藏 KernelSU 策略變更。</string>
     <string name="feature_status_unsupported_summary">核心不支援此功能</string>
     <string name="feature_status_managed_summary">這個功能由模組管理</string>
     <string name="module_install_multiple_confirm_with_names">確定要安裝以下 %1$d 個模組嗎？\n\n%2$s</string>
@@ -302,11 +226,6 @@
     <string name="installing_module">正在安裝模組 %1$d/%2$d</string>
     <string name="module_failed_count">%d 個模組安裝失敗</string>
     <!-- Kasumi status text -->
-    <string name="kasumi_status_available">可用</string>
-    <string name="kasumi_status_builtin">Kasumi 內建</string>
-    <string name="kasumi_status_not_present">未偵測到</string>
-    <string name="kasumi_status_kernel_too_old">內核版本過低，不支援 Kasumi</string>
-    <string name="kasumi_status_module_too_old">模組版本過低，請更新內建 Hymo</string>
     <string name="warning_of_meta_module_title">需要元模組</string>
     <string name="warning_of_meta_module_summary">這個模組需要元模組處理掛載系統分割區。否則，它將無法運作</string>
     <!-- 分类相关 -->
@@ -394,8 +313,6 @@
     <string name="log_viewer_all_logs_loaded">已顯示所有日誌</string>
     <string name="incompatible_kernel_msg">    目前管理器與此核心不相容！請升級核心到 %2$d 或是更高版本(：%1$d)
     </string>
-    <string name="umount_path_manager">卸載路徑管理</string>
-    <string name="umount_path_manager_summary">管理核心卸載路徑</string>
     <string name="umount_path_restart_notice">需要重新啟動系統才能套用。系統將會在下次啟動時套用新的配置</string>
     <string name="add_umount_path">新增卸載路徑</string>
     <string name="mount_path">掛載路徑</string>
@@ -415,186 +332,22 @@
     <string name="config_applied">已套用配置到核心</string>
     <string name="mnt_detach">MNT_DETACH</string>
     <string name="group_contains_apps">包含 %d 個應用程式</string>
-    <string name="settings_disable_sulog">超級使用者紀錄</string>
-    <string name="settings_disable_sulog_summary">記錄 KernelSU 超級使用者存取</string>
 
     <!-- SuperKey authentication -->
-    <string name="superkey_auth_title">超級密鑰認證</string>
-    <string name="superkey_auth_subtitle">輸入您的超級密鑰以認證為管理器</string>
-    <string name="superkey_input_hint">超級密鑰</string>
-    <string name="superkey_input_placeholder">請輸入超級密鑰</string>
-    <string name="superkey_authenticate">認證</string>
-    <string name="superkey_auth_failed">認證失敗</string>
     <string name="show_password">顯示密碼</string>
     <string name="hide_password">隱藏密碼</string>
-    <string name="superkey_optional_title">超級密鑰（選填）</string>
-    <string name="superkey_optional_desc">設定超級密鑰用於 APatch 風格的認證。留空則使用簽名認證。</string>
 
     <!-- SuperKey settings -->
-    <string name="settings_donot_store_superkey">不儲存超級密鑰</string>
-    <string name="settings_donot_store_superkey_summary">啟用後，管理器不會儲存您的超級密鑰。每次重新啟動後都需要手動輸入密鑰進行認證。</string>
-    <string name="clear_super_key">清除超級密鑰</string>
-    <string name="settings_clear_super_key_dialog">確定要清除已儲存的超級密鑰嗎？</string>
     <string name="signature_bypass_title">僅超級密鑰模式</string>
     <string name="signature_bypass_desc">停用 APK 簽名驗證。管理器將僅透過超級密鑰認證來識別。</string>
 
     <!-- Kasumi Configuration -->
-    <string name="kasumi_title">Kasumi 配置</string>
-    <string name="kasumi_settings_summary">模組掛載、Maps 偽裝、LKM、規則</string>
-    <string name="kasumi_tab_status">狀態</string>
-    <string name="kasumi_tab_settings">設定</string>
-    <string name="kasumi_tab_rules">規則</string>
-    <string name="kasumi_tab_logs">日誌</string>
-    <string name="kasumi_tab_lkm">內核模組</string>
-    <string name="kasumi_lkm_card_title">Kasumi 可載入內核模組</string>
-    <string name="kasumi_lkm_loading_card_title">載入方式</string>
-    <string name="kasumi_lkm_loading_desc">由 ksud 在 post-fs-data 階段根據目前內核 KMI 自動載入相符的 kasumi 內核模組 (.ko)，無需手動操作。</string>
-    <string name="kasumi_lkm_autoload_hint">開啟時開機載入 LKM，失敗時日誌寫入 /data/adb/hymo/lkm_autoload.log；關閉時開機略過載入。</string>
-    <string name="kasumi_lkm_autoload_enabled">已開啟開機載入 LKM</string>
-    <string name="kasumi_lkm_autoload_disabled">已關閉開機載入 LKM</string>
-    <string name="kasumi_lkm_autoload_failed">設定失敗</string>
-    <string name="kasumi_lkm_kernel_label">內核 (SYS)</string>
-    <string name="kasumi_lkm_kmi_label">uname 欺騙</string>
-    <string name="kasumi_lkm_kmi_override_desc">自動偵測失敗時手動指定 KMI 用於載入 LKM（如 6.6.30-android15）</string>
-    <string name="kasumi_lkm_kmi_set_success">KMI 覆寫已設定</string>
-    <string name="kasumi_lkm_kmi_cleared">KMI 覆寫已清除</string>
-    <string name="kasumi_lkm_kmi_failed">設定 KMI 覆寫失敗</string>
-    <string name="kasumi_lkm_load">載入 LKM</string>
-    <string name="kasumi_lkm_unload">卸載 LKM</string>
-    <string name="kasumi_lkm_load_success">LKM 已載入</string>
-    <string name="kasumi_lkm_load_failed">載入 LKM 失敗</string>
-    <string name="kasumi_lkm_unload_success">LKM 已卸載</string>
-    <string name="kasumi_lkm_unload_failed">卸載 LKM 失敗</string>
-    <string name="kasumi_lkm_hooks_title">目前 LKM Hooks</string>
-    <string name="kasumi_lkm_hooks_refresh">重新整理</string>
-    <string name="kasumi_lkm_hooks_empty">無 hooks（展開並重新整理以取得）</string>
-    <string name="kasumi_lkm_kmi_selection_title">KMI 選擇</string>
-    <string name="kasumi_lkm_kmi_selection_label">選擇 KMI</string>
-    <string name="kasumi_lkm_kmi_selection_placeholder">選擇 KMI（預設關閉）</string>
-    <string name="kasumi_lkm_kmi_selection_empty">無支援的 KMI</string>
-    <string name="kasumi_storage">儲存</string>
-    <string name="kasumi_modules_count">模組數</string>
-    <string name="kasumi_system_info">系統資訊</string>
-    <string name="kasumi_builtin_mount">內建掛載</string>
-    <string name="kasumi_builtin_mount_desc">使用內建的 hymo 掛載而非外部元模組。如果您想使用其他元模組，請停用此選項。</string>
-    <string name="kasumi_debug">偵錯日誌</string>
-    <string name="kasumi_debug_desc">輸出額外的 Hymo 偵錯資訊</string>
-    <string name="kasumi_verbose">詳細日誌</string>
-    <string name="kasumi_verbose_desc">啟用詳細的守護程序日誌</string>
-    <string name="kasumi_disable_umount">停用卸載</string>
-    <string name="kasumi_disable_umount_desc">程序隔離時不卸載檔案系統</string>
-    <string name="kasumi_kernel_debug">內核偵錯</string>
-    <string name="kasumi_kernel_debug_desc">啟用 Kasumi 內核偵錯日誌</string>
-    <string name="kasumi_stealth">隱身模式</string>
-    <string name="kasumi_stealth_desc">隱藏掛載痕跡並重新排序掛載 ID</string>
-    <string name="kasumi_hidexattr">隱藏延伸屬性</string>
-    <string name="kasumi_hidexattr_desc">啟用 mount_hide、maps_spoof、statfs_spoof、selinux_fix 和 stealth，隨 hidexattr 自動隱藏其他特徵</string>
-    <string name="kasumi_selinux_fix">SELinux 防護</string>
-    <string name="kasumi_selinux_fix_desc">攔截 app_zygote 對 SELinux 策略的探測（DirtySepolicy / Duck Detector）</string>
-    <string name="kasumi_enable_nuke">啟用 Nuke</string>
-    <string name="kasumi_enable_nuke_desc">允許清除 ext4 sysfs 條目</string>
-    <string name="kasumi_ignore_protocol">忽略通訊協定不符</string>
-    <string name="kasumi_ignore_protocol_desc">即使內核/使用者空間版本不符也繼續執行</string>
-    <string name="kasumi_moduledir">模組目錄</string>
-    <string name="kasumi_moduledir_desc">模組的基礎目錄（預設：/data/adb/modules）</string>
-    <string name="kasumi_tempdir">暫存掛載基點</string>
-    <string name="kasumi_tempdir_desc">暫存掛載的基礎路徑（留空則自動選擇）</string>
-    <string name="kasumi_mountsource">OverlayFS 掛載來源名稱</string>
-    <string name="kasumi_mountsource_desc">overlayfs 掛載來源名稱（預設：KSU）</string>
-    <string name="kasumi_logs_copy">複製</string>
-    <string name="kasumi_logs_copy_success">日誌已複製到剪貼簿</string>
-    <string name="kasumi_logs_filter">篩選</string>
-    <string name="kasumi_logs_filter_all">全部</string>
-    <string name="kasumi_logs_filter_verbose">詳細</string>
-    <string name="kasumi_logs_filter_debug">偵錯</string>
-    <string name="kasumi_logs_filter_info">資訊</string>
-    <string name="kasumi_logs_filter_warn">警告</string>
-    <string name="kasumi_logs_filter_error">錯誤</string>
-    <string name="kasumi_partitions">活躍分割區</string>
-    <string name="kasumi_partitions_desc">需要掃描模組修改的分割區（逗號分隔）</string>
-    <string name="kasumi_partitions_scan">掃描分割區</string>
-    <string name="kasumi_partitions_add">新增分割區</string>
-    <string name="kasumi_partitions_placeholder">輸入分割區名稱（例如：mi_ext, my_stock）</string>
-    <string name="kasumi_general">一般</string>
-    <string name="kasumi_advanced">進階</string>
-    <string name="kasumi_fix_mounts">修復掛載 ID</string>
-    <string name="kasumi_rules_clear_all">清空規則</string>
-    <string name="kasumi_rules_clear_confirm">確定要清除所有作用中的 Kasumi 規則嗎？此操作將立即生效。</string>
-    <string name="kasumi_rules_clear">清除</string>
-    <string name="kasumi_rules_cancel">取消</string>
-    <string name="kasumi_rules_not_available">Kasumi 內核不可用。規則頁面需要 Kasumi 內核支援。</string>
-    <string name="kasumi_rules_refresh">重新整理</string>
-    <string name="kasumi_rules_count">%d 條作用中規則</string>
-    <string name="kasumi_rules_empty">沒有作用中規則</string>
-    <string name="kasumi_rule_mount_hide">從 /proc/mounts 隱藏 overlay 掛載</string>
-    <string name="kasumi_rule_maps_spoof">偽裝 /proc/pid/maps 的 ino/dev/pathname</string>
-    <string name="kasumi_rule_statfs_spoof">偽裝 statfs f_type 以繞過偵測</string>
-    <string name="kasumi_rule_stealth">隱身模式：隱藏掛載痕跡、重排 mnt_id</string>
-    <string name="kasumi_logs_daemon">守護程序日誌</string>
-    <string name="kasumi_logs_kernel">內核日誌</string>
-    <string name="kasumi_kernel_title">Kasumi 內核</string>
-    <string name="kasumi_version_label">版本：%s</string>
-    <string name="kasumi_stats_kasumi">Kasumi</string>
-    <string name="kasumi_info_kernel">內核</string>
-    <string name="kasumi_info_selinux">SELinux</string>
-    <string name="kasumi_info_mount_base">掛載基點</string>
-    <string name="kasumi_info_active_mounts">作用中掛載：</string>
-    <string name="kasumi_info_more_mounts">……還有 %d 個</string>
-    <string name="kasumi_mismatch_default">偵測到通訊協定不符。請更新內核或模組。</string>
-    <string name="kasumi_enable_title">啟用 Kasumi</string>
-    <string name="kasumi_enable_desc">控制開機時是否啟用 Kasumi（重新啟動守護程序後生效）</string>
     <!-- Kasumi uname spoofing -->
-    <string name="kasumi_uname_title">內核版本偽裝</string>
-    <string name="kasumi_uname_release">uname -r 覆寫值</string>
-    <string name="kasumi_uname_release_desc">選填。設定後，Kasumi 會將此值偽裝為內核版本號</string>
-    <string name="kasumi_uname_version">uname -v 覆寫值</string>
-    <string name="kasumi_uname_version_desc">選填。設定後，Kasumi 會將此值偽裝為內核版本字串</string>
-    <string name="kasumi_uname_use_current">使用目前內核資訊</string>
-    <string name="kasumi_uname_mode">偽裝模式</string>
-    <string name="kasumi_uname_mode_scoped">作用域</string>
-    <string name="kasumi_uname_mode_global">全域</string>
-    <string name="kasumi_uname_mode_scoped_desc">依程序：僅 hymo 隱藏的 UID 看到偽造值（安全預設）</string>
-    <string name="kasumi_uname_mode_global_desc">系統級：改寫 init_uts_ns，所有工作均看到偽造值</string>
-    <string name="kasumi_uname_restore">還原原始（全域）</string>
-    <string name="kasumi_uname_restored">已還原原始內核 uname</string>
-    <string name="kasumi_uname_restore_failed">還原失敗（需要已有全域套用）</string>
-    <string name="kasumi_fs_type_title">儲存檔案系統</string>
-    <string name="kasumi_fs_type_auto">自動（由 hymo 自行選擇）</string>
-    <string name="kasumi_fs_type_ext4">EXT4 映像檔</string>
-    <string name="kasumi_fs_type_erofs">EROFS 映像檔</string>
-    <string name="kasumi_fs_type_tmpfs">Tmpfs 分割區（記憶體）</string>
-    <string name="kasumi_mirror_path">掛載基點 / 鏡像路徑</string>
-    <string name="kasumi_mirror_path_desc">自動：Kasumi 開啟時用 /dev/kasumi_mirror，關閉時用 /data/adb/hymo/img_mnt。也可選擇預設或自訂路徑（覆寫自動）。</string>
-    <string name="kasumi_mirror_preset_auto">自動</string>
-    <string name="kasumi_mirror_preset_img_mnt">/data/adb/hymo/img_mnt</string>
-    <string name="kasumi_mirror_preset_debug_ramdisk">/debug_ramdisk</string>
-    <string name="kasumi_mirror_preset_dev_mirror">/dev/kasumi_mirror</string>
-    <string name="kasumi_mirror_preset_custom">自訂</string>
     <!-- Kasumi user hide rules -->
-    <string name="kasumi_user_hide_title">自訂隱藏規則</string>
-    <string name="kasumi_user_hide_empty">目前沒有自訂隱藏規則。新增要從所有模組中隱藏的絕對路徑。</string>
-    <string name="kasumi_user_hide_placeholder">/要隱藏的絕對路徑</string>
-    <string name="kasumi_user_hide_add">新增</string>
-    <string name="kasumi_user_hide_add_failed">新增隱藏規則失敗</string>
-    <string name="kasumi_user_hide_remove_failed">刪除隱藏規則失敗</string>
 
     <!-- Kasumi per-module rules -->
-    <string name="kasumi_module_rules_title">此模組的自訂規則</string>
-    <string name="kasumi_module_rules_placeholder">/system 或 /vendor 下的路徑</string>
-    <string name="kasumi_mount_config">掛載配置</string>
-    <string name="kasumi_mount_mode">掛載方式</string>
-    <string name="kasumi_mount_mode_auto">自動</string>
-    <string name="kasumi_mount_mode_kasumi">Kasumi</string>
-    <string name="kasumi_mount_mode_overlay">Overlay</string>
-    <string name="kasumi_mount_mode_magic">Magic</string>
-    <string name="kasumi_mount_mode_none">無</string>
-    <string name="kasumi_strategy_magic_mount">Magic Mount</string>
-    <string name="kasumi_strategy_not_mounted">未掛載</string>
-    <string name="kasumi_module_rules_add">新增</string>
-    <string name="kasumi_module_rules_add_failed">新增模組規則失敗</string>
 
     <!-- Partition Manager -->
-    <string name="partition_manager">分割區管理器</string>
     <string name="partition_slot_info">插槽資訊</string>
     <string name="partition_device_type">裝置類型</string>
     <string name="partition_current_slot">目前插槽</string>
@@ -657,8 +410,6 @@
     <string name="partition_back">返回</string>
 
     <!-- Advanced Tools -->
-    <string name="install_advanced_tools">進階工具</string>
-    <string name="partition_manager_desc">備份/還原分割區、管理插槽</string>
 
     <!-- ksud daemon version / update -->
     <string name="home_ksud_daemon_title">ksud 守護程序</string>
@@ -677,6 +428,4 @@
     <string name="su_request_allow_once">僅允許一次</string>
     <string name="su_request_deny">拒絕</string>
     <string name="su_request_deny_hide">拒絕並隱藏</string>
-    <string name="magisk_compat_title">Magisk 風格 su 彈窗</string>
-    <string name="magisk_compat_summary">向應用程式顯示可見的 su，並在首次使用時彈窗請求授權，而不是對不在白名單中的應用程式靜默拒絕。</string>
 </resources>
