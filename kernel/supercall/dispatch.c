@@ -33,7 +33,7 @@
 #include "feature/zygote_ctl.h"
 #include "feature/zygote_nl.h"
 #include "feature/zygote_probe.h"
-#include "uapi/tamisu.h"
+#include "uapi/yukizygisk.h"
 #include "hook/syscall_hook_manager.h"
 #include "hook/tp_marker.h"
 
@@ -338,14 +338,14 @@ static int do_get_uapi_version(void __user *arg)
 	return 0;
 }
 
-static int do_tamisu_handoff(void __user *arg)
+static int do_yz_handoff(void __user *arg)
 {
 	return ksu_zygote_ctl_handoff(arg);
 }
 
-static int do_tamisu_set_dlopen(void __user *arg)
+static int do_yz_set_dlopen(void __user *arg)
 {
-	struct tamisu_dlopen_cmd cmd;
+	struct yz_dlopen_cmd cmd;
 
 	if (copy_from_user(&cmd, arg, sizeof(cmd)))
 		return -EFAULT;
@@ -353,16 +353,16 @@ static int do_tamisu_set_dlopen(void __user *arg)
 	return 0;
 }
 
-static int do_tamisu_reload(void __user *arg)
+static int do_yz_reload(void __user *arg)
 {
 	(void)arg;
 	ksu_zygote_nl_emit_reload();
 	return 0;
 }
 
-static int do_tamisu_set_yukilinker(void __user *arg)
+static int do_yz_set_yukilinker(void __user *arg)
 {
-	struct tamisu_yukilinker_cmd cmd;
+	struct yz_yukilinker_cmd cmd;
 
 	if (copy_from_user(&cmd, arg, sizeof(cmd)))
 		return -EFAULT;
@@ -370,10 +370,10 @@ static int do_tamisu_set_yukilinker(void __user *arg)
 	return 0;
 }
 
-struct tamisu_unmap_tw {
+struct yz_unmap_tw {
 	struct callback_head cb;
-	unsigned long addr[TAMISU_MAX_UNMAP_SEGS];
-	unsigned long size[TAMISU_MAX_UNMAP_SEGS];
+	unsigned long addr[YZ_MAX_UNMAP_SEGS];
+	unsigned long size[YZ_MAX_UNMAP_SEGS];
 	unsigned int n;
 	unsigned int retry;
 };
@@ -383,32 +383,32 @@ struct tamisu_unmap_tw {
  * about to resume with its PC still inside a segment we're dropping, it hasn't
  * left core yet (e.g. mid-return through self_destruct). munmap'ing under its
  * PC would SIGSEGV/boot-loop, so re-queue until the PC is in JVM/app code. */
-static void tamisu_unmap_tw_func(struct callback_head *cb)
+static void yz_unmap_tw_func(struct callback_head *cb)
 {
-	struct tamisu_unmap_tw *tw =
-	    container_of(cb, struct tamisu_unmap_tw, cb);
+	struct yz_unmap_tw *tw = container_of(cb, struct yz_unmap_tw, cb);
 	struct pt_regs *regs = task_pt_regs(current);
 	unsigned long pc = regs ? instruction_pointer(regs) : 0;
 	unsigned int i;
 
 	for (i = 0; i < tw->n; i++) {
 		if (pc >= tw->addr[i] && pc < tw->addr[i] + tw->size[i]) {
-		if (++tw->retry < 16) {
-			init_task_work(&tw->cb, tamisu_unmap_tw_func);
-			if (!task_work_add(current, &tw->cb,
-					   TWA_RESUME))
-				return; /* re-queued; keep tw */
+			if (++tw->retry < 16) {
+				init_task_work(&tw->cb, yz_unmap_tw_func);
+				if (!task_work_add(current, &tw->cb,
+						   TWA_RESUME))
+					return; /* re-queued; keep tw */
+			}
+			pr_warn("yz_unmap: pc=0x%lx still in core after %u "
+				"tries, skip pid=%d\n",
+				pc, tw->retry, current->pid);
+			kfree(tw);
+			return;
 		}
-		pr_warn("tamisu_unmap: pc=0x%lx still in core after %u "
-			"tries, skip pid=%d\n",
-			pc, tw->retry, current->pid);
-		kfree(tw);
-		return;
 	}
 
 	for (i = 0; i < tw->n; i++) {
-		pr_info("tamisu_unmap: munmap [0x%lx +0x%lx] pid=%d\n",
-			tw->addr[i], tw->size[i], current->pid);
+		pr_info("yz_unmap: munmap [0x%lx +0x%lx] pid=%d\n", tw->addr[i],
+			tw->size[i], current->pid);
 		vm_munmap(tw->addr[i], tw->size[i]);
 	}
 	kfree(tw);
@@ -416,16 +416,16 @@ static void tamisu_unmap_tw_func(struct callback_head *cb)
 
 /* zygiskd (root) -> kernel: schedule vm_munmap of the reported core segments on
  * TARGET pid (denylist_mode==1, after core unhooked itself). */
-static int do_tamisu_unmap_pid(void __user *arg)
+static int do_yz_unmap_pid(void __user *arg)
 {
-	struct tamisu_unmap_pid_cmd cmd;
+	struct yz_unmap_pid_cmd cmd;
 	struct task_struct *task;
-	struct tamisu_unmap_tw *tw;
+	struct yz_unmap_tw *tw;
 	unsigned int i;
 
 	if (copy_from_user(&cmd, arg, sizeof(cmd)))
 		return -EFAULT;
-	if (cmd.n_segs == 0 || cmd.n_segs > TAMISU_MAX_UNMAP_SEGS)
+	if (cmd.n_segs == 0 || cmd.n_segs > YZ_MAX_UNMAP_SEGS)
 		return -EINVAL;
 
 	rcu_read_lock();
@@ -435,8 +435,8 @@ static int do_tamisu_unmap_pid(void __user *arg)
 		return -ESRCH;
 
 	if (!is_appuid(task_uid(task).val)) {
-		pr_info("tamisu_unmap_pid: reject non-app pid=%u uid=%u\n",
-			cmd.pid, task_uid(task).val);
+		pr_info("yz_unmap_pid: reject non-app pid=%u uid=%u\n", cmd.pid,
+			task_uid(task).val);
 		put_task_struct(task);
 		return -EPERM;
 	}
@@ -446,7 +446,7 @@ static int do_tamisu_unmap_pid(void __user *arg)
 		put_task_struct(task);
 		return -ENOMEM;
 	}
-	init_task_work(&tw->cb, tamisu_unmap_tw_func);
+	init_task_work(&tw->cb, yz_unmap_tw_func);
 	tw->n = cmd.n_segs;
 	for (i = 0; i < cmd.n_segs; i++) {
 		tw->addr[i] = (unsigned long)cmd.addr[i];
@@ -458,27 +458,26 @@ static int do_tamisu_unmap_pid(void __user *arg)
 		return -ESRCH;
 	}
 	put_task_struct(task);
-	pr_info("tamisu_unmap_pid: scheduled %u seg(s) for pid=%u\n",
-		cmd.n_segs, cmd.pid);
+	pr_info("yz_unmap_pid: scheduled %u seg(s) for pid=%u\n", cmd.n_segs,
+		cmd.pid);
 	return 0;
 }
 
 /* core (app) -> kernel, DIRECT: unmap-self for denylist_mode==1. See
- * KSU_IOCTL_TAMISU_UNMAP_SELF in uapi/tamisu.h. Reuses tamisu_unmap_tw_func
- * (PC guard + retry + munmap); the caller IS the target, so it arms on current.
- * On failure core falls back to its spoof path, so returning an error is safe.
- */
-static int do_tamisu_unmap_self(void __user *arg)
+ * KSU_IOCTL_YZ_UNMAP_SELF in uapi/yukizygisk.h. Reuses yz_unmap_tw_func (PC
+ * guard + retry + munmap); the caller IS the target, so it arms on current. On
+ * failure core falls back to its spoof path, so returning an error is safe. */
+static int do_yz_unmap_self(void __user *arg)
 {
-	struct tamisu_unmap_self_cmd cmd;
-	struct tamisu_unmap_tw *tw;
+	struct yz_unmap_self_cmd cmd;
+	struct yz_unmap_tw *tw;
 	unsigned int i;
 
 	if (!current->mm)
 		return -EINVAL;
 	if (copy_from_user(&cmd, arg, sizeof(cmd)))
 		return -EFAULT;
-	if (cmd.n_segs == 0 || cmd.n_segs > TAMISU_MAX_UNMAP_SEGS)
+	if (cmd.n_segs == 0 || cmd.n_segs > YZ_MAX_UNMAP_SEGS)
 		return -EINVAL;
 	/* every segment must be a non-empty userspace range (defense in depth;
 	 * an app can munmap its own memory anyway -- this rejects garbage). */
@@ -488,9 +487,9 @@ static int do_tamisu_unmap_self(void __user *arg)
 
 		if (a == 0 || s == 0 || a >= TASK_SIZE || s > TASK_SIZE ||
 		    a + s < a || a + s > TASK_SIZE) {
-			pr_warn("tamisu_unmap_self: bad seg [0x%lx +0x%lx] "
-				"pid=%d\n",
-				a, s, current->pid);
+			pr_warn(
+			    "yz_unmap_self: bad seg [0x%lx +0x%lx] pid=%d\n", a,
+			    s, current->pid);
 			return -EINVAL;
 		}
 	}
@@ -498,7 +497,7 @@ static int do_tamisu_unmap_self(void __user *arg)
 	tw = kzalloc(sizeof(*tw), GFP_KERNEL);
 	if (!tw)
 		return -ENOMEM;
-	init_task_work(&tw->cb, tamisu_unmap_tw_func);
+	init_task_work(&tw->cb, yz_unmap_tw_func);
 	tw->n = cmd.n_segs;
 	for (i = 0; i < cmd.n_segs; i++) {
 		tw->addr[i] = (unsigned long)cmd.addr[i];
@@ -508,30 +507,30 @@ static int do_tamisu_unmap_self(void __user *arg)
 		kfree(tw);
 		return -ESRCH;
 	}
-	pr_info("tamisu_unmap_self: pid=%d armed %u seg(s)\n", current->pid,
+	pr_info("yz_unmap_self: pid=%d armed %u seg(s)\n", current->pid,
 		cmd.n_segs);
 	return 0;
 }
 
 /* zygiskd (root) -> kernel: write cmd.len bytes at cmd.addr in TARGET pid's mm
- * via access_process_vm(FOLL_FORCE|FOLL_WRITE). See
- * KSU_IOCTL_TAMISU_PATCH_TEXT in uapi/tamisu.h. FOLL_FORCE COWs the
- * read-only, file-backed code page and writes through it WITHOUT mprotect, so
- * the executable mapping is not split (the specialize inline-hook needs this;
- * an mprotect patch fragments the VMA, which detectors flag).
- * copy_to_user_page on the write path flushes the I-cache for the exec range.
- * zygiskd pins the target to the SO_PEERCRED caller, so this only writes the
- * caller's own memory -- no cross-process power.
+ * via access_process_vm(FOLL_FORCE|FOLL_WRITE). See KSU_IOCTL_YZ_PATCH_TEXT
+ * in uapi/yukizygisk.h. FOLL_FORCE COWs the read-only, file-backed code page
+ * and writes through it WITHOUT mprotect, so the executable mapping is not
+ * split (the specialize inline-hook needs this; an mprotect patch fragments
+ * the VMA, which detectors flag). copy_to_user_page on the write path flushes
+ * the I-cache for the exec range. zygiskd pins the target to the SO_PEERCRED
+ * caller, so this only writes the caller's own memory -- no cross-process
+ * power.
  */
-static int do_tamisu_patch_text(void __user *arg)
+static int do_yz_patch_text(void __user *arg)
 {
-	struct tamisu_patch_text_cmd cmd;
+	struct yz_patch_text_cmd cmd;
 	struct task_struct *task;
 	int n;
 
 	if (copy_from_user(&cmd, arg, sizeof(cmd)))
 		return -EFAULT;
-	if (cmd.len == 0 || cmd.len > TAMISU_PATCH_TEXT_MAX)
+	if (cmd.len == 0 || cmd.len > YZ_PATCH_TEXT_MAX)
 		return -EINVAL;
 	if (cmd.addr == 0 || cmd.addr >= TASK_SIZE ||
 	    cmd.addr + cmd.len < cmd.addr || cmd.addr + cmd.len > TASK_SIZE)
@@ -548,7 +547,7 @@ static int do_tamisu_patch_text(void __user *arg)
 	 * mm only (zygiskd resolves it via SO_PEERCRED), granting no
 	 * cross-process power; the uid gate just keeps system daemons out. */
 	if (!is_appuid(task_uid(task).val) && task_uid(task).val != 0) {
-		pr_info("tamisu_patch_text: reject pid=%u uid=%u\n", cmd.pid,
+		pr_info("yz_patch_text: reject pid=%u uid=%u\n", cmd.pid,
 			task_uid(task).val);
 		put_task_struct(task);
 		return -EPERM;
@@ -558,12 +557,12 @@ static int do_tamisu_patch_text(void __user *arg)
 			      FOLL_FORCE | FOLL_WRITE);
 	put_task_struct(task);
 	if (n != (int)cmd.len) {
-		pr_warn("tamisu_patch_text: wrote %d/%u @0x%llx pid=%u\n", n,
+		pr_warn("yz_patch_text: wrote %d/%u @0x%llx pid=%u\n", n,
 			cmd.len, cmd.addr, cmd.pid);
 		return -EFAULT;
 	}
-	pr_info("tamisu_patch_text: %u byte(s) @0x%llx pid=%u\n", cmd.len,
-		cmd.addr, cmd.pid);
+	pr_info("yz_patch_text: %u byte(s) @0x%llx pid=%u\n", cmd.len, cmd.addr,
+		cmd.pid);
 	return 0;
 }
 
@@ -617,33 +616,33 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
      .name = "GET_HOOK_TYPE",
      .handler = do_get_hook_type,
      .perm_check = manager_or_root},
-    {.cmd = KSU_IOCTL_TAMISU_HANDOFF,
-     .name = "TAMISU_HANDOFF",
-     .handler = do_tamisu_handoff,
+    {.cmd = KSU_IOCTL_YZ_HANDOFF,
+     .name = "YZ_HANDOFF",
+     .handler = do_yz_handoff,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_TAMISU_SET_DLOPEN,
-     .name = "TAMISU_SET_DLOPEN",
-     .handler = do_tamisu_set_dlopen,
+    {.cmd = KSU_IOCTL_YZ_SET_DLOPEN,
+     .name = "YZ_SET_DLOPEN",
+     .handler = do_yz_set_dlopen,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_TAMISU_SET_YUKILINKER,
-     .name = "TAMISU_SET_YUKILINKER",
-     .handler = do_tamisu_set_yukilinker,
+    {.cmd = KSU_IOCTL_YZ_SET_YUKILINKER,
+     .name = "YZ_SET_YUKILINKER",
+     .handler = do_yz_set_yukilinker,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_TAMISU_UNMAP_PID,
-     .name = "TAMISU_UNMAP_PID",
-     .handler = do_tamisu_unmap_pid,
+    {.cmd = KSU_IOCTL_YZ_UNMAP_PID,
+     .name = "YZ_UNMAP_PID",
+     .handler = do_yz_unmap_pid,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_TAMISU_UNMAP_SELF,
-     .name = "TAMISU_UNMAP_SELF",
-     .handler = do_tamisu_unmap_self,
+    {.cmd = KSU_IOCTL_YZ_UNMAP_SELF,
+     .name = "YZ_UNMAP_SELF",
+     .handler = do_yz_unmap_self,
      .perm_check = injected_app},
-    {.cmd = KSU_IOCTL_TAMISU_PATCH_TEXT,
-     .name = "TAMISU_PATCH_TEXT",
-     .handler = do_tamisu_patch_text,
+    {.cmd = KSU_IOCTL_YZ_PATCH_TEXT,
+     .name = "YZ_PATCH_TEXT",
+     .handler = do_yz_patch_text,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_TAMISU_RELOAD,
-     .name = "TAMISU_RELOAD",
-     .handler = do_tamisu_reload,
+    {.cmd = KSU_IOCTL_YZ_RELOAD,
+     .name = "YZ_RELOAD",
+     .handler = do_yz_reload,
      .perm_check = manager_or_root},
     {.cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL} // Sentinel
 };

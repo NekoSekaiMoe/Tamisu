@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Tamisu - kernel-side orchestrator: per-app process lifecycle state
+ * YukiZygisk - kernel-side orchestrator: per-app process lifecycle state
  * machine.
  *
  * Author: Anatdx
