@@ -61,4 +61,8 @@ int set_init_pgrp();
 bool uid_granted_root(uint32_t uid);
 bool uid_should_umount(uint32_t uid);
 
+// Tamisu has no manager-app concept (zygisk-only build). Returns 0 so the
+// zygiskd GetStatus SO_PEERCRED gate trusts root as the legitimate caller.
+int get_manager_uid();
+
 }  // namespace ksud

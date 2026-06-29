@@ -641,7 +641,7 @@ void handle_client(int client) {
     struct ucred cr{};
     socklen_t crlen = sizeof(cr);
     int mgr = ksud::get_manager_uid();
-    if (mgr > 0 &&
+    if (mgr >= 0 &&
         getsockopt(client, SOL_SOCKET, SO_PEERCRED, &cr, &crlen) == 0 &&
         static_cast<int>(cr.uid) == mgr) {
       js = build_status_json();
