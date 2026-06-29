@@ -152,7 +152,7 @@ int run(bool post_magica, bool allow_shell) {
 
     clear_all_temp_configs();
 
-    if (install(std::nullopt, std::nullopt) != 0) {
+    if (install(std::nullopt) != 0) {
         LOGE("late-load: install() failed");
         result = 1;
         goto finalize;
