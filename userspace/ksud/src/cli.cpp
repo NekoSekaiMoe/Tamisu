@@ -131,16 +131,16 @@ bool CliParser::has_option(const std::string& name) const {
 namespace {
 
 void print_usage() {
-    printf("YukiSU userspace daemon (zygisk-only)\n\n");
+    printf("Tamisu userspace daemon (zygisk-only)\n\n");
     printf("USAGE: ksud <COMMAND>\n\n");
     printf("COMMANDS:\n");
     printf("  insmod         Load a kernel module with kallsyms access\n");
-    printf("  late-load      Load kernelsu.ko and execute late-load stage scripts\n");
+    printf("  late-load      Load tamisu.ko and execute late-load stage scripts\n");
     printf("  post-fs-data   Trigger post-fs-data event\n");
     printf("  services       Trigger service event\n");
     printf("  boot-completed Trigger boot-complete event\n");
-    printf("  install        Install KernelSU userspace\n");
-    printf("  uninstall      Uninstall KernelSU\n");
+    printf("  install        Install Tamisu userspace\n");
+    printf("  uninstall      Uninstall Tamisu\n");
     printf("  sepolicy       SELinux policy patch tool\n");
     printf("  feature        Manage kernel features\n");
     printf("  initrc         Manage init.rc injection\n");
