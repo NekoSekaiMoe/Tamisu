@@ -113,6 +113,33 @@ struct yz_patch_text_cmd {
   __u8 bytes[YZ_PATCH_TEXT_MAX]; /* the patch bytes */
 };
 
+#define KSU_IOCTL_YZ_SET_NATIVE_TARGETS _IOC(_IOC_WRITE, 'T', 58, 0)
+
+#define YZ_NATIVE_TARGET_MAX 64
+#define YZ_NATIVE_TARGET_VALUE_MAX 256
+
+enum yz_native_target_type {
+  YZ_NATIVE_TARGET_NAME = 1,
+  YZ_NATIVE_TARGET_PATH = 2,
+};
+
+struct yz_native_target {
+  __u8 type; /* enum yz_native_target_type */
+  __u8 reserved[3];
+  char value[YZ_NATIVE_TARGET_VALUE_MAX];
+};
+
+struct yz_native_targets_cmd {
+  __u32 count;
+  struct yz_native_target targets[YZ_NATIVE_TARGET_MAX];
+};
+
+#define KSU_IOCTL_YZ_RESTORE_NATIVE_LOAD_POLICY _IOC(_IOC_WRITE, 'T', 59, 0)
+
+struct yz_native_load_policy_cmd {
+  __u32 pid; /* native process that finished its core/module load window */
+};
+
 /* ---- runtime config ---- */
 
 /* Mirrors /data/adb/ksu/yukizygisk/yzconfig.json. zygiskd parses the JSON and
