@@ -64,6 +64,11 @@ struct yz_dlopen_cmd {
  */
 #define KSU_IOCTL_YZ_RELOAD _IOC(_IOC_WRITE, 'T', 52, 0)
 
+/* zygiskd -> kernel: set the yukilinker first-stage toggle (from yzconfig). On:
+ * the AT_ENTRY stub dlopens libyukilinker (which anonymously loads the core);
+ * off: the stub dlopens the core directly. Default is on. Read at injection
+ * time, so a change applies to the next zygote (module load mode still
+ * hot-reloads). */
 #define KSU_IOCTL_YZ_SET_YUKILINKER _IOC(_IOC_WRITE, 'T', 53, 0)
 
 struct yz_yukilinker_cmd {
