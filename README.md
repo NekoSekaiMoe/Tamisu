@@ -9,6 +9,122 @@ Tamisu is a kernel-level Zygote implementation based on the KernelSU architectur
 ## Features
 WIP
 
+## Injection architecture & detection surface
+
+This section documents *what Tamisu actually does* at injection time, so
+users and downstream forks don't read more into the design than the code
+delivers.
+
+### Two-stage loader, two linkers
+
+Zygote injection is two stages, and **each stage uses a different
+linker**:
+
+1. **First stage** — the kernel (`kernel/feature/zygote_probe.c`)
+   rewrites the zygote's `AT_ENTRY` to a small handwritten AArch64 stub.
+   That stub calls the **target process's own system linker** —
+   `android_dlopen_ext` / `dlsym` resolved inside `/system/bin/linker64`
+   (offsets shipped by `zygiskd` via `send_dlopen_offset`). The system
+   linker brings in either `libyukilinker.so` (default) or, if
+   yukilinker is disabled, `libzygisk.so` directly.
+
+2. **Second stage** — `libyukilinker.so` is a custom in-process ELF
+   loader (`userspace/zygisk/core/src/yukilinker.cpp`). From here on,
+   `libzygisk.so` (the core) and every zygisk module are loaded by
+   yukilinker from memfd, without going through bionic's linker.
+
+So the phrase "custom linker" applies to the **second stage only**.
+There is no way around using the system linker for the very first call —
+that's inherent to this kind of loader, and ZygiskNext / ReZygisk make
+the same trade-off.
+
+#### Why the first stage can't be a "custom linker" too
+
+This is a frequent source of confusion (and a frequent angle of attack
+on Tamisu's marketing), so it's worth making the constraint
+falsifiable. The argument is a pure size argument:
+
+1. **The injection stub is one page.** The kernel stages the first
+   stage as a single-page RWX mapping in the target
+   (`kernel/feature/zygote_probe.c:831`, `vm_mmap(..., PAGE_SIZE,
+   PROT_READ | PROT_WRITE | PROT_EXEC, ...)`). On arm64 `PAGE_SIZE` is
+   4096.
+2. **The actual stub body is 208 bytes.** The ARM64 template is a
+   `static const u32 tmpl[]` of 52 instructions
+   (`kernel/feature/zygote_probe.c:763-775`); its job is purely to
+   patch together a call to the already-loaded system linker's
+   `android_dlopen_ext` + `dlsym` and jump in.
+3. **Any in-process ELF loader is orders of magnitude larger.**
+   `yukilinker.cpp` — which is what Tamisu uses for the *second* stage
+   — is 1099 lines of C++ (relocations across `R_AARCH64_ABS64` /
+   `GLOB_DAT` / `JUMP_SLOT` / `RELATIVE` / `TLS_*` / `TLSDESC`, GNU_RELRO,
+   DT_RELR packed relocations, memfd file-backed and anonymous paths;
+   see `userspace/zygisk/core/src/yukilinker.cpp`). It compiles to its
+   own `.so` (`userspace/zygisk/core/CMakeLists.txt:108`,
+   `add_library(yukilinker SHARED src/yukilinker.cpp)`). Even with
+   `-Os --gc-sections --strip-all` this cannot fit in 4096 bytes, let
+   alone 208.
+4. **bionic exports no "anonymous" or "lightweight" dlopen.** Every
+   loader entry point bionic exposes (`__loader_android_dlopen_ext`,
+   `__loader_dlopen`, `__loader_dlsym`, ...) is a thin shim over the
+   same `linker.cpp` implementation and the same soinfo list. Concretely:
+   `dlopen_ext()` in
+   [bionic/linker/dlfcn.cpp:137-149](https://cnb.cool/aosp/source/platform/bionic/-/git/raw/main/linker/dlfcn.cpp)
+   is a 13-line wrapper whose only job is to take `g_dl_mutex` and call
+   `do_dlopen()`; every `__loader_*` export in the
+   [`extern "C"` block at dlfcn.cpp:49-99](https://cnb.cool/aosp/source/platform/bionic/-/git/raw/main/linker/dlfcn.cpp)
+   routes through it. `do_dlopen()` itself bottoms out in
+   `find_library_internal()` at
+   [bionic/linker/linker.cpp:1455](https://cnb.cool/aosp/source/platform/bionic/-/git/raw/main/linker/linker.cpp),
+   which is the single soinfo-list path every dlopen shares. There is
+   no second, hidden ELF loader inside bionic to call.
+
+Therefore the stub has exactly one viable way to pull in any `.so`:
+call the system linker the target process is already running under.
+The "custom linker" can only take over **after** that first call
+returns. This is a property of the Android process model —
+`execve`→`PT_INTERP`→`ld.so` is the only way a process begins, as
+defined by
+[fs/binfmt_elf.c in the kernel](https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/fs/binfmt_elf.c)
+(`load_elf_binary()` honors `PT_INTERP` unconditionally) — not a
+Tamisu shortcut.
+
+### What the "anonymous loading" toggle actually does
+
+The yukilinker toggle in the manager (`yukizygisk_anon_loading_*`)
+controls second-stage loading. When on:
+
+- modules are `mmap`'d from a memfd into anonymous pages by yukilinker
+  (`dlopen_memfd` with `file_backed=true`);
+- after specialize, `solist` anonymizes the injected segments
+  (`spoof_virtual_maps`) and relabels bare anonymous exec pages as
+  `dalvik-jit-code-cache` (`name_anonymous_exec`).
+
+It does **not** mean "no module fd ever exists" or "never touches
+`/data/adb/modules`" — the zygiskd daemon still `open()`s module files
+under `/data/adb/modules` to ship them over a Unix socket as memfds.
+
+### Residual detection surface
+
+Be aware these traces remain by design:
+
+- **`AT_ENTRY` is rewritten** to point at the injected stub. Any app
+  that validates auxv will see a mismatched entry point.
+- **A short-lived RWX stub page** is staged in the target.
+- **The system linker's `android_dlopen_ext` is invoked once** for the
+  first stage — `dl_iterate_phdr` and soinfo inspection can observe the
+  loader/core soinfo during that window.
+- **Kernel side**: one `sys_ni_syscall` slot is occupied by the TSR
+  dispatcher; `sched_process_fork` / `sched_process_free` tracepoints
+  track zygote-derived processes; `__NR_execve` is hooked during boot
+  (gated by a static key, disabled once `init`'s second stage has run)
+  for ksud bootstrap; persistent zygote re-detection happens purely via
+  the LSM `bprm_committed_creds` hook, not the syscall path.
+
+Tamisu does not claim to be undetectable; the goal is "good enough
+against ordinary app-side checks without burning more kernel surface
+than necessary".
+
 ## Install
 WIP
 

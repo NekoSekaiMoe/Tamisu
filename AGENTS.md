@@ -157,6 +157,19 @@ CONFIG_TAMISU=m CC=clang make -j$(nproc)
 - **Default branch is `edge`** on `NekoSekaiMoe/Tamisu` (not `main` /
   `dev`). PRs target `edge`. Old `dev`/`main` references in tooling are
   stale.
+- **Injection = two-stage, two-linker.** The first stage is brought in
+  by the target's own system linker (`android_dlopen_ext`, offsets
+  shipped by `zygiskd:send_dlopen_offset`); only the second stage and
+  module loading go through yukilinker. So "custom linker" applies to
+  stage 2 only — do not advertise "fully custom linker / no system
+  dlopen" anywhere in the repo (README, manager strings, commit
+  messages). Residual detection surface (rewritten `AT_ENTRY`, the RWX
+  stub page, the one-shot system-linker call, the TSR ni_syscall slot,
+  the sched_process_fork tracepoint, the boot-time-only `__NR_execve`
+  hook (gated by `ksud_execve_key`, disabled after init second_stage))
+  is documented in the "Injection architecture & detection surface"
+  section of README.md — keep that section in sync if you change the
+  injection path.
 
 ## Testing
 

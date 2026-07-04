@@ -417,7 +417,7 @@
     <string name="yukizygisk_native_target_line">%1$s · %2$s · pid %3$d</string>
     <string name="yukizygisk_module_loading">模块加载</string>
     <string name="yukizygisk_anon_loading_title">匿名加载（yukilinker）</string>
-    <string name="yukizygisk_anon_loading_summary">通过自定义 linker 把模块加载进匿名内存：无模块 fd，maps 读出来像 ART JIT，从不接触 /data/adb/modules。躲开 fd 与 maps 检测。</string>
+    <string name="yukizygisk_anon_loading_summary">通过自定义 linker（yukilinker）把模块加载进匿名内存。模块 fd 会复制成 memfd 并在 onLoad 前关闭；注入段会在 specialize 后由 solist 匿名化（mremap + 改名为 JIT 类标签）。注意：first-stage loader 仍由目标进程自身的系统 linker（android_dlopen_ext）拉起——这是该方案的固有约束。</string>
     <string name="yukizygisk_loaded_modules_count">已加载模块：%1$d</string>
     <string name="yukizygisk_grant_title">Zygote 模块授权</string>
     <string name="yukizygisk_grant_filter_title">逐模块授权过滤</string>

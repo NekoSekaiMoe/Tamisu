@@ -59,12 +59,14 @@ long __nocfi ksu_hook_execve(int orig_nr, const struct pt_regs *regs)
 	const char __user **filename_user =
 	    (const char __user **)&PT_REGS_PARM1(regs);
 
-	/* ksud boot-time tracking (init second_stage, zygote detection) */
+	/* ksud boot-time tracking (init second_stage, zygote detection).
+	 * Gated by a static key that ksu_stop_ksud_execve_hook() disables
+	 * once init second_stage has run, so the common case post-boot is
+	 * zero-overhead. Persistent zygote re-detection is handled entirely
+	 * by the LSM bprm_committed_creds hook in zygote_probe.c — the
+	 * syscall path no longer carries a long-lived execve interceptor. */
 	if (static_branch_unlikely(&ksud_execve_key))
 		ksu_execve_hook_ksud(regs);
-
-	/* kernel-zygisk: persistent zygote detection (every (re)start) */
-	ksu_zygote_probe_execve(regs);
 
 	if (current->pid != 1 && is_init(current_cred())) {
 		ksu_handle_init_mark_tracker(*filename_user);

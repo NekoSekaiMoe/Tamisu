@@ -609,6 +609,9 @@ void hide_injection() {
   yuki::solist::hide_from_solist("libzygisk");
   yuki::solist::hide_from_solist("libyukilinker"); // split-out loader .so
   yuki::solist::drop_module_from_solist(kExecMemfdName, false);
+  /* Relabel bare anonymous executable segments as ART JIT, so /proc/self/maps
+   * reads them as dalvik-jit-code-cache rather than nameless rwx pages. */
+  yuki::solist::name_anonymous_exec();
 }
 
 /* denylist_mode=2 mount cleanup. */
