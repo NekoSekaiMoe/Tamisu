@@ -597,7 +597,6 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
                     onChange = { save(config.copy(grantFilterActive = it)) },
                 )
                 if (config.grantFilterActive) {
-                    val pm = context.packageManager
                     ZygoteModuleGrantList(
                         granted = config.zygoteModules.toSet(),
                         onToggle = { id, on ->
