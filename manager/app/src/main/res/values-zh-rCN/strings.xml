@@ -377,7 +377,8 @@
     <string name="su_request_deny">拒绝</string>
     <string name="su_request_deny_hide">拒绝并隐藏</string>
 
-    
+    <string name="magisk_compat_title">Magisk 风格 su 弹窗</string>
+    <string name="magisk_compat_summary">向应用显示可见的 su，并在首次使用时弹窗请求授权，而不是对不在白名单中的应用静默拒绝。</string>
     <string name="yukizygisk_injection_status">注入状态</string>
     <string name="yukizygisk_kernel_injection">内核注入</string>
     <string name="yukizygisk_status_active">已激活</string>
@@ -390,29 +391,29 @@
     <string name="yukizygisk_denylist_restore_long">注入 + 仅卸载</string>
     <string name="yukizygisk_injections_session">本次会话注入数</string>
     <string name="yukizygisk_injected_zygotes">Zygote 监视器</string>
-    <string name="yukizygisk_no_zygotes">未发现 Zygote。</string>
+    <string name="yukizygisk_no_zygotes">无 Zygote</string>
     <string name="yukizygisk_zygote_detail">%1$s · pid %2$d</string>
     <string name="yukizygisk_native_modules">Native 模块</string>
-    <string name="yukizygisk_no_native_modules">暂无 native service 模块配置。</string>
+    <string name="yukizygisk_no_native_modules">无 Native 模块</string>
     <string name="yukizygisk_native_module_detail">%1$s=%2$s · %3$s</string>
     <string name="yukizygisk_native_companion">companion</string>
     <string name="yukizygisk_native_no_companion">无 companion</string>
     <string name="yukizygisk_native_injections">Native 注入监视器</string>
-    <string name="yukizygisk_no_native_injections">还没有 native service 回报模块加载。</string>
+    <string name="yukizygisk_no_native_injections">无注入记录</string>
     <string name="yukizygisk_native_injection_detail">%1$s · %2$s · pid %3$d</string>
     <string name="yukizygisk_native_mode_module">按模块</string>
     <string name="yukizygisk_native_mode_process">按进程</string>
     <string name="yukizygisk_native_process_detail">%1$s · pid %2$d</string>
-    <string name="yukizygisk_zygote_injected_message">此 Zygote 已被注入 Zygisk。</string>
-    <string name="yukizygisk_zygote_unsupported_message">YukiZygisk 暂不支持 32位 Zygote！此 Zygote 不会被注入。</string>
-    <string name="yukizygisk_zygote_failed_message">此 Zygote 持续崩溃，安全模式已启用，此 Zygote 当前未被注入。</string>
-    <string name="yukizygisk_native_process_injected_message">此进程已被注入 Native 模块。</string>
-    <string name="yukizygisk_native_process_unsupported_message">YukiZygisk 暂不支持 32位 Native 进程！此进程不会被注入。</string>
-    <string name="yukizygisk_native_process_failed_message">此进程持续崩溃，安全模式已启用，此进程当前未被注入。</string>
+    <string name="yukizygisk_zygote_injected_message">Zygisk 已注入。</string>
+    <string name="yukizygisk_zygote_unsupported_message">暂不支持 32 位 Zygote。</string>
+    <string name="yukizygisk_zygote_failed_message">安全模式已启用，当前未注入。</string>
+    <string name="yukizygisk_native_process_injected_message">已注入 Native 模块。</string>
+    <string name="yukizygisk_native_process_unsupported_message">暂不支持 32 位 Native 进程。</string>
+    <string name="yukizygisk_native_process_failed_message">安全模式已启用，当前未注入。</string>
     <string name="yukizygisk_native_process_module_line">模块 %1$s</string>
-    <string name="yukizygisk_native_module_injected_message">此模块已成功注入目标进程。</string>
-    <string name="yukizygisk_native_module_unsupported_message">YukiZygisk 暂不支持 32位 Native 模块！此模块的32位目标进程不会被注入。</string>
-    <string name="yukizygisk_native_module_failed_message">此模块的若干目标进程持续崩溃，安全模式已启用，崩溃进程当前未被注入。</string>
+    <string name="yukizygisk_native_module_injected_message">已注入目标进程。</string>
+    <string name="yukizygisk_native_module_unsupported_message">暂不支持 32 位 Native 模块。</string>
+    <string name="yukizygisk_native_module_failed_message">安全模式已启用，部分目标未注入。</string>
     <string name="yukizygisk_native_target_line">%1$s · %2$s · pid %3$d</string>
     <string name="yukizygisk_module_loading">模块加载</string>
     <string name="yukizygisk_anon_loading_title">匿名加载（yukilinker）</string>
@@ -427,7 +428,7 @@
     <string name="yukizygisk_denylist_force">强制</string>
     <string name="yukizygisk_denylist_restore">恢复</string>
     <string name="yukizygisk_log_dmesg_title">记录到 dmesg</string>
-    <string name="yukizygisk_log_dmesg_summary">将 YukiZygisk 日志输出到内核环形缓冲区（可通过 dmesg 查看）。关闭则保持安静。</string>
+    <string name="yukizygisk_log_dmesg_summary">输出到 dmesg。</string>
     <string name="yukizygisk_uid_fallback">uid %1$d</string>
     <string name="home_click_to_install">点击安装</string>
     <string name="jailbreak_timeout">越狱可能失败了，请检查日志</string>
