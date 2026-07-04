@@ -232,7 +232,7 @@ std::array<JNINativeMethod, 5> g_zygote_methods = {{
            if (decision == 2) // denylist + force mode: do not inject
              run_modules = false;
            if (run_modules) {
-             zygisk_load_modules(env); // dlopen + onLoad here, in the child
+             zygisk_load_modules(env, uid); // dlopen + onLoad here, in the child
              zygisk_run_app_pre(&args);
              ctx_sanitize_fds(&ctx);
            } else if (ctx.pid == 0) {
@@ -294,7 +294,7 @@ std::array<JNINativeMethod, 5> g_zygote_methods = {{
            if (decision == 2) // denylist + force mode: do not inject
              run_modules = false;
            if (run_modules) {
-             zygisk_load_modules(env); // dlopen + onLoad here, in the child
+             zygisk_load_modules(env, uid); // dlopen + onLoad here, in the child
              zygisk_run_app_pre(&args);
              ctx_sanitize_fds(&ctx);
            } else if (ctx.pid == 0) {
@@ -348,7 +348,7 @@ std::array<JNINativeMethod, 5> g_zygote_methods = {{
            if (decision == 2) // denylist + force mode: do not inject
              run_modules = false;
            if (run_modules) { // USAP: skip isolated processes
-             zygisk_load_modules(env);
+             zygisk_load_modules(env, uid);
              zygisk_run_app_pre(&args);
            }
            reinterpret_cast<void (*)(
@@ -394,7 +394,7 @@ std::array<JNINativeMethod, 5> g_zygote_methods = {{
            if (decision == 2) // denylist + force mode: do not inject
              run_modules = false;
            if (run_modules) { // USAP: skip isolated processes
-             zygisk_load_modules(env);
+             zygisk_load_modules(env, uid);
              zygisk_run_app_pre(&args);
            }
            reinterpret_cast<void (*)(
@@ -430,7 +430,7 @@ std::array<JNINativeMethod, 5> g_zygote_methods = {{
        g_ctx = &ctx;
        ctx_fork_pre(&ctx);
        if (ctx.pid == 0) {         // child (system_server)
-         zygisk_load_modules(env); // dlopen + onLoad here, in the child
+         zygisk_load_modules(env, uid); // dlopen + onLoad here, in the child
          zygisk_run_server_pre(&args);
          ctx_sanitize_fds(&ctx);
        }

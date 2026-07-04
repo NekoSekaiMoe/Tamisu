@@ -114,7 +114,7 @@ struct yz_config {
   __u8 yukilinker;
   __u8 denylist_mode;
   __u8 dmesg_log;
-  __u8 reserved;
+  __u8 grant_filter_active;
 };
 
 #endif /* _UAPI_YUKIZYGISK_H */

@@ -34,6 +34,9 @@
 #include <cstdio>
 #include <cstring>
 #include <deque>
+#include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
 using zygisk::Option;
@@ -60,6 +63,7 @@ struct Module {
   module_abi *abi = nullptr;
   int id = -1; // zygiskd module index
   long version = 0;
+  std::string dir_id; // module directory name, e.g. "lspd"
   void *handle = nullptr;
   uint32_t option = 0; // zygisk::Option bits set via setOption
   CoreApiTable api{};  // per-module, filled by RegisterModuleImpl
@@ -188,6 +192,8 @@ enum class ZdRequest : uint8_t {
   Log = 10,
   PatchText = 11,
   ReportZygote = 12,
+  GetModuleName = 19,
+  GetGrantedModules = 20,
 };
 #if defined(__LP64__)
 constexpr char kZygiskdSocket[] = "zygiskd64";
@@ -382,10 +388,51 @@ yuki_dlclose_fn g_yuki_dlclose = nullptr;
 uintptr_t g_self_base = 0;
 size_t g_self_size = 0;
 
-void load_modules_impl(JNIEnv *env) {
+/* Query zygiskd for the set of module dir-ids that should load for `uid`.
+ * Returns an empty set if the daemon is unreachable (fail-open: load nothing
+ * rather than a wrong subset -- zygisk_load_modules will then dlopen zero
+ * modules, which is safer than dlopen'ing everything). */
+static std::set<std::string> fetch_granted_modules(uint32_t uid) {
+  std::set<std::string> granted;
+  int sock = connect_zygiskd();
+  if (sock < 0)
+    return granted;
+  auto req = static_cast<uint8_t>(ZdRequest::GetGrantedModules);
+  if (write(sock, &req, 1) != 1 || write(sock, &uid, sizeof(uid)) != sizeof(uid)) {
+    close(sock);
+    return granted;
+  }
+  uint32_t count = 0;
+  if (!read_all(sock, &count, sizeof(count))) {
+    close(sock);
+    return granted;
+  }
+  for (uint32_t i = 0; i < count; ++i) {
+    std::string name;
+    char c = 0;
+    while (read_all(sock, &c, 1) && c != 0)
+      name.push_back(c);
+    if (!name.empty())
+      granted.insert(std::move(name));
+  }
+  close(sock);
+  return granted;
+}
+
+void load_modules_impl(JNIEnv *env, int uid) {
   if (!g_modules.empty())
-    return;         // already loaded in this process (called per-specialize)
+    return; // already loaded in this process (inherited across a child-zygote
+            // fork -- per-uid scope applies to the first specialize; descendants
+            // inherit that subset, matching the existing module-load model)
   zd_load_config(); // refresh yukilinker/denylist_mode/dmesg from yzconfig.json
+  /* Fail fast on grant filter misconfiguration: if the filter is on but the
+   * daemon returns nothing, do NOT dlopen any module (a wrong subset is
+   * worse than none). Filter is off -> empty set means "unfiltered, load all"
+   * via the count loop below. */
+  std::set<std::string> granted;
+  bool filter_on = g_yz_config.grant_filter_active != 0;
+  if (filter_on)
+    granted = fetch_granted_modules(static_cast<uint32_t>(uid));
   int sock = connect_zygiskd();
   if (sock < 0) {
     LOGE("cannot connect zygiskd");
@@ -398,9 +445,33 @@ void load_modules_impl(JNIEnv *env) {
     return;
   }
   close(sock);
-  LOGI("zygiskd reports %u module(s)", count);
+  LOGI("zygiskd reports %u module(s) (filter=%d, %zu granted for uid=%d)",
+       count, filter_on, granted.size(), uid);
 
   for (uint32_t i = 0; i < count; ++i) {
+    /* Resolve the module dir-id (used for grant filtering and stored on the
+     * Module for later companion/scope lookups). When the grant filter is on,
+     * out-of-scope modules are skipped before dlopen -- this drops their onLoad
+     * side effects (static ctors, JNI hooks, etc.) for unscoped apps. */
+    std::string dir_id;
+    {
+      int ns = connect_zygiskd();
+      if (ns >= 0) {
+        auto r = static_cast<uint8_t>(ZdRequest::GetModuleName);
+        if (write(ns, &r, 1) == 1 &&
+            write(ns, &i, sizeof(i)) == sizeof(i)) {
+          char c = 0;
+          while (read_all(ns, &c, 1) && c != 0)
+            dir_id.push_back(c);
+        }
+        close(ns);
+      }
+    }
+    if (filter_on && !granted.count(dir_id)) {
+      LOGI("module %u (%s) not granted for uid=%d, skipping", i,
+           dir_id.c_str(), uid);
+      continue;
+    }
     int s = connect_zygiskd();
     if (s < 0)
       continue;
@@ -456,6 +527,7 @@ void load_modules_impl(JNIEnv *env) {
     }
     Module &m = g_modules.emplace_back();
     m.id = static_cast<int>(i);
+    m.dir_id = dir_id;
     m.handle = handle;
     m.api.impl = nullptr; // api callbacks resolve the module via g_cur
     m.api.registerModule = RegisterModuleImpl;
@@ -858,7 +930,9 @@ void zygisk_self_destruct(JNIEnv *env, bool isolated) {
   (void)env;
 }
 
-void zygisk_load_modules(JNIEnv *env) { load_modules_impl(env); }
+void zygisk_load_modules(JNIEnv *env, int uid) {
+  load_modules_impl(env, uid);
+}
 void zygisk_run_app_pre(zygisk::AppSpecializeArgs *args) {
   run_app_pre_impl(args);
 }

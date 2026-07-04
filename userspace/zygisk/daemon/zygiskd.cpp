@@ -39,6 +39,8 @@
 #include <fstream>
 #include <limits.h>
 #include <sstream>
+#include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -100,6 +102,25 @@ struct Module {
   std::string name;
   std::string lib_path; // <id>/zygisk/<abi>.so
 };
+
+/* Per-module zygote grant whitelist, mirrored from yzconfig.json
+ * ("zygote_modules": [...]). When grant_filter_active is set, only modules
+ * whose dir-id appears here are loaded into zygote. The set is reparsed on
+ * every read_yzconfig() call so manager edits apply to the next specialize. */
+std::set<std::string> g_granted_modules;
+bool g_grant_filter_active = false;
+
+/* Per-module uid scope, mirrored from yzconfig.json
+ * ("module_scopes": {"<dir-id>": [<uid>, ...] | "*"}). An empty entry means
+ * "all uids" (back-compat with zygote_modules-only config). A non-empty entry
+ * means the module loads only for the listed uids. Absent modules fall back to
+ * the global g_granted_modules test (or are loaded unconditionally if the
+ * grant filter is off). */
+struct ModuleScope {
+  bool wildcard = true;          // true = all uids
+  std::set<uint32_t> uids;       // populated when wildcard == false
+};
+std::map<std::string, ModuleScope> g_module_scopes;
 
 std::vector<Module> g_modules;
 
@@ -739,8 +760,32 @@ uint32_t query_flags(uint32_t uid) {
 
 yz_config g_yz_config{1, 0, 0, 0};
 
+/* Decide whether the module with the given dir-id should load into the zygote
+ * at all (global grant filter). When the grant filter is off, every enabled
+ * module passes. */
+bool module_globally_granted(const std::string &dir_id) {
+  if (!g_grant_filter_active)
+    return true;
+  return g_granted_modules.count(dir_id) != 0;
+}
+
+/* Decide whether the module with the given dir-id should run for a specific
+ * uid. A scope entry of "*" (or absent entry) means all uids. A bare uid list
+ * restricts it to those uids. */
+bool module_granted_for_uid(const std::string &dir_id, uint32_t uid) {
+  auto it = g_module_scopes.find(dir_id);
+  if (it == g_module_scopes.end())
+    return true;
+  if (it->second.wildcard)
+    return true;
+  return it->second.uids.count(uid) != 0;
+}
+
 void read_yzconfig() {
   yz_config cfg{1, 0, 0, 0};
+  std::set<std::string> granted;
+  bool grant_filter_active = false;
+  std::map<std::string, ModuleScope> scopes;
   int fd = open(ksud::YZCONFIG_PATH, O_RDONLY | O_CLOEXEC);
   if (fd >= 0) {
     std::string buf;
@@ -757,14 +802,67 @@ void read_yzconfig() {
             static_cast<__u8>(root.at("denylist_mode").as_number());
       if (root.contains("dmesg_log"))
         cfg.dmesg_log = root.at("dmesg_log").as_bool() ? 1 : 0;
+      /* yzconfig.json schema:
+       *   "zygote_modules": ["<dir-id>", ...]
+       * Presence of the key enables the per-module grant filter; absence
+       * loads every enabled zygisk module (back-compat). */
+      if (root.contains("zygote_modules")) {
+        grant_filter_active = true;
+        const auto &arr = root.at("zygote_modules");
+        if (arr.type == json::Type::Array) {
+          for (const auto &v : arr.a) {
+            if (v.type == json::Type::String && !v.s.empty())
+              granted.insert(v.s);
+          }
+        }
+      }
+      /* yzconfig.json schema:
+       *   "module_scopes": {
+       *     "<dir-id>": [<uid>, ...] | "*"
+       *   }
+       * Optional per-app scope. Absent or "*" means all uids. A bare list
+       * constrains the module to those uids only. Lets the user express
+       * "LSPosed only for WeChat" without a denylist. */
+      if (root.contains("module_scopes")) {
+        const auto &obj = root.at("module_scopes");
+        if (obj.type == json::Type::Object) {
+          for (const auto &kv : obj.o) {
+            ModuleScope ms;
+            const auto &val = kv.second;
+            if (val.type == json::Type::String && val.s == "*") {
+              ms.wildcard = true;
+            } else if (val.type == json::Type::Array) {
+              for (const auto &v : val.a) {
+                if (v.type == json::Type::String && v.s == "*") {
+                  ms.wildcard = true;
+                  ms.uids.clear();
+                  break;
+                } else if (v.type == json::Type::Number) {
+                  ms.uids.insert(static_cast<uint32_t>(v.n));
+                }
+              }
+              if (!ms.wildcard && !ms.uids.empty())
+                ms.wildcard = false;
+            }
+            scopes[kv.first] = ms;
+          }
+        }
+      }
     }
   }
+  cfg.grant_filter_active = grant_filter_active ? 1 : 0;
   g_yz_config = cfg;
+  g_granted_modules = std::move(granted);
+  g_grant_filter_active = grant_filter_active;
+  g_module_scopes = std::move(scopes);
   yz_yukilinker_cmd yc{};
   yc.enabled = cfg.yukilinker;
   ksud::ksuctl(KSU_IOCTL_YZ_SET_YUKILINKER, &yc);
-  DLOGI("yzconfig: yukilinker=%u denylist_mode=%u dmesg_log=%u", cfg.yukilinker,
-        cfg.denylist_mode, cfg.dmesg_log);
+  DLOGI("yzconfig: yukilinker=%u denylist_mode=%u dmesg_log=%u grant=%u "
+        "(%zu module(s), %zu scoped)",
+        cfg.yukilinker, cfg.denylist_mode, cfg.dmesg_log,
+        cfg.grant_filter_active, g_granted_modules.size(),
+        g_module_scopes.size());
 }
 
 uint64_t g_inject_count = 0;
@@ -1044,6 +1142,21 @@ std::string build_status_json() {
   s += std::to_string(g_yz_config.denylist_mode);
   s += ",\"dmesg_log\":";
   s += g_yz_config.dmesg_log ? "true" : "false";
+  s += ",\"grant_filter_active\":";
+  s += g_yz_config.grant_filter_active ? "true" : "false";
+  s += ",\"granted_modules\":[";
+  {
+    bool first = true;
+    for (const auto &name : g_granted_modules) {
+      if (!first)
+        s += ',';
+      first = false;
+      s += '"';
+      json_append_escaped(s, name);
+      s += '"';
+    }
+  }
+  s += "]";
   s += ",\"recent\":[";
   bool first = true;
   for (uint32_t a : g_recent_appids) {
@@ -1165,6 +1278,43 @@ void handle_client(int client) {
     send_fd(client, fd);
     if (fd >= 0)
       close(fd);
+    break;
+  }
+  case zygiskd::Request::GetModuleName: {
+    /* idx -> NUL-terminated module dir-id string. Empty string on bad idx so
+     * the core can still read a fixed byte and skip the module. */
+    uint32_t idx = 0;
+    if (!read_exact(client, &idx, sizeof(idx)) || idx >= g_modules.size()) {
+      char zero = 0;
+      write_exact(client, &zero, 1);
+      break;
+    }
+    const std::string &name = g_modules[idx].name;
+    write_exact(client, name.c_str(), name.size() + 1);
+    break;
+  }
+  case zygiskd::Request::GetGrantedModules: {
+    /* uid -> u32 count followed by count NUL-terminated dir-id strings. The
+     * core uses this to skip dlopen'ing modules that are out of scope for the
+     * target app, and to short-circuit their pre/postSpecialize callbacks. */
+    uint32_t uid = 0;
+    if (!read_exact(client, &uid, sizeof(uid))) {
+      uint32_t zero = 0;
+      write_exact(client, &zero, sizeof(zero));
+      break;
+    }
+    std::vector<std::string> picked;
+    for (const auto &m : g_modules) {
+      if (!module_globally_granted(m.name))
+        continue;
+      if (!module_granted_for_uid(m.name, uid))
+        continue;
+      picked.push_back(m.name);
+    }
+    uint32_t count = static_cast<uint32_t>(picked.size());
+    write_exact(client, &count, sizeof(count));
+    for (const auto &n : picked)
+      write_exact(client, n.c_str(), n.size() + 1);
     break;
   }
   case zygiskd::Request::ConnectCompanion: {

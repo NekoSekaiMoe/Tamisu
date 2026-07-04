@@ -30,6 +30,8 @@ enum class Request : uint8_t {
   ConnectNativeCompanion = 16,
   RestoreNativeLoadPolicy = 17,
   ReportNativeInjection = 18,
+  GetModuleName = 19,       // idx (u32) -> NUL-terminated name string
+  GetGrantedModules = 20,   // uid (u32) -> u32 count + count NUL-terminated names
 };
 
 inline constexpr uint32_t kNativeModuleNameMax = 64;

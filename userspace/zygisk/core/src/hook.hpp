@@ -22,7 +22,7 @@ bool zygisk_specialize_fully_inline_hooked();
 int zygisk_collect_path_segs(const char *substr, uint64_t *addr, uint64_t *size,
                              int max);
 void zygisk_self_destruct(JNIEnv *env, bool isolated = false);
-void zygisk_load_modules(JNIEnv *env);
+void zygisk_load_modules(JNIEnv *env, int uid);
 void zygisk_run_app_pre(zygisk::AppSpecializeArgs *args);
 void zygisk_run_app_post(const zygisk::AppSpecializeArgs *args);
 void zygisk_run_server_pre(zygisk::ServerSpecializeArgs *args);
