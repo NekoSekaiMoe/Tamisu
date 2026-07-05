@@ -16,7 +16,7 @@ plugins {
 
 val managerVersionCode: Int by rootProject.extra
 val managerVersionName: String by rootProject.extra
-val ksudBundledVersion: String by rootProject.extra
+val tamisuDaemonBundledVersion: String by rootProject.extra
 val androidCmakeVersion: String by rootProject.extra
 
 fun exposeSigningProperty(propertyName: String, envName: String) {
@@ -52,7 +52,7 @@ android {
     namespace = "me.dabao1955.tamisu"
 
     defaultConfig {
-        buildConfigField("String", "KSUD_BUNDLED_VERSION", "\"$ksudBundledVersion\"")
+        buildConfigField("String", "TAMISU_DAEMON_BUNDLED_VERSION", "\"$tamisuDaemonBundledVersion\"")
     }
 
     buildTypes {

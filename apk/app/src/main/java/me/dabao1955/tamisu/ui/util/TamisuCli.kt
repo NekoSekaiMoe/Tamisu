@@ -44,41 +44,41 @@ object TamisuCli {
     /**
      * Check if tamisu_daemon needs to be installed or updated.
      */
-    private fun checkAndInstallKsud() {
+    private fun checkAndInstallTamisuDaemon() {
         try {
-            val apkKsudVersion = getApkKsudVersion()
-            val installedKsudVersion = getInstalledKsudVersion()
+            val apkTamisuDaemonVersion = getApkTamisuDaemonVersion()
+            val installedTamisuDaemonVersion = getInstalledTamisuDaemonVersion()
 
-            Log.i(TAG, "checkAndInstallKsud: apk=$apkKsudVersion, installed=$installedKsudVersion")
+            Log.i(TAG, "checkAndInstallTamisuDaemon: apk=$apkTamisuDaemonVersion, installed=$installedTamisuDaemonVersion")
 
             // Install if: tamisu_daemon not installed, or version mismatch
-            if (installedKsudVersion == null || apkKsudVersion != installedKsudVersion) {
-                Log.i(TAG, "Installing/updating tamisu_daemon daemon only: apk=$apkKsudVersion, installed=$installedKsudVersion")
-                installOrUpdateKsudDaemon()
+            if (installedTamisuDaemonVersion == null || apkTamisuDaemonVersion != installedTamisuDaemonVersion) {
+                Log.i(TAG, "Installing/updating tamisu_daemon daemon only: apk=$apkTamisuDaemonVersion, installed=$installedTamisuDaemonVersion")
+                installOrUpdateTamisuDaemonDaemon()
             } else {
-                Log.d(TAG, "tamisu_daemon is up-to-date: $installedKsudVersion")
+                Log.d(TAG, "tamisu_daemon is up-to-date: $installedTamisuDaemonVersion")
             }
         } catch (e: Exception) {
-            Log.e(TAG, "checkAndInstallKsud failed, falling back to install", e)
+            Log.e(TAG, "checkAndInstallTamisuDaemon failed, falling back to install", e)
             // Fallback: always try to sync tamisu_daemon daemon on error
-            installOrUpdateKsudDaemon()
+            installOrUpdateTamisuDaemonDaemon()
         }
     }
 
     /**
      * The APK-bundled tamisu_daemon version is pinned at build time by
-     * apk/build.gradle.kts (`computeKsudBundledVersion`), which mirrors
+     * apk/build.gradle.kts (`computeTamisuDaemonBundledVersion`), which mirrors
      * daemon/tamisud_core/scripts/generate_version.py. No need to fork-exec the
      * daemon just to read its version.
      */
-    private fun getApkKsudVersion(): String? =
+    private fun getApkTamisuDaemonVersion(): String? =
         BuildConfig.TAMISU_DAEMON_BUNDLED_VERSION.takeIf { it.isNotBlank() }
 
     /**
      * Normalize tamisu_daemon version string to app-style display: vx.x.x-xxxxxxxx.
      * e.g. "1.3.0-1-g56b0efb0" -> "v1.3.0-56b0efb0"
      */
-    fun formatKsudVersionForDisplay(raw: String?): String? {
+    fun formatTamisuDaemonVersionForDisplay(raw: String?): String? {
         if (raw.isNullOrBlank()) return null
         val s = raw.trim().removePrefix("v")
         // Match x.x.x optionally followed by -anything; capture semver and trailing alphanumeric for 8-char
@@ -102,7 +102,7 @@ object TamisuCli {
     /**
      * Get installed tamisu_daemon version from /data/tamisu_daemon.
      */
-    private fun getInstalledKsudVersion(): String? {
+    private fun getInstalledTamisuDaemonVersion(): String? {
         return try {
             val result = ShellUtils.fastCmd(SHELL, "${TamisuPaths.TAMISU_DAEMON_BIN} version 2>/dev/null")
             if (result.isBlank()) return null
@@ -119,16 +119,16 @@ object TamisuCli {
      * formatted as vx.x.x-xxxxxxxx. Returns (formattedApk, formattedInstalled).
      */
     suspend fun getTamisuDaemonVersionsForUi(): Pair<String?, String?> = withContext(Dispatchers.IO) {
-        val apk = getApkKsudVersion()
-        val installed = getInstalledKsudVersion()
-        formatKsudVersionForDisplay(apk) to formatKsudVersionForDisplay(installed)
+        val apk = getApkTamisuDaemonVersion()
+        val installed = getInstalledTamisuDaemonVersion()
+        formatTamisuDaemonVersionForDisplay(apk) to formatTamisuDaemonVersionForDisplay(installed)
     }
 
     /**
      * Public helper for UI: sync tamisu_daemon daemon binary from APK into /data/tamisu_daemon.
      */
     suspend fun updateKsudDaemonForUi(): Boolean = withContext(Dispatchers.IO) {
-        installOrUpdateKsudDaemon()
+        installOrUpdateTamisuDaemonDaemon()
         true
     }
 
@@ -142,7 +142,7 @@ object TamisuCli {
             Log.d(TAG, "autoSyncKsudIfNeeded: no root shell, skip")
             return@withContext
         }
-        checkAndInstallKsud()
+        checkAndInstallTamisuDaemon()
     }
 
     /**
@@ -153,17 +153,17 @@ object TamisuCli {
      *   - `/data/tamisu_daemon` (daemon binary used by core/su wrapper)
      *   - `/data/tamisu/bin/tamisu_daemon` (symlink for convenience/tools)
      */
-    private fun installOrUpdateKsudDaemon() {
+    private fun installOrUpdateTamisuDaemonDaemon() {
         val shell = getRootShell()
         if (!shell.isRoot) {
-            Log.w(TAG, "installOrUpdateKsudDaemon: shell is not root, skip")
+            Log.w(TAG, "installOrUpdateTamisuDaemonDaemon: shell is not root, skip")
             return
         }
 
         val nativeDir = tamisuApp.applicationInfo.nativeLibraryDir
         val tamisu_daemonSo = File(nativeDir, "libtamisu_daemon.so")
         if (!tamisu_daemonSo.exists()) {
-            Log.e(TAG, "installOrUpdateKsudDaemon: libtamisu_daemon.so not found in $nativeDir")
+            Log.e(TAG, "installOrUpdateTamisuDaemonDaemon: libtamisu_daemon.so not found in $nativeDir")
             return
         }
 
@@ -184,9 +184,9 @@ object TamisuCli {
             "restorecon -R ${TamisuPaths.TAMISU_ROOT} || true"
         )
 
-        Log.i(TAG, "installOrUpdateKsudDaemon: syncing ${tamisu_daemonSo.absolutePath} -> /data/tamisu_daemon")
+        Log.i(TAG, "installOrUpdateTamisuDaemonDaemon: syncing ${tamisu_daemonSo.absolutePath} -> /data/tamisu_daemon")
         val result = shell.newJob().add(*cmds).exec()
-        Log.i(TAG, "installOrUpdateKsudDaemon: result code=${result.code}, isSuccess=${result.isSuccess}")
+        Log.i(TAG, "installOrUpdateTamisuDaemonDaemon: result code=${result.code}, isSuccess=${result.isSuccess}")
     }
 }
 
@@ -237,7 +237,7 @@ fun createRootShell(globalMnt: Boolean = false): Shell {
  *  `${getTamisuDaemonPath()}` next to a subcommand literal. */
 internal fun tamisu_daemonCmd(args: String): String = "${getTamisuDaemonPath()} $args"
 
-fun execKsud(args: String, newShell: Boolean = false): Boolean {
+fun execTamisuDaemon(args: String, newShell: Boolean = false): Boolean {
     return if (newShell) {
         withNewRootShell {
             ShellUtils.fastCmdResult(this, tamisu_daemonCmd(args))
@@ -271,8 +271,8 @@ suspend fun getFeatureValue(feature: String): Boolean = withContext(Dispatchers.
 /** Set a feature value and persist it; returns whether tamisu_daemon reported success. */
 suspend fun setFeatureValue(feature: String, enabled: Boolean): Boolean =
     withContext(Dispatchers.IO) {
-        execKsud("feature set $feature ${if (enabled) 1 else 0}", true) &&
-            execKsud("feature save", true)
+        execTamisuDaemon("feature set $feature ${if (enabled) 1 else 0}", true) &&
+            execTamisuDaemon("feature save", true)
     }
 
 fun install() {
@@ -280,7 +280,7 @@ fun install() {
     val tamisu_daemonPath = getTamisuDaemonPath()
     // magiskboot is built into tamisu_daemon (multi-call binary); pass tamisu_daemon path so it can exec itself as magiskboot
     Log.i(TAG, "install: tamisu_daemon=$tamisu_daemonPath")
-    val result = execKsud("install --magiskboot $tamisu_daemonPath", true)
+    val result = execTamisuDaemon("install --magiskboot $tamisu_daemonPath", true)
     Log.w(TAG, "install result: $result, cost: ${SystemClock.elapsedRealtime() - start}ms")
 }
 

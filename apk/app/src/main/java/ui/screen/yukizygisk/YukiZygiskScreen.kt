@@ -75,7 +75,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import me.dabao1955.tamisu.Natives
 import me.dabao1955.tamisu.R
-import me.dabao1955.tamisu.ui.util.execKsud
+import me.dabao1955.tamisu.ui.util.execTamisuDaemon
 import me.dabao1955.tamisu.ui.util.getRootShell
 import me.dabao1955.tamisu.ui.util.withNewRootShell
 import me.dabao1955.tamisu.ui.theme.getCardColors
@@ -137,7 +137,7 @@ private suspend fun writeYzConfig(cfg: YzConfig) = withContext(Dispatchers.IO) {
         newJob().add("mkdir -p $YZCONFIG_DIR").exec()
         newJob().add("echo '$json' > $YZCONFIG_PATH").exec()
     }
-    execKsud("yukizygisk reload")
+    execTamisuDaemon("yukizygisk reload")
 }
 
 private enum class MonitorState {

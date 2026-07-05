@@ -29,7 +29,7 @@ import me.dabao1955.tamisu.ui.component.rememberConfirmDialog
 import me.dabao1955.tamisu.ui.screen.SettingItem
 import me.dabao1955.tamisu.ui.screen.SwitchItem
 import me.dabao1955.tamisu.ui.theme.*
-import me.dabao1955.tamisu.ui.util.execKsud
+import me.dabao1955.tamisu.ui.util.execTamisuDaemon
 import me.dabao1955.tamisu.ui.util.*
 import me.dabao1955.tamisu.ui.util.getRootShell
 import me.dabao1955.tamisu.ui.util.isSELinuxEnforcing
@@ -180,7 +180,7 @@ class MoreSettingsHandlers(
     }
 
     fun handleHideBlChange(enabled: Boolean) {
-        val ok = execKsud(if (enabled) "feature hide-bl enable" else "feature hide-bl disable")
+        val ok = execTamisuDaemon(if (enabled) "feature hide-bl enable" else "feature hide-bl disable")
         if (ok) {
             state.hideBlEnabled = enabled
             val msg = if (enabled) R.string.hide_bl_enabled_toast else R.string.hide_bl_disabled_toast

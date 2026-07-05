@@ -108,7 +108,7 @@ fun InstallScreen(
                 return@launch
             }
             withContext(Dispatchers.IO) {
-                execKsud("late-load", true)
+                execTamisuDaemon("late-load", true)
             }
 
             delay(30_000)
