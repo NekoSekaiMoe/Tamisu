@@ -258,7 +258,7 @@ Practical implications:
 - **Standalone**: Tamisu works on its own (it still needs a root
   provider for `su` access; use one of the above).
 
-## Original works
+## Special thanks for upstream works
 
 - [YukiSU](https://github.com/Anatdx/YukiSU)
 - [KernelSU](https://github.com/tiann/KernelSU)
