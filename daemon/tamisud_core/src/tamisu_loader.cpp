@@ -24,12 +24,12 @@ namespace {
 class KptrGuard {
 public:
     KptrGuard() {
-        std::ifstream ifs("/proc/sys/core/kptr_restrict");
+        std::ifstream ifs("/proc/sys/kernel/kptr_restrict");
         if (ifs.is_open()) {
             std::getline(ifs, original_value_);
         }
 
-        std::ofstream ofs("/proc/sys/core/kptr_restrict");
+        std::ofstream ofs("/proc/sys/kernel/kptr_restrict");
         if (ofs.is_open()) {
             ofs << "1";
         }
@@ -37,7 +37,7 @@ public:
 
     ~KptrGuard() {
         if (!original_value_.empty()) {
-            std::ofstream ofs("/proc/sys/core/kptr_restrict");
+            std::ofstream ofs("/proc/sys/kernel/kptr_restrict");
             if (ofs.is_open()) {
                 ofs << original_value_;
             }
@@ -184,8 +184,14 @@ bool patch_undefined_symbols(std::vector<uint8_t>* buffer) {
         return false;
     }
 
-    for (const auto& [name, _] : unresolved_symbols) {
-        LOGW("loader: cannot find symbol: %s", name.c_str());
+    if (!unresolved_symbols.empty()) {
+        for (const auto& [name, _] : unresolved_symbols) {
+            LOGE("loader: cannot find symbol: %s", name.c_str());
+        }
+        LOGE("loader: %zu symbol(s) unresolved, refusing to load (would "
+             "produce bad relocations and crash the kernel)",
+             unresolved_symbols.size());
+        return false;
     }
 
     return true;
