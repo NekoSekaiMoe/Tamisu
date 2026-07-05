@@ -9,8 +9,8 @@
 
 #include "tamisu_symbol_resolver.h"
 #include "klog.h" // IWYU pragma: keep
-#include "lsm_hook.h"
-#include "patch_memory.h"
+#include "tamisu_lsm_hook.h"
+#include "tamisu_patch_memory.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
 #include <linux/static_call.h>

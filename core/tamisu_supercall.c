@@ -21,7 +21,7 @@
 #include "tamisu_syscall_hook.h"
 #include "tamisu_file_wrapper.h"
 #include "klog.h" // IWYU pragma: keep
-#include "daemon.h"
+#include "tamisu_daemon.h"
 #include "tamisu_selinux.h"
 #include "tamisu_supercall.h"
 #include "tamisu_internal.h"

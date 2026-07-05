@@ -10,8 +10,8 @@
 #include "klog.h" // IWYU pragma: keep
 #include "linux/lsm_audit.h" // IWYU pragma: keep
 #include "objsec.h"
-#include "selinux.h"
-#include "sepolicy.h"
+#include "tamisu_selinux.h"
+#include "tamisu_sepolicy.h"
 #include "ss/context.h"
 #include "ss/services.h"
 #include "security.h"

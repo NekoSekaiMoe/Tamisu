@@ -12,7 +12,7 @@
 #include "tamisu_syscall_hook.h"
 #include "tamisu_tp_marker.h"
 #include "klog.h" // IWYU pragma: keep
-#include "daemon.h"
+#include "tamisu_daemon.h"
 #include "tamisu_selinux.h"
 
 /*

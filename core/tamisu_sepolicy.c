@@ -6,7 +6,7 @@
 #include <linux/vmalloc.h>
 
 #include "klog.h" // IWYU pragma: keep
-#include "sepolicy.h"
+#include "tamisu_sepolicy.h"
 #include "ss/services.h"
 #include "ss/symtab.h"
 

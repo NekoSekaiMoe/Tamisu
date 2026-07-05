@@ -28,5 +28,5 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: check
-        working-directory: kernel
+        working-directory: core
         run: make check-format

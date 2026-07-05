@@ -3,7 +3,7 @@
 #include "linux/cred.h"
 #include "linux/sched.h"
 #include "linux/version.h"
-#include "selinux.h"
+#include "tamisu_selinux.h"
 #include "objsec.h"
 
 /*

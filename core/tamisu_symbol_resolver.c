@@ -5,7 +5,7 @@
 #include <linux/string.h>
 #include <linux/version.h>
 
-#include "symbol_resolver.h"
+#include "tamisu_symbol_resolver.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
 #define USE_KCFI 1

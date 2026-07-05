@@ -38,7 +38,7 @@
 #include <asm/cacheflush.h>
 
 #include "tamisu_feature.h"
-#include "zygote_probe.h"
+#include "tamisu_zygote_probe.h"
 #include "tamisu_lsm_hook.h"
 #include "tamisu_selinux.h"
 #include "tamisu.h"

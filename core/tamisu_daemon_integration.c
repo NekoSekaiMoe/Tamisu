@@ -26,8 +26,8 @@
 #include "tamisu_syscall_event_bridge.h"
 #include "klog.h" // IWYU pragma: keep
 #include "tamisu.h"
-#include "daemon_boot.h"
-#include "daemon.h"
+#include "tamisu_daemon_boot.h"
+#include "tamisu_daemon.h"
 #include "tamisu_selinux.h"
 
 static const char TAMISU_RC[] =

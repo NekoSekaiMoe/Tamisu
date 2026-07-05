@@ -5,8 +5,8 @@
 #include <linux/string.h>
 
 #include "klog.h" // IWYU pragma: keep
-#include "daemon_boot.h"
-#include "daemon.h"
+#include "tamisu_daemon_boot.h"
+#include "tamisu_daemon.h"
 #include "tamisu_selinux.h"
 
 bool tamisu_boot_completed __read_mostly = false;

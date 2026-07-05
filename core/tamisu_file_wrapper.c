@@ -9,7 +9,7 @@
 #include <linux/gfp.h>
 #include <linux/mount.h>
 #include "objsec.h"
-#include "daemon.h"
+#include "tamisu_daemon.h"
 
 #include <linux/seq_file.h>
 #include <linux/slab.h>

@@ -87,7 +87,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./manager
+        working-directory: apk
 
     steps:
       - name: Checkout
