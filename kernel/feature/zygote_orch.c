@@ -220,6 +220,6 @@ void ksu_zygote_orch_on_userspace_report(pid_t pid, uid_t uid)
 		pr_info("zygote_orch: [specialize-userspace] pid=%d uid=%u "
 			"appid=%u\n",
 			pid, uid, uid % 100000);
-		/* No need to emit netlink event - userspace already knows */
+		ksu_zygote_nl_emit_specialize(pid, uid % 100000);
 	}
 }

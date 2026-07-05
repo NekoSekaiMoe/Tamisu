@@ -25,11 +25,26 @@ typedef const struct cred ksu_cred_arg_t;
 typedef struct cred ksu_cred_arg_t;
 #endif
 
+typedef int (*task_fix_setuid_fn)(ksu_cred_arg_t *new, const struct cred *old,
+				  int flags);
+
+static int __nocfi my_task_fix_setuid(ksu_cred_arg_t *new,
+				      const struct cred *old, int flags);
+
+static struct ksu_lsm_hook setuid_lsm_hook = KSU_LSM_HOOK_INIT(
+    task_fix_setuid, "apparmor_task_setrlimit", my_task_fix_setuid, 0);
+
 static int __nocfi my_task_fix_setuid(ksu_cred_arg_t *new,
 				      const struct cred *old, int flags)
 {
 	uid_t old_uid = old->uid.val;
 	uid_t new_uid = new->uid.val;
+	int ret;
+
+	/* Preserve the original LSM security decision; never override it. */
+	ret = ((task_fix_setuid_fn)setuid_lsm_hook.original)(new, old, flags);
+	if (ret)
+		return ret;
 
 	/* Feed the orchestrator when UID changes to app range */
 	if (old_uid != new_uid) {
@@ -38,9 +53,6 @@ static int __nocfi my_task_fix_setuid(ksu_cred_arg_t *new,
 
 	return 0;
 }
-
-static struct ksu_lsm_hook setuid_lsm_hook = KSU_LSM_HOOK_INIT(
-    task_fix_setuid, "apparmor_task_setrlimit", my_task_fix_setuid, 0);
 
 void ksu_setuid_hook_init(void)
 {
