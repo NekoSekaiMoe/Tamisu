@@ -73,10 +73,28 @@ void ksu_zygote_nl_emit_reload(void)
 	nlmsg_multicast(yz_sock, skb, 0, YZ_NL_GROUP_EVENTS, GFP_ATOMIC);
 }
 
+static void ksu_zygote_nl_recv(struct sk_buff *skb)
+{
+	struct nlmsghdr *nlh;
+	struct yz_event *ev;
+
+	nlh = nlmsg_hdr(skb);
+	if (nlh->nlmsg_len < NLMSG_HDRLEN + sizeof(*ev))
+		return;
+
+	ev = nlmsg_data(nlh);
+	if (ev->type == YZ_EV_REPORT_SPECIALIZE) {
+		pr_info("zygote_nl: userspace report pid=%u uid=%u\n", ev->pid,
+			ev->appid);
+		ksu_zygote_orch_on_userspace_report(ev->pid, ev->appid);
+	}
+}
+
 void ksu_zygote_nl_init(void)
 {
 	struct netlink_kernel_cfg cfg = {
 	    .groups = YZ_NL_GROUP_EVENTS,
+	    .input = ksu_zygote_nl_recv,
 	};
 
 	yz_sock = netlink_kernel_create(&init_net, YZ_NETLINK_PROTO, &cfg);

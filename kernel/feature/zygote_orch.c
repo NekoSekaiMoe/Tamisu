@@ -158,7 +158,7 @@ void ksu_zygote_orch_exit(void)
 
 /* current == the specializing child; dropping to an app uid reveals its
  * identity -- the injection decision point. */
-void ksu_zygote_orch_on_setresuid(uid_t old_uid, uid_t new_uid)
+void ksu_zygote_orch_on_uid_change(uid_t old_uid, uid_t new_uid)
 {
 	unsigned long flags;
 	pid_t pid = current->pid;
@@ -188,8 +188,36 @@ void ksu_zygote_orch_on_setresuid(uid_t old_uid, uid_t new_uid)
 	spin_unlock_irqrestore(&zo_lock, flags);
 
 	if (specialized) {
-		pr_info("zygote_orch: [specialize] pid=%d uid=%u appid=%u\n",
+		pr_info("zygote_orch: [specialize-kernel] pid=%d uid=%u appid=%u\n",
 			pid, new_uid, new_uid % 100000);
 		ksu_zygote_nl_emit_specialize(pid, new_uid % 100000);
+	}
+}
+
+void ksu_zygote_orch_on_userspace_report(pid_t pid, uid_t uid)
+{
+	unsigned long flags;
+	bool specialized = false;
+	int i;
+
+	if (uid < 10000) /* app uids only */
+		return;
+
+	if (uid % 100000 >= 90000) /* skip isolated */
+		return;
+
+	spin_lock_irqsave(&zo_lock, flags);
+	i = zo_slot_of(pid);
+	if (i >= 0 && zo_children[i].state == ZO_FORKED) {
+		zo_children[i].uid = uid;
+		zo_children[i].state = ZO_SPECIALIZED;
+		specialized = true;
+	}
+	spin_unlock_irqrestore(&zo_lock, flags);
+
+	if (specialized) {
+		pr_info("zygote_orch: [specialize-userspace] pid=%d uid=%u appid=%u\n",
+			pid, uid, uid % 100000);
+		/* No need to emit netlink event - userspace already knows */
 	}
 }

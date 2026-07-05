@@ -4,7 +4,6 @@
 #include <asm/ptrace.h>
 
 long __nocfi ksu_hook_execve(int orig_nr, const struct pt_regs *regs);
-long __nocfi ksu_hook_setresuid(int orig_nr, const struct pt_regs *regs);
 
 void ksu_stop_ksud_execve_hook(void);
 

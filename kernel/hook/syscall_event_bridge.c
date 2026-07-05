@@ -75,18 +75,3 @@ long __nocfi ksu_hook_execve(int orig_nr, const struct pt_regs *regs)
 
 	return ksu_syscall_table[orig_nr](regs);
 }
-
-long __nocfi ksu_hook_setresuid(int orig_nr, const struct pt_regs *regs)
-{
-	long ret;
-	uid_t old_uid = current_uid().val;
-
-	/* Call the original syscall first, then inspect the result */
-	ret = ksu_syscall_table[orig_nr](regs);
-	if (ret < 0)
-		return ret;
-
-	ksu_handle_setresuid(old_uid, current_uid().val);
-
-	return ret;
-}

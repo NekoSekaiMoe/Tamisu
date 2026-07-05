@@ -17,6 +17,7 @@
 enum yz_event_type {
   YZ_EV_SPECIALIZE = 1,
   YZ_EV_RELOAD = 2,
+  YZ_EV_REPORT_SPECIALIZE = 3, /* userspace -> kernel */
 };
 
 struct yz_event {

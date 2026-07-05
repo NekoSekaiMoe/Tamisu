@@ -61,7 +61,6 @@ void ksu_syscall_hook_manager_init(void)
 	ksu_tp_marker_init();
 
 	/* Register individual syscall hooks via dispatcher */
-	ksu_register_syscall_hook(__NR_setresuid, ksu_hook_setresuid);
 	ksu_register_syscall_hook(__NR_execve, ksu_hook_execve);
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
 	ret = register_trace_sys_enter(ksu_sys_enter_handler, NULL);
@@ -88,7 +87,6 @@ void ksu_syscall_hook_manager_exit(void)
 	ksu_tp_marker_exit();
 
 	/* Unregister dispatcher routes before restoring the syscall table. */
-	ksu_unregister_syscall_hook(__NR_setresuid);
 	ksu_unregister_syscall_hook(__NR_execve);
 	/*
 	 * Restore the syscall table while feature handlers are still alive, so
