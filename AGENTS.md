@@ -170,6 +170,20 @@ CONFIG_TAMISU=m CC=clang make -j$(nproc)
   is documented in the "Injection architecture & detection surface"
   section of README.md — keep that section in sync if you change the
   injection path.
+- **Verify kernel UAPI/interface definitions against upstream.** This
+  repo has no full kernel source tree checked in and the local build
+  host usually doesn't either. Whenever you touch a kernel-side hook,
+  LSM callback, syscall wire format, or any `linux/...` /
+  `include/uapi/...` symbol, look the exact signature up on Bootlin's
+  Elixir cross-reference (<https://elixir.bootlin.com/linux/>) using the
+  **upstream Linux tag** that matches the KMI's base version (e.g. for
+  `android16-6.12` look up `v6.12` on Bootlin; the `androidN-x.y` KMI
+  name itself is not a Bootlin tag). Do not infer signatures from
+  usage; an `int` vs `void` return, a `const struct cred *` vs
+  `struct cred *`, or a renamed hook head (`security_hook_heads` vs
+  `lsm_static_calls_table` across 6.12) silently breaks the LKM at
+  load/init time. Cite the Bootlin URL (with the upstream tag) in the
+  commit message when the call site was non-obvious.
 
 ## Testing
 
