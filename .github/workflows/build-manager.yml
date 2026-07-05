@@ -8,11 +8,11 @@ on:
       - '.github/workflows/build-lkm.yml'
       - '.github/workflows/build-kasumi-lkm.yml'
       - '.github/workflows/kasumi-lkm.yml'
-      - '.github/workflows/ksud.yml'
+      - '.github/workflows/tamisu_daemon.yml'
       - 'repack_apk.py'
-      - 'manager/**'
-      - 'kernel/**'
-      - 'userspace/**'
+      - 'apk/**'
+      - 'core/**'
+      - 'daemon/**'
   pull_request:
     branches: [ "main", "dev" ]
     paths:
@@ -20,15 +20,15 @@ on:
       - '.github/workflows/build-lkm.yml'
       - '.github/workflows/build-kasumi-lkm.yml'
       - '.github/workflows/kasumi-lkm.yml'
-      - '.github/workflows/ksud.yml'
+      - '.github/workflows/tamisu_daemon.yml'
       - 'repack_apk.py'
-      - 'manager/**'
-      - 'kernel/**'
-      - 'userspace/**'
+      - 'apk/**'
+      - 'core/**'
+      - 'daemon/**'
   workflow_call:
     inputs:
       full_archs:
-        description: "Build extra ksud archs for release; Kasumi LKM is arm64-only in DDK CI"
+        description: "Build extra tamisu_daemon archs for release; Kasumi LKM is arm64-only in DDK CI"
         required: false
         default: false
         type: boolean
@@ -68,12 +68,12 @@ jobs:
     uses: ./.github/workflows/build-lkm.yml
     secrets: inherit
 
-  build-ksud:
+  build-tamisu_daemon:
     needs: build-lkm
     strategy:
       matrix:
         include: ${{ (inputs.full_archs == true || github.event_name == 'pull_request') && fromJSON('[{"target":"aarch64-linux-android","os":"ubuntu-latest"},{"target":"x86_64-linux-android","os":"ubuntu-latest"},{"target":"armv7-linux-androideabi","os":"ubuntu-latest"}]') || fromJSON('[{"target":"aarch64-linux-android","os":"ubuntu-latest"}]') }}
-    uses: ./.github/workflows/ksud.yml
+    uses: ./.github/workflows/tamisu_daemon.yml
     secrets: inherit
     with:
       target: ${{ matrix.target }}
@@ -150,20 +150,20 @@ jobs:
         uses: actions/upload-artifact@v6
         with:
           name: Manager-gradle-${{ matrix.abi }}
-          path: manager/app/build/outputs/apk/release/
+          path: apk/app/build/outputs/apk/release/
 
       - name: Upload mappings
         uses: actions/upload-artifact@v6
         with:
           name: "${{ steps.determine.outputs.title }}-mappings-${{ matrix.abi }}"
-          path: "manager/app/build/outputs/mapping/release/"
+          path: "apk/app/build/outputs/mapping/release/"
 
   repack-manager:
-    needs: [build-manager, build-ksud, generate-key]
-    if: always() && needs.build-manager.result == 'success' && needs.build-ksud.result == 'success' && needs.generate-key.result == 'success'
+    needs: [build-manager, build-tamisu_daemon, generate-key]
+    if: always() && needs.build-manager.result == 'success' && needs.build-tamisu_daemon.result == 'success' && needs.generate-key.result == 'success'
     strategy:
       matrix:
-        include: ${{ (inputs.full_archs == true || github.event_name == 'pull_request') && fromJSON('[{"abi":"arm64-v8a","target":"aarch64-linux-android","ksud_artifact":"ksud-aarch64-linux-android"},{"abi":"x86_64","target":"x86_64-linux-android","ksud_artifact":"ksud-x86_64-linux-android"},{"abi":"armeabi-v7a","target":"armv7-linux-androideabi","ksud_artifact":"ksud-armv7-linux-androideabi"}]') || fromJSON('[{"abi":"arm64-v8a","target":"aarch64-linux-android","ksud_artifact":"ksud-aarch64-linux-android"}]') }}
+        include: ${{ (inputs.full_archs == true || github.event_name == 'pull_request') && fromJSON('[{"abi":"arm64-v8a","target":"aarch64-linux-android","tamisu_daemon_artifact":"tamisu_daemon-aarch64-linux-android"},{"abi":"x86_64","target":"x86_64-linux-android","tamisu_daemon_artifact":"tamisu_daemon-x86_64-linux-android"},{"abi":"armeabi-v7a","target":"armv7-linux-androideabi","tamisu_daemon_artifact":"tamisu_daemon-armv7-linux-androideabi"}]') || fromJSON('[{"abi":"arm64-v8a","target":"aarch64-linux-android","tamisu_daemon_artifact":"tamisu_daemon-aarch64-linux-android"}]') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -198,24 +198,24 @@ jobs:
           name: Manager-gradle-${{ matrix.abi }}
           path: artifacts/manager-gradle
 
-      - name: Download ksud
+      - name: Download tamisu_daemon
         uses: actions/download-artifact@v7
         with:
-          name: ${{ matrix.ksud_artifact }}
-          path: artifacts/${{ matrix.ksud_artifact }}
+          name: ${{ matrix.tamisu_daemon_artifact }}
+          path: artifacts/${{ matrix.tamisu_daemon_artifact }}
 
-      - name: Place manager APK and ksud
+      - name: Place manager APK and tamisu_daemon
         run: |
           set -euo pipefail
-          mkdir -p manager/app/build/outputs/apk/release
+          mkdir -p apk/app/build/outputs/apk/release
           APK=$(find artifacts/manager-gradle -type f -name "*.apk" | head -n 1)
           test -n "$APK"
-          cp -f "$APK" manager/app/build/outputs/apk/release/
+          cp -f "$APK" apk/app/build/outputs/apk/release/
 
           mkdir -p target/${{ matrix.target }}/release
-          KSUD=$(find artifacts/${{ matrix.ksud_artifact }} -type f -name "ksud" | head -n 1)
-          test -n "$KSUD"
-          cp -f "$KSUD" target/${{ matrix.target }}/release/ksud
+          TAMISU_DAEMON=$(find artifacts/${{ matrix.tamisu_daemon_artifact }} -type f -name "tamisu_daemon" | head -n 1)
+          test -n "$TAMISU_DAEMON"
+          cp -f "$TAMISU_DAEMON" target/${{ matrix.target }}/release/tamisu_daemon
 
       - name: Prepare signing inputs
         env:

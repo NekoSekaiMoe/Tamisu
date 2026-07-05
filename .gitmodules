@@ -1,12 +1,12 @@
-[submodule "userspace/tamisu_daemon/third_party/MagiskbootAlone"]
-	path = userspace/tamisu_daemon/third_party/MagiskbootAlone
+[submodule "daemon/tamisud_core/third_party/MagiskbootAlone"]
+	path = daemon/tamisud_core/third_party/MagiskbootAlone
 	url = https://github.com/Anatdx/MagiskbootAlone.git
-[submodule "userspace/tamisu_daemon/third_party/bootctlAlone"]
-	path = userspace/tamisu_daemon/third_party/bootctlAlone
+[submodule "daemon/tamisud_core/third_party/bootctlAlone"]
+	path = daemon/tamisud_core/third_party/bootctlAlone
 	url = https://github.com/Anatdx/bootctlAlone.git
-[submodule "userspace/tamisu_daemon/third_party/resetpropAlone"]
-	path = userspace/tamisu_daemon/third_party/resetpropAlone
+[submodule "daemon/tamisud_core/third_party/resetpropAlone"]
+	path = daemon/tamisud_core/third_party/resetpropAlone
 	url = https://github.com/Anatdx/resetpropAlone.git
-[submodule "userspace/tamisu_daemon/third_party/ndk-busybox"]
-	path = userspace/tamisu_daemon/third_party/ndk-busybox
+[submodule "daemon/tamisud_core/third_party/ndk-busybox"]
+	path = daemon/tamisud_core/third_party/ndk-busybox
 	url = https://github.com/Anatdx/ndk-busybox.git

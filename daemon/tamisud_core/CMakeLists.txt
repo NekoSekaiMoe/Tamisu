@@ -1,0 +1,429 @@
+# Prefer Ninja: cmake -G Ninja .. [options] && ninja
+cmake_minimum_required(VERSION 3.14)
+
+# Android minimum API 28 (getrandom/sethostname etc. require bionic symbols from API 28+)
+if(CMAKE_SYSTEM_NAME STREQUAL "Android")
+  set(CMAKE_ANDROID_API 28 CACHE STRING "Android API level (min 28)" FORCE)
+endif()
+
+# Prefer Clang for C and CXX (LTO, -faddrsig, etc. require Clang; do not use GCC)
+if(NOT ANDROID AND NOT CMAKE_C_COMPILER)
+  find_program(CLANG_CC NAMES clang-18 clang-17 clang-16 clang-15 clang-14 clang)
+  find_program(CLANG_CXX NAMES clang++-18 clang++-17 clang++-16 clang++-15 clang++-14 clang++)
+  if(CLANG_CC AND CLANG_CXX)
+    set(CMAKE_C_COMPILER "${CLANG_CC}" CACHE STRING "C compiler" FORCE)
+    set(CMAKE_CXX_COMPILER "${CLANG_CXX}" CACHE STRING "CXX compiler" FORCE)
+    message(STATUS "Using Clang: C=${CLANG_CC} CXX=${CLANG_CXX}")
+  endif()
+endif()
+
+project(tamisu_daemon VERSION 1.0.0 LANGUAGES C CXX)
+
+# Allow FetchContent deps (e.g. miniz) that use cmake_minimum_required < 3.5
+if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
+    set(CMAKE_POLICY_VERSION_MINIMUM 3.5 CACHE STRING "Min CMake version for subprojects")
+endif()
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Use ccache to speed up builds (if available)
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+    message(STATUS "Using ccache: ${CCACHE_PROGRAM}")
+endif()
+
+# clang-tidy: optional for our sources only (third_party/FetchContent excluded). Set TAMISU_DAEMON_ENABLE_CLANG_TIDY=OFF to skip.
+option(TAMISU_DAEMON_ENABLE_CLANG_TIDY "Run clang-tidy on tamisu_daemon own sources" ON)
+set(CLANG_TIDY_ARGS "")
+if(TAMISU_DAEMON_ENABLE_CLANG_TIDY)
+    find_program(CLANG_TIDY_PROGRAM NAMES clang-tidy clang-tidy-18 clang-tidy-17 clang-tidy-16 clang-tidy-14)
+    get_filename_component(REPO_ROOT "${CMAKE_SOURCE_DIR}/../.." ABSOLUTE)
+    set(CLANG_TIDY_CONFIG "${REPO_ROOT}/.clang-tidy")
+    if(NOT CLANG_TIDY_PROGRAM)
+        message(FATAL_ERROR "clang-tidy not found. Install it (e.g. apt install clang-tidy / brew install llvm) or configure with -DTAMISU_DAEMON_ENABLE_CLANG_TIDY=OFF")
+    endif()
+    if(NOT EXISTS "${CLANG_TIDY_CONFIG}")
+        message(FATAL_ERROR ".clang-tidy not found at ${CLANG_TIDY_CONFIG}")
+    endif()
+    set(CLANG_TIDY_ARGS "${CLANG_TIDY_PROGRAM};--config-file=${CLANG_TIDY_CONFIG}")
+    if(ANDROID)
+        message(STATUS "clang-tidy: skipped for Android (run tidy on host build in CI instead)")
+    else()
+        message(STATUS "clang-tidy: enabled for tamisu_daemon own sources (config=${CLANG_TIDY_CONFIG})")
+    endif()
+else()
+    message(STATUS "clang-tidy: disabled (TAMISU_DAEMON_ENABLE_CLANG_TIDY=OFF)")
+endif()
+
+# ============================================================================
+# Super Aggressive Size Optimization
+# ============================================================================
+# Disable LTO if linker reports undefined symbols (e.g. tamisu_daemon::boot_patch) in some
+# environments (OrbStack host build with object libs + LTO). Use: -DTAMISU_DAEMON_DISABLE_LTO=ON
+option(TAMISU_DAEMON_DISABLE_LTO "Disable LTO (use if link fails with undefined symbols)" OFF)
+
+# --- Common compile flags (shared by C and C++) ---
+set(_COMMON_COMPILE_FLAGS
+    -ffunction-sections          # Place each function in its own section (enables --gc-sections dead code elimination)
+    -fdata-sections              # Place each data item in its own section
+    -fvisibility=hidden          # Hide all symbols by default, shrink export table
+    -fvisibility-inlines-hidden  # Hide inline function symbols
+    -fno-rtti                    # Disable RTTI (no dynamic_cast/typeid usage in codebase)
+    -fno-asynchronous-unwind-tables  # Remove async unwind tables (C++ exceptions still work)
+    -fmerge-all-constants        # Merge identical constants across translation units
+    -fno-ident                   # Don't embed compiler version string into .comment section
+    -fno-stack-protector         # Remove stack canary checks (unnecessary for root daemon)
+    -faddrsig                    # Emit address-significance table for more precise ICF
+    -fno-semantic-interposition  # Disable semantic interposition, allow more aggressive inlining
+    -fno-math-errno              # Math functions don't set errno
+)
+string(REPLACE ";" " " _COMMON_FLAGS_STR "${_COMMON_COMPILE_FLAGS}")
+set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${_COMMON_FLAGS_STR}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_COMMON_FLAGS_STR}")
+
+# --- Release build optimization ---
+if(TAMISU_DAEMON_DISABLE_LTO)
+    set(CMAKE_C_FLAGS_RELEASE   "-Os -DNDEBUG")
+    set(CMAKE_CXX_FLAGS_RELEASE "-Os -DNDEBUG")
+else()
+    set(CMAKE_C_FLAGS_RELEASE   "-Os -DNDEBUG -flto=full")
+    set(CMAKE_CXX_FLAGS_RELEASE "-Os -DNDEBUG -flto=full")
+endif()
+
+# --- Aggressive linker optimization ---
+if(TAMISU_DAEMON_DISABLE_LTO)
+    string(CONCAT _LINKER_FLAGS
+        " -fuse-ld=lld"
+        " -Wl,--gc-sections"
+        " -Wl,--strip-all"
+        " -Wl,--exclude-libs,ALL"
+        " -Wl,-O2"
+        " -Wl,--hash-style=gnu"
+        " -Wl,--build-id=none"
+        " -Wl,-z,norelro"
+    )
+else()
+    string(CONCAT _LINKER_FLAGS
+        " -fuse-ld=lld"               # Use lld linker
+        " -flto=full"                 # Full LTO: maximum cross-module optimization (smaller than thin LTO)
+        " -Wl,--gc-sections"          # Garbage-collect unused sections
+        " -Wl,--icf=all"              # Identical Code Folding: merge functions with identical bodies
+        " -Wl,--strip-all"            # Strip all symbols
+        " -Wl,--exclude-libs,ALL"     # Don't export symbols from static libraries
+        " -Wl,-O2"                    # Linker optimization level 2 (string table optimization etc.)
+        " -Wl,--lto-O3"              # LTO at O3 level (compile with Oz, but LTO pass uses O3 for aggressive inlining/elimination)
+        " -Wl,--hash-style=gnu"       # GNU hash is more compact than sysv
+        " -Wl,--build-id=none"        # Remove build-id note section
+        " -Wl,-z,norelro"             # Remove RELRO segment (root tool doesn't need this security feature)
+    )
+endif()
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}${_LINKER_FLAGS}")
+
+# --- Shrink miniz: disable unused features ---
+add_compile_definitions(
+    MINIZ_NO_STDIO               # No FILE* interface needed
+    MINIZ_NO_TIME                 # No timestamp support needed
+    MINIZ_NO_ARCHIVE_WRITING_APIS # Decompression only, disable write APIs
+)
+
+# Fetch third-party dependencies
+include(FetchContent)
+
+# mbedTLS - SHA1/SHA256 + X.509/RSA/ECDSA (for MagiskbootAlone AVB and flash_partition SHA256)
+set(ENABLE_PROGRAMS OFF CACHE BOOL "" FORCE)
+set(ENABLE_TESTING OFF CACHE BOOL "" FORCE)
+set(DISABLE_PACKAGE_CONFIG_AND_INSTALL ON CACHE BOOL "" FORCE)
+set(MBEDTLS_FATAL_WARNINGS OFF CACHE BOOL "" FORCE)  # avoid -Werror vs -fno-semantic-interposition on Apple Clang
+FetchContent_Declare(
+    mbedtls
+    GIT_REPOSITORY https://github.com/Mbed-TLS/mbedtls.git
+    GIT_TAG v3.6.2
+    GIT_SHALLOW TRUE
+    GIT_SUBMODULES "framework"
+)
+FetchContent_MakeAvailable(mbedtls)
+
+# miniz - Lightweight ZIP library
+FetchContent_Declare(
+    miniz
+    GIT_REPOSITORY https://github.com/richgel999/miniz.git
+    GIT_TAG 3.0.2
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(miniz)
+
+# LZ4 - prefer Magisk vendored inside MagiskbootAlone submodule (same ABI as Magisk magiskboot)
+set(LZ4_IN_MAGISKBOOT_ALONE ${CMAKE_SOURCE_DIR}/third_party/MagiskbootAlone/external/lz4)
+if(EXISTS ${LZ4_IN_MAGISKBOOT_ALONE}/lz4.c)
+    set(LZ4_LIB_DIR ${LZ4_IN_MAGISKBOOT_ALONE})
+    message(STATUS "Using vendored LZ4 (MagiskbootAlone/external/lz4) for magiskboot: ${LZ4_LIB_DIR}")
+else()
+    FetchContent_Declare(
+        lz4
+        GIT_REPOSITORY https://github.com/lz4/lz4.git
+        GIT_TAG v1.10.0
+        GIT_SHALLOW TRUE
+    )
+    FetchContent_MakeAvailable(lz4)
+    set(LZ4_LIB_DIR ${lz4_SOURCE_DIR}/lib)
+endif()
+
+# Generated sources / embedded assets
+set(ASSETS_DIR ${CMAKE_SOURCE_DIR}/assets)
+set(GENERATED_DIR ${CMAKE_BINARY_DIR}/generated)
+set(ASSETS_CPP ${GENERATED_DIR}/assets_data.cpp)
+set(VERSION_CPP ${CMAKE_SOURCE_DIR}/src/defs.cpp)
+file(MAKE_DIRECTORY ${GENERATED_DIR})
+
+# Generate version file at configure time
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+execute_process(
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/generate_version.py ${VERSION_CPP}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    RESULT_VARIABLE VERSION_RESULT
+)
+if(NOT VERSION_RESULT EQUAL 0)
+    message(WARNING "Failed to generate version file, using defaults")
+endif()
+
+# Run embed_assets.py to generate assets_data.cpp from everything in assets/. All
+# assets (ko, zygisk payloads) are staged into assets/ by build.sh BEFORE configure,
+# so the glob catches them. DEPEND on the asset files (not just the script) plus
+# CONFIGURE_DEPENDS so the table regenerates whenever an asset is added/changed.
+file(GLOB ASSET_FILES CONFIGURE_DEPENDS ${ASSETS_DIR}/*)
+add_custom_command(
+    OUTPUT ${ASSETS_CPP}
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/embed_assets.py
+            ${ASSETS_DIR} ${ASSETS_CPP}
+    DEPENDS ${CMAKE_SOURCE_DIR}/scripts/embed_assets.py ${ASSET_FILES}
+    COMMENT "Generating embedded assets..."
+)
+
+# third_party (MagiskbootAlone, bootctlAlone, resetpropAlone, ndk-busybox): compile into tamisu_daemon for multi-call
+set(MAGISKTOOLS_ALONE_DIR ${CMAKE_SOURCE_DIR}/third_party)
+set(MAGISKBOOT_ALONE_DIR ${MAGISKTOOLS_ALONE_DIR}/MagiskbootAlone)
+set(MAGISKBOOT_SOURCES
+    ${MAGISKBOOT_ALONE_DIR}/src/base_host.cpp
+    ${MAGISKBOOT_ALONE_DIR}/src/bootimg.cpp
+    ${MAGISKBOOT_ALONE_DIR}/src/boot_crypto.cpp
+    ${MAGISKBOOT_ALONE_DIR}/src/cpio.cpp
+    ${MAGISKBOOT_ALONE_DIR}/src/magiskboot_main.cpp
+    ${LZ4_LIB_DIR}/lz4.c
+    ${LZ4_LIB_DIR}/lz4frame.c
+    ${LZ4_LIB_DIR}/lz4hc.c
+    ${LZ4_LIB_DIR}/xxhash.c
+)
+if(EXISTS ${MAGISKBOOT_ALONE_DIR}/src/magiskboot_main.cpp)
+    set_source_files_properties(${MAGISKBOOT_SOURCES} PROPERTIES CXX_STANDARD 20)
+    include_directories(${MAGISKBOOT_ALONE_DIR}/src ${LZ4_LIB_DIR})
+    set(MAGISKBOOT_ALONE_AVAILABLE 1)
+    message(STATUS "MagiskbootAlone: building magiskboot into tamisu_daemon (multi-call)")
+else()
+    message(WARNING "MagiskbootAlone submodule not found at ${MAGISKBOOT_ALONE_DIR}; run: git submodule update --init")
+endif()
+
+set(BOOTCTL_ALONE_DIR ${MAGISKTOOLS_ALONE_DIR}/bootctlAlone)
+set(RESETPROP_ALONE_DIR ${MAGISKTOOLS_ALONE_DIR}/resetpropAlone)
+set(RESETPROP_ALONE_SOURCES)
+if(EXISTS ${BOOTCTL_ALONE_DIR}/src/main.cpp)
+    set(BOOTCTL_ALONE_AVAILABLE 1)
+    message(STATUS "bootctlAlone: building bootctl into tamisu_daemon (multi-call)")
+endif()
+if(EXISTS ${RESETPROP_ALONE_DIR}/src/main.cpp)
+    file(GLOB RESETPROP_ALONE_SOURCES CONFIGURE_DEPENDS
+        ${RESETPROP_ALONE_DIR}/src/*.cpp
+    )
+    set(RESETPROP_ALONE_AVAILABLE 1)
+    message(STATUS "resetpropAlone: building resetprop into tamisu_daemon (multi-call)")
+endif()
+
+# ndk-busybox: build as static lib and link into tamisu_daemon for multi-call (argv0 "busybox")
+set(NDK_BUSYBOX_DIR ${MAGISKTOOLS_ALONE_DIR}/ndk-busybox)
+if(EXISTS ${NDK_BUSYBOX_DIR}/CMakeLists.txt)
+  set(BUSYBOX_EMBEDDED 1 CACHE BOOL "Build busybox as static lib for embedding")
+  add_subdirectory(${NDK_BUSYBOX_DIR} ${CMAKE_BINARY_DIR}/ndk-busybox)
+  set(NDK_BUSYBOX_AVAILABLE 1)
+  message(STATUS "ndk-busybox: building busybox into tamisu_daemon (multi-call)")
+endif()
+
+# Our own sources (clang-tidy will run on these only)
+set(TAMISU_DAEMON_OUR_SOURCES
+    src/main.cpp
+    src/cli.cpp
+    src/defs.cpp
+    src/log.cpp
+    src/utils.cpp
+    src/tamisu_loader.cpp
+    src/core/tamisuctl.cpp
+    src/core/feature.cpp
+    src/core/restorecon.cpp
+    src/core/assets.cpp
+    src/module/module.cpp
+    src/module/module_config.cpp
+    src/boot/boot_patch.cpp
+    src/boot/tools.cpp
+    src/boot/apk_sign.cpp
+    src/sepolicy/sepolicy.cpp
+    src/init_event.cpp
+    src/late_load.cpp
+    src/debug.cpp
+    src/core/hide_bootloader.cpp
+    src/flash/flash_partition.cpp
+    ${ASSETS_CPP}
+)
+
+# Third-party sources (no clang-tidy: MagiskbootAlone, bootctl, resetprop)
+set(TAMISU_DAEMON_THIRDPARTY_SOURCES)
+if(MAGISKBOOT_ALONE_AVAILABLE)
+    list(APPEND TAMISU_DAEMON_THIRDPARTY_SOURCES ${MAGISKBOOT_SOURCES})
+endif()
+if(BOOTCTL_ALONE_AVAILABLE)
+    list(APPEND TAMISU_DAEMON_THIRDPARTY_SOURCES ${BOOTCTL_ALONE_DIR}/src/main.cpp)
+endif()
+if(RESETPROP_ALONE_AVAILABLE)
+    list(APPEND TAMISU_DAEMON_THIRDPARTY_SOURCES ${RESETPROP_ALONE_SOURCES})
+endif()
+
+get_filename_component(REPO_ROOT "${CMAKE_SOURCE_DIR}/../.." ABSOLUTE)
+
+# Zygisk daemon (zygiskd), welded into tamisu_daemon as a multi-call face. Invoked as
+# `tamisu_daemon zygiskd` or via a `zygiskd` -> tamisu_daemon symlink. Source lives with the rest
+# of the zygisk project; bundled here (no clang-tidy) like the other tools.
+set(ZYGISKD_DIR /daemon/zygisk/daemon)
+if(EXISTS ${ZYGISKD_DIR}/zygiskd.cpp)
+    set(ZYGISKD_AVAILABLE 1)
+    list(APPEND TAMISU_DAEMON_THIRDPARTY_SOURCES ${ZYGISKD_DIR}/zygiskd.cpp)
+endif()
+
+# Include directories (for both object libs and tamisu_daemon)
+set(TAMISU_DAEMON_INCLUDE_DIRS
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/src/hymo
+    ${mbedtls_SOURCE_DIR}/include
+    ${miniz_SOURCE_DIR}
+    ${miniz_BINARY_DIR}
+    ${LZ4_LIB_DIR}
+    ${GENERATED_DIR}
+    ${REPO_ROOT}  # uapi/ kernel headers for userspace
+)
+include_directories(${TAMISU_DAEMON_INCLUDE_DIRS})
+
+# Compile definitions shared by our and third-party object libs
+set(TAMISU_DAEMON_DEFINES)
+if(MAGISKBOOT_ALONE_AVAILABLE)
+    list(APPEND TAMISU_DAEMON_DEFINES MAGISKBOOT_ALONE_AVAILABLE=1 USE_MBEDTLS=1)
+endif()
+if(BOOTCTL_ALONE_AVAILABLE)
+    list(APPEND TAMISU_DAEMON_DEFINES BOOTCTL_ALONE_AVAILABLE=1)
+endif()
+if(RESETPROP_ALONE_AVAILABLE)
+    list(APPEND TAMISU_DAEMON_DEFINES RESETPROP_ALONE_AVAILABLE=1)
+endif()
+if(NDK_BUSYBOX_AVAILABLE)
+    list(APPEND TAMISU_DAEMON_DEFINES NDK_BUSYBOX_AVAILABLE=1)
+endif()
+if(ZYGISKD_AVAILABLE)
+    list(APPEND TAMISU_DAEMON_DEFINES ZYGISKD_AVAILABLE=1)
+endif()
+
+# Object library: our sources (with clang-tidy on host only)
+# Android: host clang-tidy + NDK headers mixes host /usr/include (bits/wordsize.h) with NDK and can
+# crash (e.g. bugprone-implicit-widening-of-multiplication-result in NDK errno.h). Run tidy on host build instead.
+add_library(tamisu_daemon_our_objs OBJECT ${TAMISU_DAEMON_OUR_SOURCES})
+target_include_directories(tamisu_daemon_our_objs PRIVATE ${TAMISU_DAEMON_INCLUDE_DIRS})
+target_compile_definitions(tamisu_daemon_our_objs PRIVATE ${TAMISU_DAEMON_DEFINES})
+target_compile_features(tamisu_daemon_our_objs PUBLIC cxx_std_17)
+if(TAMISU_DAEMON_ENABLE_CLANG_TIDY AND NOT ANDROID)
+    set_target_properties(tamisu_daemon_our_objs PROPERTIES
+        CXX_CLANG_TIDY "${CLANG_TIDY_ARGS}"
+        C_CLANG_TIDY "${CLANG_TIDY_ARGS}"
+    )
+endif()
+
+# Object library: third-party sources (no clang-tidy)
+add_library(tamisu_daemon_thirdparty_objs OBJECT ${TAMISU_DAEMON_THIRDPARTY_SOURCES})
+target_include_directories(tamisu_daemon_thirdparty_objs PRIVATE ${TAMISU_DAEMON_INCLUDE_DIRS})
+target_compile_definitions(tamisu_daemon_thirdparty_objs PRIVATE ${TAMISU_DAEMON_DEFINES})
+if(MAGISKBOOT_ALONE_AVAILABLE)
+    target_compile_features(tamisu_daemon_thirdparty_objs PUBLIC cxx_std_20)
+endif()
+
+# Executable: link object libs
+add_executable(tamisu_daemon
+    $<TARGET_OBJECTS:tamisu_daemon_our_objs>
+    $<TARGET_OBJECTS:tamisu_daemon_thirdparty_objs>
+)
+target_compile_definitions(tamisu_daemon PRIVATE ${TAMISU_DAEMON_DEFINES})
+if(ZYGISKD_AVAILABLE)
+    # zygiskd (welded in) logs via liblog's __android_log_print
+    target_link_libraries(tamisu_daemon PRIVATE log)
+endif()
+if(NDK_BUSYBOX_AVAILABLE)
+    target_compile_definitions(tamisu_daemon PRIVATE NDK_BUSYBOX_AVAILABLE=1)
+    target_link_libraries(tamisu_daemon PRIVATE busybox)
+    # libselinux not in NDK; link only when found (e.g. host or custom Android sysroot)
+    find_library(SELINUX_LIB selinux)
+    if(SELINUX_LIB)
+      target_link_libraries(tamisu_daemon PRIVATE selinux)
+    endif()
+    # busybox expects these wraps (from Android.mk)
+    target_link_options(tamisu_daemon PRIVATE -Wl,--wrap=realpath -Wl,--wrap=rename -Wl,--wrap=renameat)
+endif()
+
+# Link libraries - Android bionic libc has built-in pthread, no separate linking needed
+if(NOT ANDROID)
+    target_link_libraries(tamisu_daemon PRIVATE pthread)
+endif()
+
+target_link_libraries(tamisu_daemon PRIVATE z miniz mbedx509 mbedcrypto dl)
+
+# ============================================================================
+# Post-build Size Compression
+# ============================================================================
+
+# llvm-strip: more precise than --strip-all, removes .comment / .note misc sections
+find_program(LLVM_STRIP llvm-strip)
+if(LLVM_STRIP)
+    add_custom_command(TARGET tamisu_daemon POST_BUILD
+        COMMAND ${LLVM_STRIP}
+            --strip-all                  # Remove all symbols
+            --remove-section=.comment    # Remove compiler version info
+            --remove-section=.note       # Remove note section
+            --remove-section=.note.android.ident
+            --remove-section=.note.gnu.build-id
+            $<TARGET_FILE:tamisu_daemon>
+        COMMENT "llvm-strip: removing all debug info & note sections..."
+    )
+endif()
+
+# Optional: UPX binary compression (runtime self-extracting, typically 50-70% further reduction)
+# Pass -DTAMISU_DAEMON_UPX=ON to enable; off by default as some environments don't support UPX
+option(TAMISU_DAEMON_UPX "Use UPX to compress tamisu_daemon binary" OFF)
+if(TAMISU_DAEMON_UPX)
+    find_program(UPX_PROGRAM upx)
+    if(UPX_PROGRAM)
+        add_custom_command(TARGET tamisu_daemon POST_BUILD
+            COMMAND ${UPX_PROGRAM} --best --lzma $<TARGET_FILE:tamisu_daemon>
+            COMMENT "UPX: compressing tamisu_daemon with LZMA (--best)..."
+        )
+        message(STATUS "UPX compression ENABLED (--best --lzma)")
+    else()
+        message(WARNING "TAMISU_DAEMON_UPX=ON but upx not found in PATH; skipping UPX compression")
+    endif()
+endif()
+
+# Report final binary size
+add_custom_command(TARGET tamisu_daemon POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo "-- tamisu_daemon final size:"
+    COMMAND ls -lh $<TARGET_FILE:tamisu_daemon>
+    COMMENT "Reporting final binary size..."
+)
+
+# Install
+install(TARGETS tamisu_daemon DESTINATION bin)
+
+# NOTE: standalone binaries (zygisk loader/core) are built separately and
+# staged into assets/ by build.sh BEFORE this CMake configures, so they are
+# embedded as ordinary prebuilt assets -- tamisu_daemon does NOT compile them.

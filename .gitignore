@@ -11,7 +11,7 @@ local.properties
 .gradle/
 
 # tamisu_daemon build artifacts
-userspace/tamisu_daemon/build-android/
+daemon/tamisud_core/build-android/
 build_tamisu_daemon/
 
 out/

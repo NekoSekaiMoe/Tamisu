@@ -34,8 +34,8 @@ jobs:
       if: ${{ inputs.pack_lkm }}
       run: |
         set -euo pipefail
-        mkdir -p ./userspace/tamisu_daemon/assets
-        cp android*-lkm/*.ko ./userspace/tamisu_daemon/assets/ 2>/dev/null || true
+        mkdir -p ./daemon/tamisud_core/assets
+        cp android*-lkm/*.ko ./daemon/tamisud_core/assets/ 2>/dev/null || true
      
     - name: Determine target settings
       id: target
@@ -75,7 +75,7 @@ jobs:
 
     - name: Build tamisu_daemon
       run: |
-        cd userspace/tamisu_daemon
+        cd daemon/tamisud_core
         mkdir -p build && cd build
         
         # Cross-compile using Android NDK toolchain
@@ -101,4 +101,4 @@ jobs:
       with:
         name: tamisu_daemon-${{ inputs.target }}
         path: |
-          userspace/tamisu_daemon/build/tamisu_daemon
+          daemon/tamisud_core/build/tamisu_daemon

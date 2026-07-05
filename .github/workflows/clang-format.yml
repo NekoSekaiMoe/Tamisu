@@ -4,16 +4,16 @@ on:
   push:
     paths:
       - '.github/workflows/clang-format.yml'
-      - 'kernel/**/*.c'
-      - 'kernel/**/*.h'
+      - 'core/**/*.c'
+      - 'core/**/*.h'
   pull_request:
     branches:
       - 'main'
     paths:
       - '.github/workflows/clang-format.yml'
-      - 'kernel/**/*.c'
-      - 'kernel/**/*.h'
-      - 'kernel/.clang-format'
+      - 'core/**/*.c'
+      - 'core/**/*.h'
+      - 'core/.clang-format'
 
 permissions:
   checks: write

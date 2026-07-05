@@ -1,0 +1,339 @@
+#include "init_event.h"
+#include "assets.h"
+#include "core/feature.h"
+#include "core/hide_bootloader.h"
+#include "core/tamisuctl.h"
+#include "core/restorecon.h"
+#include "defs.h"
+#include "log.h"
+#include "module/module.h"
+#include "module/module_config.h"
+#include "utils.h"
+
+#include <fcntl.h>
+#include <poll.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <array>
+#include <cerrno>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
+namespace tamisu_daemon {
+
+namespace {
+
+// Catch boot logs (logcat/dmesg) to file
+void catch_bootlog(const char* logname, const std::vector<const char*>& command) {
+    ensure_dir_exists(LOG_DIR);
+
+    const std::string bootlog = std::string(LOG_DIR) + "/" + logname + ".log";
+    const std::string oldbootlog = std::string(LOG_DIR) + "/" + logname + ".old.log";
+
+    // Rotate old log
+    if (access(bootlog.c_str(), F_OK) == 0) {
+        (void)rename(bootlog.c_str(), oldbootlog.c_str());
+    }
+
+    // Fork and exec timeout command
+    const pid_t pid = fork();
+    if (pid < 0) {
+        LOGW("Failed to fork for %s: %s", logname, strerror(errno));
+        return;
+    }
+
+    if (pid == 0) {
+        // Child process
+        // Create new process group
+        setpgid(0, 0);
+
+        // Switch cgroups
+        switch_cgroups();
+
+        // Open log file for stdout
+        const int fd = open(bootlog.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 0) {
+            _exit(1);
+        }
+        dup2(fd, STDOUT_FILENO);
+        close(fd);
+
+        // Build argv: timeout -s 9 30s <command...>
+        std::vector<const char*> argv;
+        argv.push_back("timeout");
+        argv.push_back("-s");
+        argv.push_back("9");
+        argv.push_back("30s");
+        for (const char* arg : command) {
+            argv.push_back(arg);
+        }
+        argv.push_back(nullptr);
+
+        execvp("timeout", const_cast<char* const*>(argv.data()));
+        _exit(127);
+    }
+
+    // Parent: don't wait, let it run in background
+    LOGI("Started %s capture (pid %d)", logname, pid);
+}
+
+void run_stage(const std::string& stage, bool block) {
+    umask(0);
+
+    // Check for Magisk (like Rust version)
+    if (has_magisk()) {
+        LOGW("Magisk detected, skip %s", stage.c_str());
+        return;
+    }
+
+    if (is_safe_mode()) {
+        LOGW("safe mode, skip %s scripts", stage.c_str());
+        return;
+    }
+
+    // Execute common scripts first
+    exec_common_scripts(stage + ".d", block);
+
+    // Execute regular modules stage scripts
+    exec_stage_script(stage, block);
+}
+
+// Launch zygiskd detached.
+int spawn_zygiskd() {
+    int ready_pipe[2] = {-1, -1};
+    if (pipe(ready_pipe) != 0) {
+        LOGW("Failed to create zygiskd ready pipe: %s", strerror(errno));
+    }
+
+    pid_t pid = fork();
+    if (pid < 0) {
+        LOGE("Failed to fork zygiskd launcher: %s", strerror(errno));
+        if (ready_pipe[0] >= 0)
+            close(ready_pipe[0]);
+        if (ready_pipe[1] >= 0)
+            close(ready_pipe[1]);
+        return -1;
+    }
+    if (pid == 0) {
+        if (ready_pipe[0] >= 0)
+            close(ready_pipe[0]);
+
+        if (setpgid(0, 0) != 0) {
+            LOGW("Failed to detach zygiskd process group: %s", strerror(errno));
+        }
+        switch_cgroups();
+
+        const int devnull = open("/dev/null", O_RDWR | O_CLOEXEC);
+        if (devnull >= 0) {
+            dup2(devnull, STDIN_FILENO);
+            dup2(devnull, STDOUT_FILENO);
+            dup2(devnull, STDERR_FILENO);
+            if (devnull > STDERR_FILENO) {
+                close(devnull);
+            }
+        }
+
+        const pid_t grandchild = fork();
+        if (grandchild < 0) {
+            if (ready_pipe[1] >= 0) {
+                const char fail = '0';
+                write(ready_pipe[1], &fail, 1);
+                close(ready_pipe[1]);
+            }
+            _exit(127);
+        }
+        if (grandchild > 0) {
+            if (ready_pipe[1] >= 0)
+                close(ready_pipe[1]);
+            _exit(0);
+        }
+
+        if (ready_pipe[1] >= 0) {
+            char fd_env[16];
+            snprintf(fd_env, sizeof(fd_env), "%d", ready_pipe[1]);
+            setenv("YUKIZYGISK_READY_FD", fd_env, 1);
+        }
+
+        char* const argv[] = {const_cast<char*>(DAEMON_PATH), const_cast<char*>("zygiskd"),
+                              nullptr};
+        execv(DAEMON_PATH, argv);
+
+        char* const fallback_argv[] = {const_cast<char*>("tamisu_daemon"), const_cast<char*>("zygiskd"),
+                                       nullptr};
+        execv("/proc/self/exe", fallback_argv);
+        if (ready_pipe[1] >= 0) {
+            const char fail = '0';
+            write(ready_pipe[1], &fail, 1);
+            close(ready_pipe[1]);
+        }
+        _exit(127);
+    }
+
+    if (ready_pipe[1] >= 0)
+        close(ready_pipe[1]);
+
+    int status = 0;
+    if (waitpid(pid, &status, 0) < 0) {
+        LOGW("waitpid for zygiskd launcher failed: %s", strerror(errno));
+    }
+
+    if (ready_pipe[0] >= 0) {
+        pollfd pfd{};
+        pfd.fd = ready_pipe[0];
+        pfd.events = POLLIN | POLLHUP;
+        const int pr = poll(&pfd, 1, 5000);
+        char ready = '0';
+
+        if (pr > 0 && read(ready_pipe[0], &ready, 1) == 1 && ready == '1') {
+            LOGI("zygiskd reported ready");
+        } else {
+            LOGW("zygiskd did not report ready before zygote exec (poll=%d, byte=%c)", pr, ready);
+        }
+        close(ready_pipe[0]);
+    }
+    return 0;
+}
+
+bool yukizygisk_feature_enabled() {
+    if (is_safe_mode()) {
+        return false;
+    }
+    const auto [value, supported] = get_feature(TAMISU_FEATURE_YUKIZYGISK);
+    return supported && value != 0;
+}
+
+void ensure_yukizygisk_payload_if_enabled() {
+    if (!yukizygisk_feature_enabled()) {
+        return;
+    }
+    ensure_yukizygisk(true);
+}
+
+void ensure_zygiskd_running_if_enabled() {
+    if (!yukizygisk_feature_enabled())
+        return;
+    // Yield to Magisk Zygisk if it is enabled. Magisk injects via the native
+    // bridge and reaches zygote earlier than we do; running both loaders in
+    // one zygote process corrupts PLT hooks and crashes the process.
+    // Priority: Magisk Zygisk > Tamisu > {ZygiskNext, NeoZygisk, ReZygisk}.
+    if (is_magisk_zygisk_enabled()) {
+        LOGW("YukiZygisk disabled: Magisk Zygisk has higher priority");
+        return;
+    }
+    LOGI("YukiZygisk feature on -- launching zygiskd");
+    spawn_zygiskd();
+}
+
+}  // namespace
+
+int on_post_data_fs() {
+    LOGI("post-fs-data triggered");
+
+    if (set_init_pgrp() != 0) {
+        LOGW("set init pgrp failed");
+    }
+
+    // Report to kernel first
+    report_post_fs_data();
+
+    umask(0);
+
+    // Clear all temporary module configs early (like Rust version)
+    clear_all_temp_configs();
+
+    // Catch boot logs
+    catch_bootlog("logcat", {"logcat", "-b", "all"});
+    catch_bootlog("dmesg", {"dmesg", "-w"});
+
+    // Check for Magisk (like Rust version)
+    if (has_magisk()) {
+        LOGW("Magisk detected, skip post-fs-data!");
+        return 0;
+    }
+
+    // Check for safe mode FIRST (like Rust version)
+    const bool safe_mode = is_safe_mode();
+
+    if (safe_mode) {
+        LOGW("safe mode, skip common post-fs-data.d scripts");
+    } else {
+        // Execute common post-fs-data scripts
+        exec_common_scripts("post-fs-data.d", true);
+    }
+
+    // Ensure directories exist
+    ensure_dir_exists(WORKING_DIR);
+    ensure_dir_exists(MODULE_DIR);
+    ensure_dir_exists(LOG_DIR);
+
+    // Ensure binaries exist (AFTER safe mode check, like Rust)
+    if (ensure_binaries(true) != 0) {
+        LOGW("Failed to ensure binaries");
+    }
+
+    // if we are in safe mode, we should disable all modules
+    if (safe_mode) {
+        LOGW("safe mode, skip post-fs-data scripts!");
+        return 0;
+    }
+
+    // Refresh custom init rc for the next boot. This also covers manual edits in
+    // /data/adb/initrc.d.
+    if (regenerate_preinit_rc() != 0) {
+        LOGW("regenerate preinit rc failed");
+    }
+
+    // Restorecon
+    restorecon("/data/adb", true);
+
+    // Load sepolicy rules from modules
+    load_sepolicy_rule();
+
+    // Load feature config (with init_features handling managed features)
+    init_features();
+    ensure_yukizygisk_payload_if_enabled();
+    ensure_zygiskd_running_if_enabled();
+
+    // Tamisu is a zygisk provider, not a mount solution. Module mounting
+    // (metamodule / metamount.sh / built-in mount) is owned by the root
+    // solution coexisting on the device (Tamisu/Magisk/APatch). Tamisu
+    // only runs regular module stage scripts so zygisk modules can react
+    // to boot phases.
+    exec_stage_script("post-fs-data", true);
+    load_system_prop();
+
+    run_stage("post-mount", true);
+
+    chdir("/");
+
+    LOGI("post-fs-data completed");
+    return 0;
+}
+
+void on_services() {
+    LOGI("services triggered");
+
+    // Hide bootloader unlock status (soft BL hiding)
+    // Service stage is the correct timing - after boot_completed is set
+    hide_bootloader_status();
+
+    run_stage("service", false);
+
+    LOGI("services completed");
+}
+
+void on_boot_completed() {
+    LOGI("boot-completed triggered");
+
+    // Report to kernel
+    report_boot_complete();
+
+    // Run boot-completed stage
+    run_stage("boot-completed", false);
+
+    LOGI("boot-completed completed");
+}
+
+}  // namespace tamisu_daemon
