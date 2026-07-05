@@ -108,9 +108,84 @@ CONFIG_TAMISU=m CC=clang make -j$(nproc)
 
 ## Install
 
-WIP — Tamisu is currently delivered as a Manager APK + boot-patched
-kernel image (or runtime `insmod` of `tamisu.ko` via `tamisu_daemon
-late-load`). See `apk/app/src/main/.../Install.kt` for the in-app flow.
+## Install
+
+Tamisu ships four loading paths, listed below in order of preference.
+The kernel module (`tamisu.ko`) cannot be loaded with the system
+`insmod` because it references non-exported GKI kernel symbols
+(`policydb_*`, `init_mm`, `selinux_state`, tracepoint data, ...). Every
+loading path below goes through Tamisu's own loader
+(`daemon/tamisud_core/src/kernelsu_loader.cpp`), which patches the
+ELF's `SHN_UNDEF` symbols to `SHN_ABS` with addresses resolved from
+`/proc/kallsyms` before calling `init_module` — bypassing the kernel
+module loader's `ksymtab` lookup entirely.
+
+### Path 1 — Boot-patch + init `modprobe` (recommended for production)
+
+The manager app patches `boot.img` (or `init_boot.img` on Android 13+)
+to inject `tamisu.ko` into the ramdisk under `/lib/modules/<kver>/`
+plus a `modules.load` entry. On the next boot, Android's first-stage
+`init` runs `modprobe` and loads `tamisu.ko` **before zygote forks**,
+so the kernel hook is already in place when the first app process is
+forked.
+
+In-app flow: Manager → Install → select `boot.img` → flash → reboot.
+
+No manual `insmod`; the recommended path for daily use.
+
+### Path 2 — `tamisu_daemon late-load`
+
+When the device is already booted (e.g. testing, or you don't want to
+re-flash boot), trigger late-load from the manager Install page, or
+from a root shell:
+
+```sh
+tamisu_daemon late-load
+```
+
+This runs the loader, then performs the full userspace bring-up:
+restorecon → sepolicy rules → feature flags → stage scripts →
+`system.prop` → re-enforce SELinux → restart the manager. Only app
+processes forked **after** late-load will be injected; already-running
+apps are not retroactively injected.
+
+Prerequisite: SELinux must be `permissive`, or you already have a root
+shell from a coexisting root solution (KernelSU / Magisk / APatch) to
+run `tamisu_daemon` as root.
+
+### Path 3 — `tamisu_daemon insmod <ko>` (debug / manual)
+
+Loads any `.ko` via Tamisu's ELF-patching loader, without running the
+late-load stage scripts:
+
+```sh
+tamisu_daemon insmod /data/local/tmp/tamisu.ko
+```
+
+Useful for development and debugging (e.g. iterating on a locally
+built `tamisu.ko`). Same loader as Path 1/2; just skips the
+post-install init.
+
+### Path 4 — Magica bootstrap (permissive-only devices)
+
+For devices where no root shell is available at all and SELinux is
+permissive (e.g. some OEM-unlocked engineering builds), the manager
+can bootstrap Tamisu via Magica. This is an edge path; see
+`apk/.../Install.kt` (`Trigger late-load` button falls back to Magica
+when no root shell is detected).
+
+### Why the system `insmod` does not work
+
+Stock GKI kernels do not `EXPORT_SYMBOL` the SELinux policydb helpers,
+mm internals like `init_mm`, `kallsyms_lookup_name`, tracepoint data
+symbols, etc. Tamisu's privileged ioctls (in-kernel SELinux policy
+rewriting for zygiskd's allow rules) need these symbols. The system
+`insmod` from busybox / kmod calls `init_module(2)` directly, and the
+kernel's module loader refuses to resolve any symbol not present in
+`ksymtab` / `ksymtab_gpl` (`-ENOENT`). Tamisu's loader sidesteps this
+by rewriting the ELF before `init_module` so the loader sees each
+previously-undefined symbol as `SHN_ABS` with the real address, never
+looking it up in `ksymtab`.
 
 ## Injection architecture & detection surface
 

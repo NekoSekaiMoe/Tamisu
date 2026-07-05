@@ -108,14 +108,14 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 SettingsGroupCard(
                     title = stringResource(R.string.configuration),
                     content = {
-                        var yukiZygiskEnabled by remember { mutableStateOf(false) }
-                        val yukiZygiskStatus by produceState(initialValue = "") {
+                        var zygiskEnabled by remember { mutableStateOf(false) }
+                        val zygiskStatus by produceState(initialValue = "") {
                             value = getFeatureStatus("zygisk")
                         }
                         LaunchedEffect(Unit) {
-                            yukiZygiskEnabled = getFeatureValue("zygisk")
+                            zygiskEnabled = getFeatureValue("zygisk")
                         }
-                        val yukiZygiskSummary = when (yukiZygiskStatus) {
+                        val zygiskSummary = when (zygiskStatus) {
                             "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
                             "managed" -> stringResource(id = R.string.feature_status_managed_summary)
                             else -> stringResource(id = R.string.settings_zygisk_summary)
@@ -123,11 +123,11 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         SwitchItem(
                             icon = Icons.Filled.Extension,
                             title = stringResource(id = R.string.settings_zygisk),
-                            summary = yukiZygiskSummary,
-                            checked = yukiZygiskEnabled,
-                            enabled = yukiZygiskStatus == "supported",
+                            summary = zygiskSummary,
+                            checked = zygiskEnabled,
+                            enabled = zygiskStatus == "supported",
                             onCheckedChange = { enable ->
-                                yukiZygiskEnabled = enable
+                                zygiskEnabled = enable
                                 scope.launch {
                                     if (setFeatureValue("zygisk", enable)) {
                                         snackBarHost.showSnackbar(
@@ -137,7 +137,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                             )
                                         )
                                     } else {
-                                        yukiZygiskEnabled = getFeatureValue("zygisk")
+                                        zygiskEnabled = getFeatureValue("zygisk")
                                         snackBarHost.showSnackbar(
                                             context.getString(R.string.settings_zygisk_toast_failed)
                                         )

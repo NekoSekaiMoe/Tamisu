@@ -144,7 +144,7 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="home_contribution_card">Tamisu</string>
-    <string name="home_contribution_card_desc">Tamisu is a kernel-level Zygisk provider (à la ZygiskNext), not a root provider. It coexists with Tamisu, Magisk, or APatch, owning only zygote injection while the root solution owns su, app profile, and modules.</string>
+    <string name="home_contribution_card_desc">Tamisu is a kernel-level Zygisk provider (à la ZygiskNext), not a root provider. It coexists with KernelSU, Magisk, or APatch, owning only zygote injection while the root solution owns su, app profile, and modules.</string>
     <string name="custom_settings">Custom settings</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
