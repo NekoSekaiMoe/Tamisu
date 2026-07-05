@@ -94,7 +94,7 @@ private const val YZCONFIG_DIR = "/data/tamisu/zygisk"
 private const val YZCONFIG_PATH = "$YZCONFIG_DIR/yzconfig.json"
 
 data class YzConfig(
-    val yukilinker: Boolean = true,
+    val zygisk_linker: Boolean = true,
     val denylistMode: Int = 0,
     val dmesgLog: Boolean = false,
     val grantFilterActive: Boolean = false,
@@ -113,7 +113,7 @@ private suspend fun readYzConfig(): YzConfig = withContext(Dispatchers.IO) {
             } ?: emptyList()
         } else emptyList()
         YzConfig(
-            yukilinker = o.optBoolean("yukilinker", true),
+            zygisk_linker = o.optBoolean("zygisk_linker", true),
             denylistMode = o.optInt("denylist_mode", 0),
             dmesgLog = o.optBoolean("dmesg_log", false),
             grantFilterActive = hasGrant,
@@ -126,7 +126,7 @@ private suspend fun readYzConfig(): YzConfig = withContext(Dispatchers.IO) {
 
 private suspend fun writeYzConfig(cfg: YzConfig) = withContext(Dispatchers.IO) {
     val json = JSONObject().apply {
-        put("yukilinker", cfg.yukilinker)
+        put("zygisk_linker", cfg.zygisk_linker)
         put("denylist_mode", cfg.denylistMode)
         put("dmesg_log", cfg.dmesgLog)
         if (cfg.grantFilterActive) {
@@ -315,7 +315,7 @@ private const val YZ_POLL_INTERVAL_MS = 2000L
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
 @Composable
-fun Tamisu ZygiskScreen(navigator: DestinationsNavigator) {
+fun ZygiskScreen(navigator: DestinationsNavigator) {
     val scrollBehavior =
         TopAppBarDefaults.pinnedScrollBehavior(androidx.compose.material3.rememberTopAppBarState())
     val scope = rememberCoroutineScope()
@@ -419,7 +419,7 @@ fun Tamisu ZygiskScreen(navigator: DestinationsNavigator) {
                 )
                 StatusRow(
                     stringResource(R.string.zygisk_module_loader),
-                    if (config.yukilinker) stringResource(R.string.zygisk_loader_anon)
+                    if (config.zygisk_linker) stringResource(R.string.zygisk_loader_anon)
                     else stringResource(R.string.zygisk_loader_system),
                 )
                 StatusRow(
@@ -573,8 +573,8 @@ fun Tamisu ZygiskScreen(navigator: DestinationsNavigator) {
                     icon = Icons.Filled.Memory,
                     title = stringResource(R.string.zygisk_anon_loading_title),
                     summary = stringResource(R.string.zygisk_anon_loading_summary),
-                    checked = config.yukilinker,
-                    onChange = { save(config.copy(yukilinker = it)) },
+                    checked = config.zygisk_linker,
+                    onChange = { save(config.copy(zygisk_linker = it)) },
                 )
                 Text(
                     stringResource(R.string.zygisk_loaded_modules_count, modulesLoadedCount),

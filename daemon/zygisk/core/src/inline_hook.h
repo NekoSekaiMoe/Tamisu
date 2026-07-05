@@ -38,7 +38,7 @@ extern uint64_t g_yz_ret_ctx[];
 bool yz_patch_text(uintptr_t addr, const void *bytes, unsigned int len);
 }
 
-namespace yuki::ihook {
+namespace zygisk::ihook {
 
 struct Hook {
   uint32_t *target = nullptr; // patched function start
@@ -230,4 +230,4 @@ inline void uninstall(Hook *h) {
   h->active = false;
 }
 
-} // namespace yuki::ihook
+} // namespace zygisk::ihook

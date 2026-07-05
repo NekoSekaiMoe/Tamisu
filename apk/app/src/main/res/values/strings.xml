@@ -378,7 +378,7 @@
     <string name="zygisk_status_active">Active</string>
     <string name="zygisk_status_off">Off</string>
     <string name="zygisk_module_loader">Module loader</string>
-    <string name="zygisk_loader_anon">yukilinker (anonymous)</string>
+    <string name="zygisk_loader_anon">zygisk_linker (anonymous)</string>
     <string name="zygisk_loader_system">System dlopen</string>
     <string name="zygisk_denylist_behaviour">Denylist behaviour</string>
     <string name="zygisk_denylist_force_long">Force unmount + no inject</string>
@@ -410,8 +410,8 @@
     <string name="zygisk_native_module_failed_message">Safe mode enabled; some targets skipped.</string>
     <string name="zygisk_native_target_line">%1$s · %2$s · pid %3$d</string>
     <string name="zygisk_module_loading">Module loading</string>
-    <string name="zygisk_anon_loading_title">Anonymous loading (yukilinker)</string>
-    <string name="zygisk_anon_loading_summary">Load modules via the custom linker (yukilinker) into anonymous memory. Module fds are copied to memfd and closed before onLoad; injected segments are anonymized by solist (mremap + JIT-like relabeling) post-specialize. Note: the first-stage loader is still brought in by the target\'s own system linker (android_dlopen_ext) — this is inherent to the design.</string>
+    <string name="zygisk_anon_loading_title">Anonymous loading (zygisk_linker)</string>
+    <string name="zygisk_anon_loading_summary">Load modules via the custom linker (zygisk_linker) into anonymous memory. Module fds are copied to memfd and closed before onLoad; injected segments are anonymized by solist (mremap + JIT-like relabeling) post-specialize. Note: the first-stage loader is still brought in by the target\'s own system linker (android_dlopen_ext) — this is inherent to the design.</string>
     <string name="zygisk_loaded_modules_count">Loaded modules: %1$d</string>
     <string name="zygisk_grant_title">Zygote module grants</string>
     <string name="zygisk_grant_filter_title">Per-module grant filter</string>

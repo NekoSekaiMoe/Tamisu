@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <link.h>
 
-namespace yukilinker {
+namespace zygisk_linker {
 
 struct SoHandle {
   uint8_t *load_bias = nullptr; // mapping base - min_vaddr
@@ -79,8 +79,8 @@ void dlclose(SoHandle *h);
 /* Drop process-wide loader state. */
 void shutdown();
 
-/* dl_iterate_phdr with yukilinker-loaded modules. */
+/* dl_iterate_phdr with zygisk_linker-loaded modules. */
 int dl_iterate_phdr_hook(int (*cb)(struct dl_phdr_info *, size_t, void *),
                          void *data);
 
-} // namespace yukilinker
+} // namespace zygisk_linker

@@ -26,7 +26,7 @@
 #define PR_SET_VMA_ANON_NAME 0
 #endif // #ifndef PR_SET_VMA_ANON_NAME
 
-namespace yuki::solist {
+namespace zygisk::solist {
 namespace {
 
 extern "C" __attribute__((weak, format(printf, 1, 2))) void
@@ -644,4 +644,4 @@ int name_anonymous_exec() {
   return n;
 }
 
-} // namespace yuki::solist
+} // namespace zygisk::solist

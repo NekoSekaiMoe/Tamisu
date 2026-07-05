@@ -8,7 +8,7 @@
 #include "inline_hook.h"
 #include "log.h"
 #include "solist.h"
-#include "yukilinker.h"
+#include "zygisk_linker.h"
 #include "zygiskd.h"
 
 #include "uapi/zygisk.h"
@@ -105,12 +105,12 @@ struct ModuleHandle {
   uint32_t magic = kHandleMagic;
   uint32_t index = 0;
   void *so = nullptr;
-  bool yuki_loaded = false;
+  bool zygisk_loaded = false;
 };
 
 struct InlineHookRecord {
   void *target = nullptr;
-  yuki::ihook::Hook hook{};
+  zygisk::ihook::Hook hook{};
 };
 
 struct ResolvedSymbol {
@@ -598,7 +598,7 @@ int api_inline_hook(void *target, void *addr, void **original) {
 
   InlineHookRecord rec{};
   rec.target = target;
-  void *orig = yuki::ihook::install(target, addr, &rec.hook);
+  void *orig = zygisk::ihook::install(target, addr, &rec.hook);
   if (orig == nullptr) {
     LOGE("inline hook: install failed target=%p handler=%p", target, addr);
     return kFailed;
@@ -617,7 +617,7 @@ int api_inline_unhook(void *target) {
   for (auto it = g_inline_hooks.begin(); it != g_inline_hooks.end(); ++it) {
     if (it->target != target)
       continue;
-    yuki::ihook::uninstall(&it->hook);
+    zygisk::ihook::uninstall(&it->hook);
     g_inline_hooks.erase(it);
     return kSuccess;
   }
@@ -749,12 +749,12 @@ void load_matching_modules() {
     }
 
     std::string lib_name = basename_of(info.lib_path);
-    bool yuki_loaded = false;
-    void *so = yukilinker::dlopen_memfd(lib_fd, info.lib_path,
+    bool zygisk_loaded = false;
+    void *so = zygisk_linker::dlopen_memfd(lib_fd, info.lib_path,
                                         /*file_backed=*/true);
     if (so != nullptr) {
-      yuki_loaded = true;
-      LOGI("native core: yukilinker loaded id=%s idx=%u path=%s",
+      zygisk_loaded = true;
+      LOGI("native core: zygisk_linker loaded id=%s idx=%u path=%s",
            info.module_id, i, info.lib_path);
     } else {
       android_dlextinfo ext{};
@@ -784,13 +784,13 @@ void load_matching_modules() {
       continue;
     }
     auto *mod = reinterpret_cast<ZygiskNextModule *>(
-        yuki_loaded ? yukilinker::dlsym(static_cast<yukilinker::SoHandle *>(so),
+        zygisk_loaded ? zygisk_linker::dlsym(static_cast<zygisk_linker::SoHandle *>(so),
                                         "zn_module")
                     : dlsym(so, "zn_module"));
     if (mod == nullptr) {
       LOGE("native core: zn_module missing id=%s idx=%u", info.module_id, i);
-      if (yuki_loaded)
-        yukilinker::dlclose(static_cast<yukilinker::SoHandle *>(so));
+      if (zygisk_loaded)
+        zygisk_linker::dlclose(static_cast<zygisk_linker::SoHandle *>(so));
       else
         dlclose(so);
       continue;
@@ -799,8 +799,8 @@ void load_matching_modules() {
         mod->onModuleLoaded == nullptr) {
       LOGE("native core: unsupported module id=%s idx=%u api=%d entry=%p",
            info.module_id, i, mod->target_api_version, mod->onModuleLoaded);
-      if (yuki_loaded)
-        yukilinker::dlclose(static_cast<yukilinker::SoHandle *>(so));
+      if (zygisk_loaded)
+        zygisk_linker::dlclose(static_cast<zygisk_linker::SoHandle *>(so));
       else
         dlclose(so);
       continue;
@@ -809,7 +809,7 @@ void load_matching_modules() {
     auto *handle = new ModuleHandle();
     handle->index = i;
     handle->so = so;
-    handle->yuki_loaded = yuki_loaded;
+    handle->zygisk_loaded = zygisk_loaded;
     g_loaded_modules.push_back(handle);
     LOGI("native module onModuleLoaded: %s", info.module_id);
     mod->onModuleLoaded(handle, &g_api);
@@ -995,6 +995,6 @@ zygisk_core_entry_direct(int /*core_fd*/) {
 
 extern "C" [[gnu::visibility("default")]] void zygisk_finalize_loader(int) {
   int n =
-      yuki::solist::drop_lib_containing(g_loader_base, !g_loader_unmap_safe);
+      zygisk::solist::drop_lib_containing(g_loader_base, !g_loader_unmap_safe);
   LOGI("native finalize_loader: unloaded %d soinfo(s)", n);
 }

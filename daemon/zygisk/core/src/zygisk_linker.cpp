@@ -12,7 +12,7 @@
 #define YUKILINKER_BOOTSTRAP 0
 #endif // #ifndef YUKILINKER_BOOTSTRAP
 
-#include "yukilinker.h"
+#include "zygisk_linker.h"
 
 #include <cerrno>
 #include <cstring>
@@ -83,7 +83,7 @@
 #define DT_RELRENT 0x6fffe003
 #endif // #ifndef DT_RELRENT
 
-namespace yukilinker {
+namespace zygisk_linker {
 namespace {
 
 constexpr size_t kPage = 4096;
@@ -179,7 +179,7 @@ void create_tls_key_once() {
   if (pthread_key_create(&g_tls_key, destroy_thread_tls) == 0)
     g_tls_key_ready = true;
   else
-    ZLOGE("yukilinker: failed to create TLS key");
+    ZLOGE("zygisk_linker: failed to create TLS key");
 }
 
 ThreadTls *get_thread_tls() {
@@ -193,12 +193,12 @@ ThreadTls *get_thread_tls() {
     return ttls;
   ttls = static_cast<ThreadTls *>(calloc(1, sizeof(ThreadTls)));
   if (ttls == nullptr) {
-    ZLOGE("yukilinker: failed to allocate thread TLS state");
+    ZLOGE("zygisk_linker: failed to allocate thread TLS state");
     return nullptr;
   }
   if (pthread_setspecific(g_tls_key, ttls) != 0) {
     free(ttls);
-    ZLOGE("yukilinker: failed to bind thread TLS state");
+    ZLOGE("zygisk_linker: failed to bind thread TLS state");
     return nullptr;
   }
   return ttls;
@@ -210,7 +210,7 @@ void *allocate_tls_block_locked(TlsModule *mod) {
     align = sizeof(void *);
   void *block = nullptr;
   if (posix_memalign(&block, align, mod->memsz) != 0) {
-    ZLOGE("yukilinker: failed to allocate TLS block");
+    ZLOGE("zygisk_linker: failed to allocate TLS block");
     return nullptr;
   }
   memset(block, 0, mod->memsz);
@@ -223,13 +223,13 @@ bool register_tls_module(SoHandle *h) {
   if (h == nullptr || h->tls_memsz == 0)
     return true;
   if (h->tls_filesz > h->tls_memsz) {
-    ZLOGE("yukilinker: TLS filesz exceeds memsz");
+    ZLOGE("zygisk_linker: TLS filesz exceeds memsz");
     return false;
   }
   if (h->tls_align == 0)
     h->tls_align = 1;
   if (!is_power_of_two(h->tls_align)) {
-    ZLOGE("yukilinker: TLS segment alignment %zu is not a power of 2",
+    ZLOGE("zygisk_linker: TLS segment alignment %zu is not a power of 2",
           h->tls_align);
     return false;
   }
@@ -237,13 +237,13 @@ bool register_tls_module(SoHandle *h) {
   pthread_mutex_lock(&g_tls_lock);
   if (g_tls_shutdown) {
     pthread_mutex_unlock(&g_tls_lock);
-    ZLOGE("yukilinker: refusing TLS registration after shutdown");
+    ZLOGE("zygisk_linker: refusing TLS registration after shutdown");
     return false;
   }
   size_t mod_id = g_next_tls_mod_id++;
   if (mod_id >= kMaxTlsModules) {
     pthread_mutex_unlock(&g_tls_lock);
-    ZLOGE("yukilinker: TLS module table is full");
+    ZLOGE("zygisk_linker: TLS module table is full");
     return false;
   }
   TlsModule &mod = g_tls_modules[mod_id];
@@ -276,7 +276,7 @@ void *custom_tls_get_addr(TlsIndex *ti) {
     return nullptr;
   size_t mod_id = static_cast<size_t>(ti->module);
   if (mod_id == 0 || mod_id >= kMaxTlsModules) {
-    ZLOGE("yukilinker: invalid TLS module %zu", mod_id);
+    ZLOGE("zygisk_linker: invalid TLS module %zu", mod_id);
     return nullptr;
   }
 
@@ -288,12 +288,12 @@ void *custom_tls_get_addr(TlsIndex *ti) {
   TlsModule *mod = &g_tls_modules[mod_id];
   if (mod->owner == nullptr || mod->unloading) {
     pthread_mutex_unlock(&g_tls_lock);
-    ZLOGE("yukilinker: TLS module %zu is not registered", mod_id);
+    ZLOGE("zygisk_linker: TLS module %zu is not registered", mod_id);
     return nullptr;
   }
   if (ti->offset >= mod->memsz) {
     pthread_mutex_unlock(&g_tls_lock);
-    ZLOGE("yukilinker: TLS offset out of range");
+    ZLOGE("zygisk_linker: TLS offset out of range");
     return nullptr;
   }
   if (ttls->blocks[mod_id] == nullptr) {
@@ -449,7 +449,7 @@ void *resolve(const SoHandle *h, uint32_t symidx, bool *ok) {
 
   if (ELF64_ST_BIND(s.st_info) == STB_WEAK)
     return nullptr; // weak undefined is allowed -> 0
-  ZLOGE("yukilinker: unresolved symbol '%s'", name);
+  ZLOGE("zygisk_linker: unresolved symbol '%s'", name);
   *ok = false;
   return nullptr;
 }
@@ -470,11 +470,11 @@ bool resolve_tls_reference(const SoHandle *h, uint32_t symidx,
   if (symidx == 0) {
     if (h->tls_mod_id == 0) {
       ZLOGE(
-          "yukilinker: TLS relocation refers to an image with no TLS segment");
+          "zygisk_linker: TLS relocation refers to an image with no TLS segment");
       return false;
     }
     if (addend < 0) {
-      ZLOGE("yukilinker: negative TLS relocation addend");
+      ZLOGE("zygisk_linker: negative TLS relocation addend");
       return false;
     }
     out->module = h->tls_mod_id;
@@ -490,22 +490,22 @@ bool resolve_tls_reference(const SoHandle *h, uint32_t symidx,
       out->offset = addend > 0 ? static_cast<uintptr_t>(addend) : 0;
       return true;
     }
-    ZLOGE("yukilinker: unresolved TLS symbol '%s'", name);
+    ZLOGE("zygisk_linker: unresolved TLS symbol '%s'", name);
     return false;
   }
 
   if (ELF64_ST_TYPE(s.st_info) != STT_TLS) {
-    ZLOGE("yukilinker: TLS relocation refers to non-TLS symbol '%s'", name);
+    ZLOGE("zygisk_linker: TLS relocation refers to non-TLS symbol '%s'", name);
     return false;
   }
   if (h->tls_mod_id == 0) {
-    ZLOGE("yukilinker: TLS symbol '%s' has no TLS segment", name);
+    ZLOGE("zygisk_linker: TLS symbol '%s' has no TLS segment", name);
     return false;
   }
 
   auto off = static_cast<int64_t>(s.st_value) + addend;
   if (off < 0) {
-    ZLOGE("yukilinker: negative TLS symbol offset for '%s'", name);
+    ZLOGE("zygisk_linker: negative TLS symbol offset for '%s'", name);
     return false;
   }
   out->module = h->tls_mod_id;
@@ -576,7 +576,7 @@ bool apply_rela(SoHandle *h, const ElfW(Rela) * rela, size_t count) {
       auto *ti = static_cast<TlsIndex *>(
           arena_alloc(sizeof(TlsIndex), alignof(TlsIndex)));
       if (ti == nullptr) {
-        ZLOGE("yukilinker: failed to allocate TLSDESC index");
+        ZLOGE("zygisk_linker: failed to allocate TLSDESC index");
         return false;
       }
       ti->module = ref.module;
@@ -595,13 +595,13 @@ bool apply_rela(SoHandle *h, const ElfW(Rela) * rela, size_t count) {
       }
       const ElfW(Sym) &s = h->symtab[sym];
       const char *name = h->strtab + s.st_name;
-      ZLOGE("yukilinker: TLS symbol '%s' uses unsupported IE access model",
+      ZLOGE("zygisk_linker: TLS symbol '%s' uses unsupported IE access model",
             name);
       return false;
     }
 #endif // #if YUKILINKER_FULL
     default:
-      ZLOGE("yukilinker: unhandled reloc type %u (need TLS?)", type);
+      ZLOGE("zygisk_linker: unhandled reloc type %u (need TLS?)", type);
       return false;
     }
   }
@@ -648,7 +648,7 @@ void protect_gnu_relro(SoHandle *h) {
     return;
   if (mprotect(reinterpret_cast<void *>(h->relro_start), h->relro_size,
                PROT_READ) != 0)
-    ZLOGE("yukilinker: GNU_RELRO mprotect failed: %s", strerror(errno));
+    ZLOGE("zygisk_linker: GNU_RELRO mprotect failed: %s", strerror(errno));
 #else
   (void)h;
 #endif // #if YUKILINKER_FULL
@@ -659,7 +659,7 @@ void protect_gnu_relro(SoHandle *h) {
 SoHandle *dlopen_memfd(int memfd, const char *vma_name, bool file_backed) {
   struct stat st;
   if (fstat(memfd, &st) != 0 || st.st_size < (off_t)sizeof(ElfW(Ehdr))) {
-    ZLOGE("yukilinker: fstat memfd: %s", strerror(errno));
+    ZLOGE("zygisk_linker: fstat memfd: %s", strerror(errno));
     return nullptr;
   }
   size_t file_size = (size_t)st.st_size;
@@ -667,7 +667,7 @@ SoHandle *dlopen_memfd(int memfd, const char *vma_name, bool file_backed) {
   /* Temporary source view. */
   void *src = mmap(nullptr, file_size, PROT_READ, MAP_PRIVATE, memfd, 0);
   if (src == MAP_FAILED) {
-    ZLOGE("yukilinker: mmap source: %s", strerror(errno));
+    ZLOGE("zygisk_linker: mmap source: %s", strerror(errno));
     return nullptr;
   }
   auto cleanup_src = [&] { munmap(src, file_size); };
@@ -677,7 +677,7 @@ SoHandle *dlopen_memfd(int memfd, const char *vma_name, bool file_backed) {
       eh->e_ident[EI_CLASS] != ELFCLASS64 ||
       eh->e_ident[EI_DATA] != ELFDATA2LSB || eh->e_machine != EM_AARCH64 ||
       eh->e_type != ET_DYN) {
-    ZLOGE("yukilinker: not an aarch64 ET_DYN ELF");
+    ZLOGE("zygisk_linker: not an aarch64 ET_DYN ELF");
     cleanup_src();
     return nullptr;
   }
@@ -697,7 +697,7 @@ SoHandle *dlopen_memfd(int memfd, const char *vma_name, bool file_backed) {
     max_v = mx(max_v, (uintptr_t)page_up(phdr[i].p_vaddr + phdr[i].p_memsz));
   }
   if (dyn_ph == nullptr || min_v == UINTPTR_MAX) {
-    ZLOGE("yukilinker: no PT_LOAD/PT_DYNAMIC");
+    ZLOGE("zygisk_linker: no PT_LOAD/PT_DYNAMIC");
     cleanup_src();
     return nullptr;
   }
@@ -707,7 +707,7 @@ SoHandle *dlopen_memfd(int memfd, const char *vma_name, bool file_backed) {
   void *reserve =
       mmap(nullptr, map_size, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
   if (reserve == MAP_FAILED) {
-    ZLOGE("yukilinker: reserve: %s", strerror(errno));
+    ZLOGE("zygisk_linker: reserve: %s", strerror(errno));
     cleanup_src();
     return nullptr;
   }
@@ -727,7 +727,7 @@ SoHandle *dlopen_memfd(int memfd, const char *vma_name, bool file_backed) {
       if (file_len > 0 &&
           mmap((void *)seg, file_len, seg_prot, MAP_FIXED | MAP_PRIVATE, memfd,
                file_off) == MAP_FAILED) {
-        ZLOGE("yukilinker: map seg from memfd: %s", strerror(errno));
+        ZLOGE("zygisk_linker: map seg from memfd: %s", strerror(errno));
         munmap(reserve, map_size);
         cleanup_src();
         return nullptr;
@@ -739,7 +739,7 @@ SoHandle *dlopen_memfd(int memfd, const char *vma_name, bool file_backed) {
       if (len > file_len &&
           mmap((void *)(seg + file_len), len - file_len, seg_prot,
                MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0) == MAP_FAILED) {
-        ZLOGE("yukilinker: map bss: %s", strerror(errno));
+        ZLOGE("zygisk_linker: map bss: %s", strerror(errno));
         munmap(reserve, map_size);
         cleanup_src();
         return nullptr;
@@ -748,7 +748,7 @@ SoHandle *dlopen_memfd(int memfd, const char *vma_name, bool file_backed) {
       /* Anonymous copy path. */
       if (mmap((void *)seg, len, PROT_READ | PROT_WRITE,
                MAP_FIXED | MAP_PRIVATE | MAP_ANONYMOUS, -1, 0) == MAP_FAILED) {
-        ZLOGE("yukilinker: map seg: %s", strerror(errno));
+        ZLOGE("zygisk_linker: map seg: %s", strerror(errno));
         munmap(reserve, map_size);
         cleanup_src();
         return nullptr;
@@ -762,7 +762,7 @@ SoHandle *dlopen_memfd(int memfd, const char *vma_name, bool file_backed) {
   /* Arena-backed handle. */
   void *hmem = arena_alloc(sizeof(SoHandle));
   if (hmem == nullptr) {
-    ZLOGE("yukilinker: arena exhausted");
+    ZLOGE("zygisk_linker: arena exhausted");
     munmap(reserve, map_size);
     cleanup_src();
     return nullptr;
@@ -876,7 +876,7 @@ SoHandle *dlopen_memfd(int memfd, const char *vma_name, bool file_backed) {
     }
   }
   if (h->symtab == nullptr || h->strtab == nullptr) {
-    ZLOGE("yukilinker: missing symtab/strtab");
+    ZLOGE("zygisk_linker: missing symtab/strtab");
     munmap(reserve, map_size);
     cleanup_src();
     return nullptr; // h is arena-backed; not individually freed
@@ -889,13 +889,13 @@ SoHandle *dlopen_memfd(int memfd, const char *vma_name, bool file_backed) {
     const char *nm = h->strtab + needed_offsets[i];
     void *dep = ::dlopen(nm, RTLD_NOW | RTLD_GLOBAL);
     if (dep == nullptr)
-      ZLOGE("yukilinker: dep dlopen(%s) failed: %s", nm, dlerror());
+      ZLOGE("zygisk_linker: dep dlopen(%s) failed: %s", nm, dlerror());
     h->dep_handles[h->dep_count++] = dep; // keep slot even if null
   }
 
 #if YUKILINKER_FULL
   if (!register_tls_module(h)) {
-    ZLOGE("yukilinker: TLS registration failed");
+    ZLOGE("zygisk_linker: TLS registration failed");
     munmap(reserve, map_size);
     cleanup_src();
     return nullptr; // h is arena-backed; not individually freed
@@ -911,7 +911,7 @@ SoHandle *dlopen_memfd(int memfd, const char *vma_name, bool file_backed) {
   if (ok && jmprel != nullptr)
     ok = apply_rela(h, jmprel, pltrelsz / sizeof(ElfW(Rela)));
   if (!ok) {
-    ZLOGE("yukilinker: relocation failed");
+    ZLOGE("zygisk_linker: relocation failed");
 #if YUKILINKER_FULL
     unregister_tls_module(h);
 #endif // #if YUKILINKER_FULL
@@ -1039,10 +1039,10 @@ int dl_iterate_phdr_hook(int (*cb)(struct dl_phdr_info *, size_t, void *),
   return rc;
 }
 
-} // namespace yukilinker
+} // namespace zygisk_linker
 
 /* Raw close for AT_ENTRY. */
-static inline void yuki_raw_close(int fd) {
+static inline void zygisk_raw_close(int fd) {
 #if defined(__aarch64__)
   register long x8 asm("x8") = 57; // __NR_close
   register long x0 asm("x0") = fd;
@@ -1056,42 +1056,42 @@ static constexpr char kCorePath[] = "/data/tamisu/lib/zygisk/libzygisk.so";
 
 extern "C" {
 
-[[gnu::visibility("default")]] void *yuki_dlopen_memfd(int memfd,
+[[gnu::visibility("default")]] void *zygisk_dlopen_memfd(int memfd,
                                                        const char *vma_name) {
-  return yukilinker::dlopen_memfd(memfd, vma_name, /*file_backed=*/true);
+  return zygisk_linker::dlopen_memfd(memfd, vma_name, /*file_backed=*/true);
 }
 
-[[gnu::visibility("default")]] void *yuki_dlsym(void *h, const char *name) {
-  return yukilinker::dlsym(static_cast<yukilinker::SoHandle *>(h), name);
+[[gnu::visibility("default")]] void *zygisk_dlsym(void *h, const char *name) {
+  return zygisk_linker::dlsym(static_cast<zygisk_linker::SoHandle *>(h), name);
 }
 
-[[gnu::visibility("default")]] void yuki_dlclose(void *h) {
-  yukilinker::dlclose(static_cast<yukilinker::SoHandle *>(h));
+[[gnu::visibility("default")]] void zygisk_dlclose(void *h) {
+  zygisk_linker::dlclose(static_cast<zygisk_linker::SoHandle *>(h));
 }
 
 /* First-stage entry. */
-[[gnu::visibility("default")]] void yuki_bootstrap(int core_fd) {
+[[gnu::visibility("default")]] void zygisk_bootstrap(int core_fd) {
   if (core_fd < 0)
     return;
-  yukilinker::SoHandle *core =
-      yukilinker::dlopen_memfd(core_fd, "data-code-cache",
+  zygisk_linker::SoHandle *core =
+      zygisk_linker::dlopen_memfd(core_fd, "data-code-cache",
                                /*file_backed=*/true);
-  yuki_raw_close(core_fd); // before the zygote's pre-fork fd allowlist check
+  zygisk_raw_close(core_fd); // before the zygote's pre-fork fd allowlist check
   if (core == nullptr)
     return;
   using core_entry_fn = void (*)(const char *, void *, void *, void *);
   auto entry = reinterpret_cast<core_entry_fn>(
-      yukilinker::dlsym(core, "zygisk_core_entry"));
+      zygisk_linker::dlsym(core, "zygisk_core_entry"));
   if (entry == nullptr)
     return;
   // Pass loader address plus core range to the core.
-  entry(kCorePath, reinterpret_cast<void *>(&yuki_bootstrap),
+  entry(kCorePath, reinterpret_cast<void *>(&zygisk_bootstrap),
         reinterpret_cast<void *>(core->load_bias),
         reinterpret_cast<void *>(core->map_size));
-  yukilinker::finalize_self_dso();
+  zygisk_linker::finalize_self_dso();
   using fin_fn = void (*)(int);
   auto fin = reinterpret_cast<fin_fn>(
-      yukilinker::dlsym(core, "zygisk_finalize_loader"));
+      zygisk_linker::dlsym(core, "zygisk_finalize_loader"));
   if (fin != nullptr) [[clang::musttail]]
     return fin(0);
 }

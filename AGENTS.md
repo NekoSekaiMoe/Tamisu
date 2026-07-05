@@ -54,7 +54,7 @@ The daemon is a multi-call binary. When invoked as `magiskboot`, `bootctl`, `res
 
 Zygisk injection is two-stage:
 1. Kernel rewrites zygote's `AT_ENTRY` → single-page ARM64 stub calls system linker to load `libzygisk_linker.so`
-2. yukilinker (custom ELF loader) loads `libzygisk.so` and modules from memfd without bionic
+2. zygisk_linker (custom ELF loader) loads `libzygisk.so` and modules from memfd without bionic
 
 The kernel module hooks: `sys_ni_syscall` slot (TSR dispatcher), `sched_process_fork/free` tracepoints, LSM `bprm_committed_creds`, and a static-key-gated `__NR_execve` hook (disabled after init second stage).
 

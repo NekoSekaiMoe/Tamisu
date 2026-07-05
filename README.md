@@ -129,12 +129,12 @@ linker**:
    `android_dlopen_ext` / `dlsym` resolved inside `/system/bin/linker64`
    (offsets shipped by `zygiskd` via `send_dlopen_offset`). The system
    linker brings in either `libzygisk_linker.so` (default) or, if
-   yukilinker is disabled, `libzygisk.so` directly.
+   zygisk_linker is disabled, `libzygisk.so` directly.
 
 2. **Second stage** — `libzygisk_linker.so` is a custom in-process ELF
-   loader (`daemon/zygisk/core/src/yukilinker.cpp`). From here on,
+   loader (`daemon/zygisk/core/src/zygisk_linker.cpp`). From here on,
    `libzygisk.so` (the core) and every zygisk module are loaded by
-   yukilinker from memfd, without going through bionic's linker.
+   zygisk_linker from memfd, without going through bionic's linker.
 
 So the phrase "custom linker" applies to the **second stage only**.
 There is no way around using the system linker for the very first call —
@@ -156,7 +156,7 @@ falsifiable. The argument is a pure size argument:
    patch together a call to the already-loaded system linker's
    `android_dlopen_ext` + `dlsym` and jump in.
 3. **Any in-process ELF loader is orders of magnitude larger.**
-   `yukilinker.cpp` — which is what Tamisu uses for the *second* stage
+   `zygisk_linker.cpp` — which is what Tamisu uses for the *second* stage
    — is ~1100 lines of C++ (relocations across `R_AARCH64_ABS64` /
    `GLOB_DAT` / `JUMP_SLOT` / `RELATIVE` / `TLS_*` / `TLSDESC`, GNU_RELRO,
    DT_RELR packed relocations, memfd file-backed and anonymous paths).
@@ -177,10 +177,10 @@ Tamisu shortcut.
 
 ### What the "anonymous loading" toggle actually does
 
-The yukilinker toggle in the manager (`zygisk_anon_loading_*`)
+The zygisk_linker toggle in the manager (`zygisk_anon_loading_*`)
 controls second-stage loading. When on:
 
-- modules are `mmap`'d from a memfd into anonymous pages by yukilinker
+- modules are `mmap`'d from a memfd into anonymous pages by zygisk_linker
   (`dlopen_memfd` with `file_backed=true`);
 - after specialize, `solist` anonymizes the injected segments
   (`spoof_virtual_maps`) and relabels bare anonymous exec pages as

@@ -8,7 +8,7 @@
 #include "hook.h"
 #include "log.h"
 #include "solist.h"
-#include "yukilinker.h"
+#include "zygisk_linker.h"
 #include "zygisk.h"
 
 #include "uapi/supercall.h"
@@ -415,19 +415,19 @@ extern "C" void yz_klog(const char *fmt, ...) {
   close(s);
 }
 
-/* Built-in yukilinker symbols. */
+/* Built-in zygisk_linker symbols. */
 extern "C" {
-void *yuki_dlopen_memfd(int memfd, const char *vma_name);
-void *yuki_dlsym(void *handle, const char *name);
-void yuki_dlclose(void *handle);
+void *zygisk_dlopen_memfd(int memfd, const char *vma_name);
+void *zygisk_dlsym(void *handle, const char *name);
+void zygisk_dlclose(void *handle);
 }
-using yuki_dlopen_fn = void *(*)(int, const char *);
-using yuki_dlsym_fn = void *(*)(void *, const char *);
-using yuki_dlclose_fn = void (*)(void *);
-yuki_dlopen_fn g_yuki_dlopen = nullptr;
-yuki_dlsym_fn g_yuki_dlsym = nullptr;
-yuki_dlclose_fn g_yuki_dlclose = nullptr;
-/* libzygisk mapping range from yukilinker. */
+using zygisk_dlopen_fn = void *(*)(int, const char *);
+using zygisk_dlsym_fn = void *(*)(void *, const char *);
+using zygisk_dlclose_fn = void (*)(void *);
+zygisk_dlopen_fn g_yuki_dlopen = nullptr;
+zygisk_dlsym_fn g_yuki_dlsym = nullptr;
+zygisk_dlclose_fn g_yuki_dlclose = nullptr;
+/* libzygisk mapping range from zygisk_linker. */
 uintptr_t g_self_base = 0;
 size_t g_self_size = 0;
 
@@ -467,7 +467,7 @@ void load_modules_impl(JNIEnv *env, int uid) {
     return; // already loaded in this process (inherited across a child-zygote
             // fork -- per-uid scope applies to the first specialize; descendants
             // inherit that subset, matching the existing module-load model)
-  zd_load_config(); // refresh yukilinker/denylist_mode/dmesg from yzconfig.json
+  zd_load_config(); // refresh zygisk_linker/denylist_mode/dmesg from yzconfig.json
   /* Fail fast on grant filter misconfiguration: if the filter is on but the
    * daemon returns nothing, do NOT dlopen any module (a wrong subset is
    * worse than none). Filter is off -> empty set means "unfiltered, load all"
@@ -638,7 +638,7 @@ void run_app_pre_impl(zygisk::AppSpecializeArgs *args) {
         !(m.option & (1u << zygisk::DLCLOSE_MODULE_LIBRARY)))
       continue;
     if (g_yuki_dlclose != nullptr)
-      g_yuki_dlclose(m.handle); // yukilinker-loaded: munmap its segments
+      g_yuki_dlclose(m.handle); // zygisk_linker-loaded: munmap its segments
     else
       dlclose(m.handle); // android_dlopen_ext path
     m.handle = nullptr;
@@ -649,12 +649,12 @@ void run_app_pre_impl(zygisk::AppSpecializeArgs *args) {
 
 /* Hide injected linker entries. */
 void hide_injection() {
-  yuki::solist::hide_from_solist("libzygisk");
-  yuki::solist::hide_from_solist("libzygisk_linker"); // split-out loader .so
-  yuki::solist::drop_module_from_solist(kExecMemfdName, false);
+  zygisk::solist::hide_from_solist("libzygisk");
+  zygisk::solist::hide_from_solist("libzygisk_linker"); // split-out loader .so
+  zygisk::solist::drop_module_from_solist(kExecMemfdName, false);
   /* Relabel bare anonymous executable segments as ART JIT, so /proc/self/maps
    * reads them as dalvik-jit-code-cache rather than nameless rwx pages. */
-  yuki::solist::name_anonymous_exec();
+  zygisk::solist::name_anonymous_exec();
 }
 
 /* denylist_mode=2 mount cleanup. */
@@ -689,7 +689,7 @@ void run_app_post_impl(const zygisk::AppSpecializeArgs *args) {
     }
   g_cur = nullptr;
   hide_injection();
-  yuki::solist::spoof_virtual_maps("/dev/zero (deleted)", false);
+  zygisk::solist::spoof_virtual_maps("/dev/zero (deleted)", false);
   yz_drop_runtime_header_pages();
 }
 
@@ -751,18 +751,18 @@ extern void (*__init_array_end[])(void) __attribute__((visibility("hidden")));
 }
 
 /* Shared core startup. */
-static void core_start(const char *self_path, void *yuki_dlopen,
-                       void *yuki_dlsym) {
+static void core_start(const char *self_path, void *zygisk_dlopen,
+                       void *zygisk_dlsym) {
   if (!g_ctors_done) {
     for (void (**p)(void) = __init_array_start; p < __init_array_end; ++p)
       if (*p)
         (*p)();
   }
-  g_yuki_dlopen = reinterpret_cast<yuki_dlopen_fn>(yuki_dlopen);
-  g_yuki_dlsym = reinterpret_cast<yuki_dlsym_fn>(yuki_dlsym);
+  g_yuki_dlopen = reinterpret_cast<zygisk_dlopen_fn>(zygisk_dlopen);
+  g_yuki_dlsym = reinterpret_cast<zygisk_dlsym_fn>(zygisk_dlsym);
   zd_report_zygote();
-  LOGI("core start, self=%s yuki=%p", self_path ? self_path : "(null)",
-       yuki_dlopen);
+  LOGI("core start, self=%s linker=%p", self_path ? self_path : "(null)",
+       zygisk_dlopen);
   zygisk_hook_bootstrap(self_path);
 }
 
@@ -862,10 +862,10 @@ zygisk_core_entry(const char *self_path, void *loader_self, void *core_base,
   g_loader_base = reinterpret_cast<uintptr_t>(loader_self);
   g_self_base = reinterpret_cast<uintptr_t>(core_base);
   g_self_size = reinterpret_cast<size_t>(core_size);
-  g_yuki_dlclose = yuki_dlclose;
+  g_yuki_dlclose = zygisk_dlclose;
   g_loader_unmap_safe = rebind_self_dl_iterate_slot(g_self_base);
-  core_start(self_path, reinterpret_cast<void *>(yuki_dlopen_memfd),
-             reinterpret_cast<void *>(yuki_dlsym));
+  core_start(self_path, reinterpret_cast<void *>(zygisk_dlopen_memfd),
+             reinterpret_cast<void *>(zygisk_dlsym));
 }
 
 extern "C" [[gnu::visibility("default")]] void
@@ -879,7 +879,7 @@ extern "C" [[gnu::visibility("default")]] void zygisk_finalize_loader(int) {
   LOGI("finalize_loader: unloading loader at base=%p munmap=%d",
        (void *)g_loader_base, g_loader_unmap_safe);
   int n =
-      yuki::solist::drop_lib_containing(g_loader_base, !g_loader_unmap_safe);
+      zygisk::solist::drop_lib_containing(g_loader_base, !g_loader_unmap_safe);
   LOGI("finalize_loader: unloaded %d soinfo(s)", n);
 }
 
@@ -968,17 +968,17 @@ void zygisk_self_destruct(JNIEnv *env, bool isolated) {
       yz_find_self_range(&cbase, &csize) && cbase != 0 && csize != 0;
   if (!isolated) {
     bool reverted = yz_report_self_unmap();
-    yuki::solist::hide_from_solist("libzygisk");
-    yuki::solist::hide_from_solist("libzygisk_linker");
+    zygisk::solist::hide_from_solist("libzygisk");
+    zygisk::solist::hide_from_solist("libzygisk_linker");
     if (!reverted)
       yz_revert_self_mounts();
   }
   if (have_range && can_unmap) {
-    yukilinker::shutdown();
+    zygisk_linker::shutdown();
     yz_finalize_self_dso();
     yz_self_unmap_tail(reinterpret_cast<void *>(cbase), csize); // [[noreturn]]
   }
-  yuki::solist::spoof_virtual_maps(kExecMemfdName, true);
+  zygisk::solist::spoof_virtual_maps(kExecMemfdName, true);
   (void)env;
 }
 

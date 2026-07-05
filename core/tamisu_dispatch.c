@@ -360,13 +360,13 @@ static int do_yz_reload(void __user *arg)
 	return 0;
 }
 
-static int do_yz_set_yukilinker(void __user *arg)
+static int do_yz_set_zygisk_linker(void __user *arg)
 {
-	struct yz_yukilinker_cmd cmd;
+	struct yz_zygisk_linker_cmd cmd;
 
 	if (copy_from_user(&cmd, arg, sizeof(cmd)))
 		return -EFAULT;
-	tamisu_zygote_probe_set_yukilinker(cmd.enabled != 0);
+	tamisu_zygote_probe_set_zygisk_linker(cmd.enabled != 0);
 	return 0;
 }
 
@@ -621,7 +621,7 @@ static const struct tamisu_ioctl_cmd_map tamisu_ioctl_handlers[] = {
      .perm_check = only_root},
     {.cmd = TAMISU_IOCTL_YZ_SET_YUKILINKER,
      .name = "YZ_SET_YUKILINKER",
-     .handler = do_yz_set_yukilinker,
+     .handler = do_yz_set_zygisk_linker,
      .perm_check = only_root},
     {.cmd = TAMISU_IOCTL_YZ_SET_NATIVE_TARGETS,
      .name = "YZ_SET_NATIVE_TARGETS",

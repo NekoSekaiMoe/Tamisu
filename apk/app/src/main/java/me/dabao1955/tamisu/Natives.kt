@@ -71,7 +71,7 @@ object Natives {
      * hostile app spoofing our package name can't read it. JSON shape:
      * `{ "count": Int, "recent": [appId...],
      *    "zygotes": [{"pid": Int, "name": String, "abi": String}...],
-     *    "modules": ["name"...], "yukilinker": Bool, "denylist_mode": Int,
+     *    "modules": ["name"...], "zygisk_linker": Bool, "denylist_mode": Int,
      *    "dmesg_log": Bool }`.
      */
     external fun yzQueryStatus(): String?

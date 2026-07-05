@@ -795,8 +795,8 @@ void read_yzconfig() {
     close(fd);
     json::Value root = json::parse(buf);
     if (root.type == json::Type::Object) {
-      if (root.contains("yukilinker"))
-        cfg.yukilinker = root.at("yukilinker").as_bool() ? 1 : 0;
+      if (root.contains("zygisk_linker"))
+        cfg.zygisk_linker = root.at("zygisk_linker").as_bool() ? 1 : 0;
       if (root.contains("denylist_mode"))
         cfg.denylist_mode =
             static_cast<__u8>(root.at("denylist_mode").as_number());
@@ -855,12 +855,12 @@ void read_yzconfig() {
   g_granted_modules = std::move(granted);
   g_grant_filter_active = grant_filter_active;
   g_module_scopes = std::move(scopes);
-  yz_yukilinker_cmd yc{};
-  yc.enabled = cfg.yukilinker;
+  yz_zygisk_linker_cmd yc{};
+  yc.enabled = cfg.zygisk_linker;
   tamisu_daemon::tamisuctl(TAMISU_IOCTL_YZ_SET_YUKILINKER, &yc);
-  DLOGI("yzconfig: yukilinker=%u denylist_mode=%u dmesg_log=%u grant=%u "
+  DLOGI("yzconfig: zygisk_linker=%u denylist_mode=%u dmesg_log=%u grant=%u "
         "(%zu module(s), %zu scoped)",
-        cfg.yukilinker, cfg.denylist_mode, cfg.dmesg_log,
+        cfg.zygisk_linker, cfg.denylist_mode, cfg.dmesg_log,
         cfg.grant_filter_active, g_granted_modules.size(),
         g_module_scopes.size());
 }
@@ -1136,8 +1136,8 @@ void json_append_escaped(std::string &out, const std::string &s) {
 std::string build_status_json() {
   std::string s = "{\"count\":";
   s += std::to_string(g_inject_count);
-  s += ",\"yukilinker\":";
-  s += g_yz_config.yukilinker ? "true" : "false";
+  s += ",\"zygisk_linker\":";
+  s += g_yz_config.zygisk_linker ? "true" : "false";
   s += ",\"denylist_mode\":";
   s += std::to_string(g_yz_config.denylist_mode);
   s += ",\"dmesg_log\":";

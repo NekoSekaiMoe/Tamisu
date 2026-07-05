@@ -448,7 +448,7 @@ std::array<JNINativeMethod, 5> g_zygote_methods = {{
 }};
 
 /* Hook records for restore. */
-std::vector<yuki::ihook::Hook> g_ihooks;
+std::vector<zygisk::ihook::Hook> g_ihooks;
 struct RnFallback {
   const char *clz;
   JNINativeMethod m; // m.fnPtr == ORIGINAL entry, for RegisterNatives restore
@@ -484,8 +484,8 @@ void hook_jni_methods(JNIEnv *env, const char *clz, JNINativeMethod *methods,
     }
 
     jobject reflected = env->ToReflectedMethod(clazz, mid, is_static);
-    void *art = yuki::art::art_method_of(env, reflected);
-    void *orig = art ? yuki::art::native_entry(art) : nullptr;
+    void *art = zygisk::art::art_method_of(env, reflected);
+    void *orig = art ? zygisk::art::native_entry(art) : nullptr;
     env->DeleteLocalRef(reflected);
     if (orig == nullptr) {
       ZLOGE("no original entry for %s", m.name);
@@ -494,8 +494,8 @@ void hook_jni_methods(JNIEnv *env, const char *clz, JNINativeMethod *methods,
     }
 
     // Patch native body; keep ART entries untouched.
-    yuki::ihook::Hook h;
-    void *tramp = yuki::ihook::install(orig, m.fnPtr, &h);
+    zygisk::ihook::Hook h;
+    void *tramp = zygisk::ihook::install(orig, m.fnPtr, &h);
     if (tramp != nullptr) {
       g_ihooks.push_back(h);
       m.fnPtr = tramp; // wrapper calls the original via the trampoline
@@ -550,7 +550,7 @@ void hook_zygote_jni() {
     ZLOGE("GetEnv failed");
     return;
   }
-  if (!yuki::art::probe(env)) {
+  if (!zygisk::art::probe(env)) {
     ZLOGE("ArtMethod layout probe failed; not hooking natives");
     return;
   }
@@ -637,7 +637,7 @@ bool zygisk_specialize_fully_inline_hooked() {
 /* Restore hooks before self-unmap. */
 void zygisk_self_unhook(JNIEnv *env) {
   for (auto &h : g_ihooks)
-    yuki::ihook::uninstall(&h);
+    zygisk::ihook::uninstall(&h);
   g_ihooks.clear();
   if (env != nullptr)
     for (auto &fb : g_rn_fallback) {

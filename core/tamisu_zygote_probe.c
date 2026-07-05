@@ -67,7 +67,7 @@ void tamisu_zygote_probe_set_dlopen_off(u64 dlopen_off, u64 dlsym_off)
 		dlsym_off);
 }
 
-static bool zp_yukilinker_enabled;
+static bool zp_zygisk_linker_enabled;
 
 static DEFINE_MUTEX(zp_native_targets_lock);
 static struct yz_native_target zp_native_targets[YZ_NATIVE_TARGET_MAX];
@@ -92,10 +92,10 @@ zp_native_policy_has_additions(const struct tamisu_file_load_policy *state)
 	return state && (state->added_av || state->tmpfs_added_av);
 }
 
-void tamisu_zygote_probe_set_yukilinker(bool enabled)
+void tamisu_zygote_probe_set_zygisk_linker(bool enabled)
 {
-	zp_yukilinker_enabled = enabled;
-	pr_info("zygote_probe: yukilinker first-stage = %d\n", enabled);
+	zp_zygisk_linker_enabled = enabled;
+	pr_info("zygote_probe: zygisk_linker first-stage = %d\n", enabled);
 }
 
 int tamisu_zygote_probe_set_native_targets(
@@ -782,7 +782,7 @@ static void zp_inject_tw_func(struct callback_head *cb)
 		struct tamisu_file_load_policy native_policy = {};
 		unsigned long stub, dlopen_addr, dlsym_addr;
 		int loader_fd, core_fd, stub_core_fd, werr;
-		bool yuki;
+		bool use_linker;
 		const char *lib_str, *entry_str;
 		const char *core_path;
 		size_t lib_len, entry_len;
@@ -799,11 +799,11 @@ static void zp_inject_tw_func(struct callback_head *cb)
 		dlsym_addr = at_base + zp_dlsym_off;
 
 		/* Stage loader/core fds in the target. */
-		yuki = native || zp_yukilinker_enabled;
+		use_linker = native || zp_zygisk_linker_enabled;
 		core_path = native ? ZP_NATIVE_CORE_PATH : ZP_CORE_PATH;
 		zp_cache_name(loader_name, sizeof(loader_name));
 		zp_cache_name(core_name, sizeof(core_name));
-		if (yuki)
+		if (use_linker)
 			loader_fd = zp_stage_fd(ZP_LOADER_PATH, loader_name,
 						native ? &native_policy : NULL);
 		else if (native)
@@ -817,12 +817,12 @@ static void zp_inject_tw_func(struct callback_head *cb)
 				current->pid, socket_name, loader_fd);
 			goto out;
 		}
-		if (yuki) {
+		if (use_linker) {
 			core_fd = zp_stage_fd(core_path, core_name, NULL);
 		} else {
 			core_fd = loader_fd; /* dlopen the core directly */
 		}
-		if (yuki && core_fd < 0) {
+		if (use_linker && core_fd < 0) {
 			pr_info(
 			    "zygote_probe: [2c-3b] pid=%d socket=%s stage core "
 			    "failed: %d, skipping\n",
@@ -841,7 +841,7 @@ static void zp_inject_tw_func(struct callback_head *cb)
 				"%ld\n",
 				current->pid, socket_name, (long)stub);
 			zp_close_current_fd(loader_fd);
-			if (yuki)
+			if (use_linker)
 				zp_close_current_fd(core_fd);
 			zp_restore_native_policy_state(&native_policy);
 			goto out;
@@ -852,16 +852,16 @@ static void zp_inject_tw_func(struct callback_head *cb)
 		zp_patch_imm64(&code[6], dlopen_addr); /* x21 = dlopen */
 		zp_patch_imm64(&code[10], dlsym_addr); /* x23 = dlsym */
 		/* core fd argument */
-		stub_core_fd = yuki ? core_fd : -1;
+		stub_core_fd = use_linker ? core_fd : -1;
 		code[40] = 0xd2800000u | (((u32)stub_core_fd & 0xffff) << 5);
 		code[45] = 0xd2800000u | (((u32)stub_core_fd & 0xffff) << 5);
 
 		/* Choose first-stage entry. */
-		if (yuki) {
+		if (use_linker) {
 			lib_str = "libzygisk_linker.so";
 			lib_len = sizeof("libzygisk_linker.so");
-			entry_str = "yuki_bootstrap";
-			entry_len = sizeof("yuki_bootstrap");
+			entry_str = "zygisk_bootstrap";
+			entry_len = sizeof("zygisk_bootstrap");
 		} else {
 			lib_str =
 			    native ? "libzygisk_zncore.so" : "libzygisk.so";
@@ -889,7 +889,7 @@ static void zp_inject_tw_func(struct callback_head *cb)
 				current->pid, socket_name);
 			vm_munmap(stub, PAGE_SIZE);
 			zp_close_current_fd(loader_fd);
-			if (yuki)
+			if (use_linker)
 				zp_close_current_fd(core_fd);
 			zp_restore_native_policy_state(&native_policy);
 			goto out;
@@ -908,7 +908,7 @@ static void zp_inject_tw_func(struct callback_head *cb)
 		if (werr) {
 			vm_munmap(stub, PAGE_SIZE);
 			zp_close_current_fd(loader_fd);
-			if (yuki)
+			if (use_linker)
 				zp_close_current_fd(core_fd);
 			zp_restore_native_policy_state(&native_policy);
 		} else if (native) {

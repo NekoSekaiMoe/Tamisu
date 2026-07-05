@@ -49,7 +49,7 @@ struct yz_dlopen_cmd {
 
 #define TAMISU_IOCTL_YZ_SET_YUKILINKER _IOC(_IOC_WRITE, 'T', 53, 0)
 
-struct yz_yukilinker_cmd {
+struct yz_zygisk_linker_cmd {
   __u32 enabled;
 };
 
@@ -112,7 +112,7 @@ struct yz_native_load_policy_cmd {
 };
 
 struct yz_config {
-  __u8 yukilinker;
+  __u8 zygisk_linker;
   __u8 denylist_mode;
   __u8 dmesg_log;
   __u8 grant_filter_active;

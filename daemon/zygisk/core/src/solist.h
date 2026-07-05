@@ -8,7 +8,7 @@
 
 #include <cstdint>
 
-namespace yuki::solist {
+namespace zygisk::solist {
 
 /* Unlink matching soinfo entries. */
 int hide_from_solist(const char *path_substr);
@@ -26,4 +26,4 @@ int spoof_virtual_maps(const char *path_substr, bool private_only);
 /* Name bare executable anonymous VMAs. */
 int name_anonymous_exec();
 
-} // namespace yuki::solist
+} // namespace zygisk::solist

@@ -362,7 +362,7 @@
     <string name="zygisk_status_active">已激活</string>
     <string name="zygisk_status_off">未启用</string>
     <string name="zygisk_module_loader">模块加载器</string>
-    <string name="zygisk_loader_anon">yukilinker（匿名）</string>
+    <string name="zygisk_loader_anon">zygisk_linker（匿名）</string>
     <string name="zygisk_loader_system">系统 dlopen</string>
     <string name="zygisk_denylist_behaviour">拒绝名单行为</string>
     <string name="zygisk_denylist_force_long">强制卸载 + 不注入</string>
@@ -394,8 +394,8 @@
     <string name="zygisk_native_module_failed_message">安全模式已启用，部分目标未注入。</string>
     <string name="zygisk_native_target_line">%1$s · %2$s · pid %3$d</string>
     <string name="zygisk_module_loading">模块加载</string>
-    <string name="zygisk_anon_loading_title">匿名加载（yukilinker）</string>
-    <string name="zygisk_anon_loading_summary">通过自定义 linker（yukilinker）把模块加载进匿名内存。模块 fd 会复制成 memfd 并在 onLoad 前关闭；注入段会在 specialize 后由 solist 匿名化（mremap + 改名为 JIT 类标签）。注意：first-stage loader 仍由目标进程自身的系统 linker（android_dlopen_ext）拉起——这是该方案的固有约束。</string>
+    <string name="zygisk_anon_loading_title">匿名加载（zygisk_linker）</string>
+    <string name="zygisk_anon_loading_summary">通过自定义 linker（zygisk_linker）把模块加载进匿名内存。模块 fd 会复制成 memfd 并在 onLoad 前关闭；注入段会在 specialize 后由 solist 匿名化（mremap + 改名为 JIT 类标签）。注意：first-stage loader 仍由目标进程自身的系统 linker（android_dlopen_ext）拉起——这是该方案的固有约束。</string>
     <string name="zygisk_loaded_modules_count">已加载模块：%1$d</string>
     <string name="zygisk_grant_title">Zygote 模块授权</string>
     <string name="zygisk_grant_filter_title">逐模块授权过滤</string>

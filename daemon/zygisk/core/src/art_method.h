@@ -11,7 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 
-namespace yuki::art {
+namespace zygisk::art {
 
 inline jfieldID g_executable_art_method = nullptr; // Executable.artMethod (J)
 inline size_t g_data_off = 0;
@@ -80,4 +80,4 @@ inline bool probe(JNIEnv *env) {
   return true;
 }
 
-} // namespace yuki::art
+} // namespace zygisk::art

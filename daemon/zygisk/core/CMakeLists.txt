@@ -28,7 +28,7 @@ add_library(zygisk SHARED
     # the anonymous in-memory loader, compiled INTO the core so libzygisk carries
     # its own copy -- the separate libzygisk_linker first stage is then unloaded
     # right after handoff (zygisk_finalize_loader) instead of lingering.
-    src/yukilinker.cpp
+    src/zygisk_linker.cpp
     # synchronous self-unmap: capture-stub template + tail-call munmap.
     src/self_unmap.S
     # solist unlink and maps hiding helpers.
@@ -71,7 +71,7 @@ target_link_options(zygisk PRIVATE -Wl,--gc-sections -Wl,--strip-all
 
 add_library(zygisk_zncore SHARED
     src/zygisk_zncore.cpp
-    src/yukilinker.cpp
+    src/zygisk_linker.cpp
     src/self_unmap.S
     src/solist.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../tamisud_core/third_party/ndk-busybox/archival/libarchive/unxz/xz_dec_lzma2.c
@@ -103,14 +103,14 @@ target_link_options(zygisk_zncore PRIVATE -Wl,--gc-sections -Wl,--strip-all
                     -Wl,--as-needed)
 
 # libzygisk_linker.so -- the anonymous in-memory module loader, split into its own
-# .so that core dlopen+dlsym's at runtime (exports yuki_dlopen_memfd/dlsym/
+# .so that core dlopen+dlsym's at runtime (exports zygisk_dlopen_memfd/dlsym/
 # dlclose). Same source as compiled-in; no lsplt/solist deps.
-add_library(yukilinker SHARED src/yukilinker.cpp)
-set_target_properties(yukilinker PROPERTIES PREFIX "lib" OUTPUT_NAME yukilinker)
-target_include_directories(yukilinker PRIVATE
+add_library(zygisk_linker SHARED src/zygisk_linker.cpp)
+set_target_properties(zygisk_linker PROPERTIES PREFIX "lib" OUTPUT_NAME zygisk_linker)
+target_include_directories(zygisk_linker PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/../../..)  # repo root
-target_compile_options(yukilinker PRIVATE
+target_compile_options(zygisk_linker PRIVATE
     -Os -fno-exceptions -fno-rtti
     -ffunction-sections -fdata-sections -fvisibility=hidden
     -fno-stack-protector
@@ -120,9 +120,9 @@ target_compile_options(yukilinker PRIVATE
     # this flag is belt-and-suspenders, and prevents any handler from being
     # registered in the first place.
     -fno-c++-static-destructors)
-target_compile_definitions(yukilinker PRIVATE YUKILINKER_BOOTSTRAP=1)
-target_link_libraries(yukilinker PRIVATE dl)
-target_link_options(yukilinker PRIVATE -Wl,--gc-sections -Wl,--strip-all)
+target_compile_definitions(zygisk_linker PRIVATE YUKILINKER_BOOTSTRAP=1)
+target_link_libraries(zygisk_linker PRIVATE dl)
+target_link_options(zygisk_linker PRIVATE -Wl,--gc-sections -Wl,--strip-all)
 
 find_program(LLVM_STRIP NAMES llvm-strip)
 if(LLVM_STRIP)
