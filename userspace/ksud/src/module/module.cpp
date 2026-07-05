@@ -21,7 +21,7 @@
 
 #if defined(RESETPROP_ALONE_AVAILABLE) && RESETPROP_ALONE_AVAILABLE
 extern "C" int resetprop_main(int argc, char** argv);
-#endif  // #if defined(RESETPROP_ALONE_AVAILABLE) ...
+#endif // #if defined(RESETPROP_ALONE_AVAILABLE) ...
 
 namespace ksud {
 
@@ -102,6 +102,8 @@ CommonScriptEnv build_common_script_env() {
     CommonScriptEnv env;
     env.kernel_ver_code = std::to_string(get_version());
     env.late_load = (get_flags() & KSU_GET_INFO_FLAG_LATE_LOAD) != 0;
+    const auto [zygisk_value, zygisk_supported] = get_feature(KSU_FEATURE_YUKIZYGISK);
+    env.zygisk_enabled = zygisk_supported && zygisk_value != 0;
 
     std::string binary_dir = std::string(BINARY_DIR);
     if (!binary_dir.empty() && binary_dir.back() == '/') {
@@ -132,6 +134,12 @@ void apply_common_script_env(const CommonScriptEnv& env, const char* module_id,
         setenv("KSU_LATE_LOAD", "1", 1);
     } else {
         unsetenv("KSU_LATE_LOAD");
+    }
+
+    if (env.zygisk_enabled) {
+        setenv("ZYGISK_ENABLED", "1", 1);
+    } else {
+        unsetenv("ZYGISK_ENABLED");
     }
 
     if (set_magisk_compat) {
@@ -476,7 +484,7 @@ int load_system_prop() {
 #else
                 execl(RESETPROP_PATH, "resetprop", "-n", key.c_str(), value.c_str(), nullptr);
                 _exit(127);
-#endif  // #if defined(RESETPROP_ALONE_AVAILABLE) ...
+#endif // #if defined(RESETPROP_ALONE_AVAILABLE) ...
             }
             if (pid > 0) {
                 int status;
