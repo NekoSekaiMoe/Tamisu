@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Tamisu Zygisk - kernel control plane: zygiskd -> kernel handoff + fd brokering,
- * plus in-context delivery (push) of the brokered fds into the target.
+ * Tamisu Zygisk - kernel control plane: zygiskd -> kernel handoff + fd
+ * brokering, plus in-context delivery (push) of the brokered fds into the
+ * target.
  *
  * zygiskd opens the per-app module .so files and hands their fds to the kernel
  * for a just-specialized process; the kernel takes its own references and then

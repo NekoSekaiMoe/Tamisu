@@ -863,7 +863,8 @@ static void zp_inject_tw_func(struct callback_head *cb)
 			entry_str = "yuki_bootstrap";
 			entry_len = sizeof("yuki_bootstrap");
 		} else {
-			lib_str = native ? "libzygisk_zncore.so" : "libzygisk.so";
+			lib_str =
+			    native ? "libzygisk_zncore.so" : "libzygisk.so";
 			lib_len = native ? sizeof("libzygisk_zncore.so")
 					 : sizeof("libzygisk.so");
 			entry_str = "zygisk_core_entry_direct";
@@ -989,7 +990,8 @@ void tamisu_zygote_probe_init(void)
 #endif // #if ZP_ENABLE_LSM_INJECTOR
 
 	if (tamisu_register_feature_handler(&zygisk_feature_handler))
-		pr_err("zygote_probe: failed to register Tamisu Zygisk feature\n");
+		pr_err(
+		    "zygote_probe: failed to register Tamisu Zygisk feature\n");
 	else
 		pr_info("zygote_probe: feature registered\n");
 }
