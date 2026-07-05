@@ -41,7 +41,7 @@
 #include "zygote_probe.h"
 #include "hook/lsm_hook.h"
 #include "selinux/selinux.h"
-#include "ksu.h"
+#include "tamisu.h"
 #include "klog.h" // IWYU pragma: keep
 #include "uapi/yukizygisk.h"
 
@@ -59,7 +59,7 @@ static bool yukizygisk_enabled;
 static u64 zp_dlopen_off;
 static u64 zp_dlsym_off;
 
-void ksu_zygote_probe_set_dlopen_off(u64 dlopen_off, u64 dlsym_off)
+void tamisu_zygote_probe_set_dlopen_off(u64 dlopen_off, u64 dlsym_off)
 {
 	zp_dlopen_off = dlopen_off;
 	zp_dlsym_off = dlsym_off;
@@ -78,7 +78,7 @@ static u32 zp_native_target_count;
 struct zp_native_policy_pending {
 	struct list_head list;
 	pid_t tgid;
-	struct ksu_file_load_policy state;
+	struct tamisu_file_load_policy state;
 	struct delayed_work timeout;
 	bool pending;
 };
@@ -87,18 +87,18 @@ static DEFINE_MUTEX(zp_native_policy_lock);
 static LIST_HEAD(zp_native_policy_pending);
 
 static bool
-zp_native_policy_has_additions(const struct ksu_file_load_policy *state)
+zp_native_policy_has_additions(const struct tamisu_file_load_policy *state)
 {
 	return state && (state->added_av || state->tmpfs_added_av);
 }
 
-void ksu_zygote_probe_set_yukilinker(bool enabled)
+void tamisu_zygote_probe_set_yukilinker(bool enabled)
 {
 	zp_yukilinker_enabled = enabled;
 	pr_info("zygote_probe: yukilinker first-stage = %d\n", enabled);
 }
 
-int ksu_zygote_probe_set_native_targets(const struct yz_native_targets_cmd *cmd)
+int tamisu_zygote_probe_set_native_targets(const struct yz_native_targets_cmd *cmd)
 {
 	u32 i, n;
 
@@ -132,11 +132,11 @@ int ksu_zygote_probe_set_native_targets(const struct yz_native_targets_cmd *cmd)
 	return 0;
 }
 
-static void zp_restore_native_policy_state(struct ksu_file_load_policy *state)
+static void zp_restore_native_policy_state(struct tamisu_file_load_policy *state)
 {
 	if (!zp_native_policy_has_additions(state))
 		return;
-	ksu_file_load_policy_restore(state);
+	tamisu_file_load_policy_restore(state);
 	memset(state, 0, sizeof(*state));
 }
 
@@ -166,7 +166,7 @@ static void zp_native_policy_timeout(struct work_struct *work)
 }
 
 static void zp_publish_native_policy_state(pid_t tgid,
-					   struct ksu_file_load_policy *state)
+					   struct tamisu_file_load_policy *state)
 {
 	struct zp_native_policy_pending *entry;
 	struct zp_native_policy_pending *cur;
@@ -214,7 +214,7 @@ static void zp_publish_native_policy_state(pid_t tgid,
 		tgid, entry->state.added_av, entry->state.tmpfs_added_av);
 }
 
-int ksu_zygote_probe_restore_native_policy(pid_t tgid)
+int tamisu_zygote_probe_restore_native_policy(pid_t tgid)
 {
 	struct zp_native_policy_pending *entry;
 	struct zp_native_policy_pending *tmp;
@@ -281,7 +281,7 @@ typedef struct linux_binprm zp_bprm_arg_t;
 #endif // #if LINUX_VERSION_CODE >= KERNEL_VERSIO...
 
 static void my_bprm_committed_creds(zp_bprm_arg_t *bprm);
-static struct ksu_lsm_hook zygote_probe_hook = KSU_LSM_HOOK_INIT(
+static struct tamisu_lsm_hook zygote_probe_hook = TAMISU_LSM_HOOK_INIT(
     bprm_committed_creds, ZP_BPRM_HOOK_TARGET, my_bprm_committed_creds, 0);
 
 typedef void (*bprm_committed_creds_fn)(zp_bprm_arg_t *bprm);
@@ -300,8 +300,8 @@ static int yukizygisk_feature_set(u64 value)
 	return 0;
 }
 
-static const struct ksu_feature_handler yukizygisk_feature_handler = {
-    .feature_id = KSU_FEATURE_YUKIZYGISK,
+static const struct tamisu_feature_handler yukizygisk_feature_handler = {
+    .feature_id = TAMISU_FEATURE_YUKIZYGISK,
     .name = "yukizygisk",
     .get_handler = yukizygisk_feature_get,
     .set_handler = yukizygisk_feature_set,
@@ -435,9 +435,9 @@ static bool zp_parse_zygote_args(struct mm_struct *mm, char *socket_name,
 	return found;
 }
 
-#define ZP_LOADER_PATH "/data/adb/ksu/lib/yukizygisk/libyukilinker.so"
-#define ZP_CORE_PATH "/data/adb/ksu/lib/yukizygisk/libzygisk.so"
-#define ZP_NATIVE_CORE_PATH "/data/adb/ksu/lib/yukizygisk/libyukizncore.so"
+#define ZP_LOADER_PATH "/data/tamisu/lib/yukizygisk/libyukilinker.so"
+#define ZP_CORE_PATH "/data/tamisu/lib/yukizygisk/libzygisk.so"
+#define ZP_NATIVE_CORE_PATH "/data/tamisu/lib/yukizygisk/libyukizncore.so"
 #define ZP_VMA_NAME "memfd:data-code-cache"
 #define ZP_VMA_NAME_LEN sizeof(ZP_VMA_NAME)
 #define ZP_LOADER_MAX_SZ (8u << 20) /* sanity cap on a payload image */
@@ -477,7 +477,7 @@ static void zp_cache_name(char *buf, size_t len)
 
 /* Stage a private shmem payload fd in current. */
 static int zp_stage_fd(const char *path, const char *name,
-		       struct ksu_file_load_policy *policy_state)
+		       struct tamisu_file_load_policy *policy_state)
 {
 	const struct cred *old_cred;
 	struct file *src, *mfd;
@@ -486,8 +486,8 @@ static int zp_stage_fd(const char *path, const char *name,
 	ssize_t r;
 	int fd;
 
-	/* Read payload as ksu. */
-	old_cred = ksu_cred ? override_creds(ksu_cred) : NULL;
+	/* Read payload as tamisu. */
+	old_cred = tamisu_cred ? override_creds(tamisu_cred) : NULL;
 
 	src = filp_open(path, O_RDONLY, 0);
 	if (IS_ERR(src)) {
@@ -536,7 +536,7 @@ static int zp_stage_fd(const char *path, const char *name,
 	}
 
 	if (policy_state) {
-		int ret = ksu_file_load_policy_allow_current(src, policy_state);
+		int ret = tamisu_file_load_policy_allow_current(src, policy_state);
 		if (ret)
 			pr_info("zygote_probe: [2c-3b] native policy allow %s "
 				"failed: %d\n",
@@ -586,7 +586,7 @@ static int zp_stage_fd(const char *path, const char *name,
 
 /* Stage a real file-backed payload fd in current. */
 static int zp_stage_file_fd(const char *path,
-			    struct ksu_file_load_policy *policy_state)
+			    struct tamisu_file_load_policy *policy_state)
 {
 	const struct cred *old_cred;
 	struct file *file;
@@ -594,7 +594,7 @@ static int zp_stage_file_fd(const char *path,
 	int fd;
 	int ret;
 
-	old_cred = ksu_cred ? override_creds(ksu_cred) : NULL;
+	old_cred = tamisu_cred ? override_creds(tamisu_cred) : NULL;
 	file = filp_open(path, O_RDONLY, 0);
 	if (old_cred)
 		revert_creds(old_cred);
@@ -615,7 +615,7 @@ static int zp_stage_file_fd(const char *path,
 	}
 
 	if (policy_state) {
-		ret = ksu_file_load_policy_allow_current(file, policy_state);
+		ret = tamisu_file_load_policy_allow_current(file, policy_state);
 		if (ret)
 			pr_info("zygote_probe: [2c-3b] native policy allow %s "
 				"failed: %d\n",
@@ -775,7 +775,7 @@ static void zp_inject_tw_func(struct callback_head *cb)
 		};
 		u32 code[ARRAY_SIZE(tmpl)];
 		struct zp_dlextinfo extinfo;
-		struct ksu_file_load_policy native_policy = {};
+		struct tamisu_file_load_policy native_policy = {};
 		unsigned long stub, dlopen_addr, dlsym_addr;
 		int loader_fd, core_fd, stub_core_fd, werr;
 		bool yuki;
@@ -968,10 +968,10 @@ static void __nocfi my_bprm_committed_creds(zp_bprm_arg_t *bprm)
 	}
 }
 
-void ksu_zygote_probe_init(void)
+void tamisu_zygote_probe_init(void)
 {
 #if ZP_ENABLE_LSM_INJECTOR
-	int ret = ksu_register_lsm_hook(&zygote_probe_hook);
+	int ret = tamisu_register_lsm_hook(&zygote_probe_hook);
 
 	if (ret)
 		pr_err("zygote_probe: failed to register bprm hook: %d\n", ret);
@@ -984,17 +984,17 @@ void ksu_zygote_probe_init(void)
 	pr_info("zygote_probe: LSM injector disabled for bootloop isolation\n");
 #endif // #if ZP_ENABLE_LSM_INJECTOR
 
-	if (ksu_register_feature_handler(&yukizygisk_feature_handler))
+	if (tamisu_register_feature_handler(&yukizygisk_feature_handler))
 		pr_err("zygote_probe: failed to register YukiZygisk feature\n");
 	else
 		pr_info("zygote_probe: feature registered\n");
 }
 
-void ksu_zygote_probe_exit(void)
+void tamisu_zygote_probe_exit(void)
 {
-	ksu_unregister_feature_handler(KSU_FEATURE_YUKIZYGISK);
+	tamisu_unregister_feature_handler(TAMISU_FEATURE_YUKIZYGISK);
 	WRITE_ONCE(yukizygisk_enabled, false);
 #if ZP_ENABLE_LSM_INJECTOR
-	ksu_unregister_lsm_hook(&zygote_probe_hook);
+	tamisu_unregister_lsm_hook(&zygote_probe_hook);
 #endif // #if ZP_ENABLE_LSM_INJECTOR
 }

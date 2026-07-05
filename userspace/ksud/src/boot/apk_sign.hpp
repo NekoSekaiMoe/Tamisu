@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 struct ApkSignatureInfo {
     struct V2Info {
@@ -21,4 +21,4 @@ struct ApkSignatureInfo {
 
 ApkSignatureInfo get_apk_signature(const std::string& apk_path);
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

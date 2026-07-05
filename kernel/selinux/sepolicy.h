@@ -1,48 +1,48 @@
-#ifndef __KSU_H_SEPOLICY
-#define __KSU_H_SEPOLICY
+#ifndef __TAMISU_H_SEPOLICY
+#define __TAMISU_H_SEPOLICY
 
 #include <linux/types.h>
 
 #include "ss/policydb.h"
 
-struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol);
-void ksu_destroy_sepolicy(struct selinux_policy *pol);
+struct selinux_policy *tamisu_dup_sepolicy(struct selinux_policy *old_pol);
+void tamisu_destroy_sepolicy(struct selinux_policy *pol);
 
 // Operation on types
-bool ksu_type(struct policydb *db, const char *name, const char *attr);
-bool ksu_attribute(struct policydb *db, const char *name);
-bool ksu_permissive(struct policydb *db, const char *type);
-bool ksu_enforce(struct policydb *db, const char *type);
-bool ksu_typeattribute(struct policydb *db, const char *type, const char *attr);
+bool tamisu_type(struct policydb *db, const char *name, const char *attr);
+bool tamisu_attribute(struct policydb *db, const char *name);
+bool tamisu_permissive(struct policydb *db, const char *type);
+bool tamisu_enforce(struct policydb *db, const char *type);
+bool tamisu_typeattribute(struct policydb *db, const char *type, const char *attr);
 
 // Access vector rules
-bool ksu_allow(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_allow(struct policydb *db, const char *src, const char *tgt,
 	       const char *cls, const char *perm);
-bool ksu_deny(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_deny(struct policydb *db, const char *src, const char *tgt,
 	      const char *cls, const char *perm);
-bool ksu_auditallow(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_auditallow(struct policydb *db, const char *src, const char *tgt,
 		    const char *cls, const char *perm);
-bool ksu_dontaudit(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_dontaudit(struct policydb *db, const char *src, const char *tgt,
 		   const char *cls, const char *perm);
 
 // Extended permissions access vector rules
-bool ksu_allowxperm(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_allowxperm(struct policydb *db, const char *src, const char *tgt,
 		    const char *cls, const char *range);
-bool ksu_auditallowxperm(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_auditallowxperm(struct policydb *db, const char *src, const char *tgt,
 			 const char *cls, const char *range);
-bool ksu_dontauditxperm(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_dontauditxperm(struct policydb *db, const char *src, const char *tgt,
 			const char *cls, const char *range);
 
 // Type rules
-bool ksu_type_transition(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_type_transition(struct policydb *db, const char *src, const char *tgt,
 			 const char *cls, const char *def, const char *obj);
-bool ksu_type_change(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_type_change(struct policydb *db, const char *src, const char *tgt,
 		     const char *cls, const char *def);
-bool ksu_type_member(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_type_member(struct policydb *db, const char *src, const char *tgt,
 		     const char *cls, const char *def);
 
 // File system labeling
-bool ksu_genfscon(struct policydb *db, const char *fs_name, const char *path,
+bool tamisu_genfscon(struct policydb *db, const char *fs_name, const char *path,
 		  const char *ctx);
 
-#endif // #ifndef __KSU_H_SEPOLICY
+#endif // #ifndef __TAMISU_H_SEPOLICY

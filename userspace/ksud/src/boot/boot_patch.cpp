@@ -23,7 +23,7 @@
 
 namespace fs = std::filesystem;
 
-namespace ksud {
+namespace tamisu_daemon {
 
 // Forward declaration — defined near get_current_kmi() at the bottom of this file.
 std::string read_kernel_release_from_sysfs();
@@ -99,10 +99,10 @@ bool is_magisk_patched(const std::string& magiskboot, const std::string& workdir
     return has_magisk_init.exit_code == 0 || has_overlay.exit_code == 0;
 }
 
-// Check if boot image is already patched by Tamisu/KernelSU.
+// Check if boot image is already patched by Tamisu/Tamisu.
 // Detects both the new modprobe layout (tamisu.ko under /lib/modules/) and
-// the legacy flat kernelsu.ko layout.
-bool is_kernelsu_patched(const std::string& magiskboot, const std::string& workdir,
+// the legacy flat tamisu.ko layout.
+bool is_tamisu_patched(const std::string& magiskboot, const std::string& workdir,
                          const std::string& cpio_path) {
     // New layout: tamisu.ko anywhere in /lib/modules/
     auto tamisu_result = exec_command_magiskboot(
@@ -111,9 +111,9 @@ bool is_kernelsu_patched(const std::string& magiskboot, const std::string& workd
         // Deeper check would need a directory listing; the dir itself is a strong signal.
         return true;
     }
-    // Legacy: flat kernelsu.ko at ramdisk root
+    // Legacy: flat tamisu.ko at ramdisk root
     auto result =
-        exec_command_magiskboot(magiskboot, {"cpio", cpio_path, "exists kernelsu.ko"}, workdir);
+        exec_command_magiskboot(magiskboot, {"cpio", cpio_path, "exists tamisu.ko"}, workdir);
     return result.exit_code == 0;
 }
 
@@ -231,10 +231,10 @@ bool do_backup(const std::string& magiskboot, const std::string& workdir,
         return false;
     }
 
-    const std::string filename = std::string(KSU_BACKUP_FILE_PREFIX) + sha1;
+    const std::string filename = std::string(TAMISU_BACKUP_FILE_PREFIX) + sha1;
     printf("- Backup stock boot image\n");
 
-    const std::string target = std::string(KSU_BACKUP_DIR) + filename;
+    const std::string target = std::string(TAMISU_BACKUP_DIR) + filename;
 
     // Copy image to backup location
     std::ifstream src(image, std::ios::binary);
@@ -266,17 +266,17 @@ bool do_backup(const std::string& magiskboot, const std::string& workdir,
 // Clean old backups
 void clean_backup(const std::string& current_sha1) {
     printf("- Clean up backup\n");
-    const std::string backup_name = std::string(KSU_BACKUP_FILE_PREFIX) + current_sha1;
+    const std::string backup_name = std::string(TAMISU_BACKUP_FILE_PREFIX) + current_sha1;
 
     std::error_code ec;
-    for (auto it = fs::directory_iterator(KSU_BACKUP_DIR, ec);
+    for (auto it = fs::directory_iterator(TAMISU_BACKUP_DIR, ec);
          it != fs::directory_iterator() && !ec; it.increment(ec)) {
         std::error_code rf_ec;
         if (!it->is_regular_file(rf_ec))
             continue;
 
         const std::string name = it->path().filename().string();
-        if (name != backup_name && starts_with(name, KSU_BACKUP_FILE_PREFIX)) {
+        if (name != backup_name && starts_with(name, TAMISU_BACKUP_FILE_PREFIX)) {
             if (fs::remove(it->path())) {
                 printf("- removed %s\n", name.c_str());
             }
@@ -305,7 +305,7 @@ struct BootPatchArgs {
     bool enable_adbd = false;       // --enable-adbd
     std::string adb_debug_prop;     // --adb-debug-prop
     bool kasumi_in_cpio =
-        false;  // --kasumi (experimental: embed Kasumi LKM in cpio, load after KernelSU)
+        false;  // --kasumi (experimental: embed Kasumi LKM in cpio, load after Tamisu)
     std::string kasumi_module;  // --kasumi-module (custom Kasumi LKM path; overrides embedded)
 };
 
@@ -388,7 +388,7 @@ int boot_patch_impl(const std::vector<std::string>& args) {
     // Try TMPDIR env first (manager sets this to app cache dir)
     const char* env_tmpdir = getenv("TMPDIR");
     if (env_tmpdir && access(env_tmpdir, W_OK) == 0) {
-        std::string template_path = std::string(env_tmpdir) + "/KernelSU_XXXXXX";
+        std::string template_path = std::string(env_tmpdir) + "/Tamisu_XXXXXX";
         std::vector<char> tmpdir_template(template_path.begin(), template_path.end());
         tmpdir_template.push_back('\0');
         tmpdir = mkdtemp(tmpdir_template.data());
@@ -402,7 +402,7 @@ int boot_patch_impl(const std::vector<std::string>& args) {
     if (workdir.empty()) {
         std::array<char, PATH_MAX> cwd{};
         if (getcwd(cwd.data(), cwd.size()) && access(cwd.data(), W_OK) == 0) {
-            std::string template_path = std::string(cwd.data()) + "/KernelSU_XXXXXX";
+            std::string template_path = std::string(cwd.data()) + "/Tamisu_XXXXXX";
             std::vector<char> tmpdir_template(template_path.begin(), template_path.end());
             tmpdir_template.push_back('\0');
             tmpdir = mkdtemp(tmpdir_template.data());
@@ -416,7 +416,7 @@ int boot_patch_impl(const std::vector<std::string>& args) {
     // Fallback to /data/local/tmp
     if (workdir.empty()) {
         std::array<char, 32> tmpdir_buf{};
-        (void)strncpy(tmpdir_buf.data(), "/data/local/tmp/KernelSU_XXXXXX", tmpdir_buf.size() - 1);
+        (void)strncpy(tmpdir_buf.data(), "/data/local/tmp/Tamisu_XXXXXX", tmpdir_buf.size() - 1);
         tmpdir_buf[tmpdir_buf.size() - 1] = '\0';
         tmpdir = mkdtemp(tmpdir_buf.data());
         if (tmpdir) {
@@ -499,7 +499,7 @@ int boot_patch_impl(const std::vector<std::string>& args) {
 
     // Prepare LKM module
     printf("- Preparing assets\n");
-    const std::string kmod_file = workdir + "/kernelsu.ko";
+    const std::string kmod_file = workdir + "/tamisu.ko";
 
     if (!parsed.module.empty()) {
         // Use specified module
@@ -513,7 +513,7 @@ int boot_patch_impl(const std::vector<std::string>& args) {
         dst << src.rdbuf();
     } else {
         // Try to extract LKM from embedded assets first
-        const std::string kmi_lkm_name = kmi + "_kernelsu.ko";
+        const std::string kmi_lkm_name = kmi + "_tamisu.ko";
         printf("- KMI: %s\n", kmi.c_str());
 
         if (copy_asset_to_file(kmi_lkm_name, kmod_file)) {
@@ -521,9 +521,9 @@ int boot_patch_impl(const std::vector<std::string>& args) {
         } else {
             // Fallback: try to find LKM from known locations
             const std::vector<std::string> search_paths = {
-                std::string(BINARY_DIR) + kmi_lkm_name,  std::string(BINARY_DIR) + "kernelsu.ko",
-                std::string(WORKING_DIR) + kmi_lkm_name, std::string(WORKING_DIR) + "kernelsu.ko",
-                "/data/local/tmp/" + kmi_lkm_name,       "/data/local/tmp/kernelsu.ko",
+                std::string(BINARY_DIR) + kmi_lkm_name,  std::string(BINARY_DIR) + "tamisu.ko",
+                std::string(WORKING_DIR) + kmi_lkm_name, std::string(WORKING_DIR) + "tamisu.ko",
+                "/data/local/tmp/" + kmi_lkm_name,       "/data/local/tmp/tamisu.ko",
             };
 
             bool found = false;
@@ -691,7 +691,7 @@ int boot_patch_impl(const std::vector<std::string>& args) {
     }
 
     printf("- Adding tamisu.ko via AOSP first_stage modprobe layout\n");
-    const bool already_patched = is_kernelsu_patched(magiskboot, workdir, ramdisk);
+    const bool already_patched = is_tamisu_patched(magiskboot, workdir, ramdisk);
     (void)already_patched;
 
     // AOSP first_stage init's LoadKernelModules() scans /lib/modules/<uname -r>/
@@ -918,7 +918,7 @@ int boot_patch_impl(const std::vector<std::string>& args) {
             struct tm* tm_info = localtime(&now);
             std::array<char, 32> time_str{};
             (void)strftime(time_str.data(), time_str.size(), "%Y%m%d_%H%M%S", tm_info);
-            name = std::string("kernelsu_patched_") + time_str.data() + ".img";
+            name = std::string("tamisu_patched_") + time_str.data() + ".img";
         }
 
         const std::string output_image = output_dir + "/" + name;
@@ -994,7 +994,7 @@ int boot_restore(const std::vector<std::string>& args) {
 
     // Create temp working directory
     std::array<char, 32> tmpdir_buf{};
-    (void)strncpy(tmpdir_buf.data(), "/data/local/tmp/KernelSU_XXXXXX", tmpdir_buf.size() - 1);
+    (void)strncpy(tmpdir_buf.data(), "/data/local/tmp/Tamisu_XXXXXX", tmpdir_buf.size() - 1);
     tmpdir_buf[tmpdir_buf.size() - 1] = '\0';
     char* tmpdir = mkdtemp(tmpdir_buf.data());
     if (!tmpdir) {
@@ -1108,9 +1108,9 @@ int boot_restore(const std::vector<std::string>& args) {
         return 1;
     }
 
-    // Check if patched by KernelSU
-    if (!is_kernelsu_patched(magiskboot, workdir, ramdisk)) {
-        LOGE("Boot image is not patched by KernelSU");
+    // Check if patched by Tamisu
+    if (!is_tamisu_patched(magiskboot, workdir, ramdisk)) {
+        LOGE("Boot image is not patched by Tamisu");
         cleanup();
         return 1;
     }
@@ -1133,7 +1133,7 @@ int boot_restore(const std::vector<std::string>& args) {
         if (sha_content) {
             const std::string sha = trim(*sha_content);
             const std::string backup_path =
-                std::string(KSU_BACKUP_DIR) + KSU_BACKUP_FILE_PREFIX + sha;
+                std::string(TAMISU_BACKUP_DIR) + TAMISU_BACKUP_FILE_PREFIX + sha;
 
             if (access(backup_path.c_str(), R_OK) == 0) {
                 new_boot = backup_path;
@@ -1147,10 +1147,10 @@ int boot_restore(const std::vector<std::string>& args) {
         printf("- Backup info is absent!\n");
     }
 
-    // If no backup, manually remove KernelSU/Tamisu
+    // If no backup, manually remove Tamisu/Tamisu
     if (!from_backup) {
-        // Remove legacy flat kernelsu.ko
-        do_cpio_cmd(magiskboot, workdir, ramdisk, "rm kernelsu.ko");
+        // Remove legacy flat tamisu.ko
+        do_cpio_cmd(magiskboot, workdir, ramdisk, "rm tamisu.ko");
 
         // Remove modprobe layout: rm the /lib/modules tree (tamisu.ko lives inside).
         // magiskboot cpio 'rm' on a directory removes recursively on some builds,
@@ -1204,7 +1204,7 @@ int boot_restore(const std::vector<std::string>& args) {
             struct tm* tm_info = localtime(&now);
             std::array<char, 32> time_str{};
             (void)strftime(time_str.data(), time_str.size(), "%Y%m%d_%H%M%S", tm_info);
-            name = std::string("kernelsu_restore_") + time_str.data() + ".img";
+            name = std::string("tamisu_restore_") + time_str.data() + ".img";
         }
 
         const std::string output_image = "./" + name;
@@ -1424,4 +1424,4 @@ int boot_info_available_partitions() {
     return 0;
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

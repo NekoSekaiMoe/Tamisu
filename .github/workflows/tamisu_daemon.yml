@@ -1,4 +1,4 @@
-name: Build ksud
+name: Build tamisu_daemon
 on:
   workflow_call:
     inputs:
@@ -34,8 +34,8 @@ jobs:
       if: ${{ inputs.pack_lkm }}
       run: |
         set -euo pipefail
-        mkdir -p ./userspace/ksud/assets
-        cp android*-lkm/*.ko ./userspace/ksud/assets/ 2>/dev/null || true
+        mkdir -p ./userspace/tamisu_daemon/assets
+        cp android*-lkm/*.ko ./userspace/tamisu_daemon/assets/ 2>/dev/null || true
      
     - name: Determine target settings
       id: target
@@ -62,7 +62,7 @@ jobs:
             ;;
         esac
 
-    # busybox is built into ksud (ndk-busybox multi-call); no standalone busybox in assets
+    # busybox is built into tamisu_daemon (ndk-busybox multi-call); no standalone busybox in assets
 
     # - name: Install UPX
     #   run: |
@@ -73,9 +73,9 @@ jobs:
     #     rm -rf "upx-${UPX_VERSION}-amd64_linux" "upx-${UPX_VERSION}-amd64_linux.tar.xz"
     #     upx --version | head -1
 
-    - name: Build ksud
+    - name: Build tamisu_daemon
       run: |
-        cd userspace/ksud
+        cd userspace/tamisu_daemon
         mkdir -p build && cd build
         
         # Cross-compile using Android NDK toolchain
@@ -96,9 +96,9 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release
 
         ninja
-    - name: Upload ksud artifact
+    - name: Upload tamisu_daemon artifact
       uses: actions/upload-artifact@v6
       with:
-        name: ksud-${{ inputs.target }}
+        name: tamisu_daemon-${{ inputs.target }}
         path: |
-          userspace/ksud/build/ksud
+          userspace/tamisu_daemon/build/tamisu_daemon

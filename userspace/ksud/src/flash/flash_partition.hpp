@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace ksud {
+namespace tamisu_daemon {
 namespace flash {
 
 // Common partition names (shown by default)
@@ -168,4 +168,4 @@ std::string get_kernel_version(const std::string& slot_suffix = "");
 std::string get_boot_slot_info();
 
 }  // namespace flash
-}  // namespace ksud
+}  // namespace tamisu_daemon

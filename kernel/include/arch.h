@@ -1,5 +1,5 @@
-#ifndef __KSU_H_ARCH
-#define __KSU_H_ARCH
+#ifndef __TAMISU_H_ARCH
+#define __TAMISU_H_ARCH
 
 #include <linux/version.h>
 
@@ -45,4 +45,4 @@
 
 #define PT_REGS_ORIG_SYSCALL(x) (__PT_REGS_CAST(x)->__PT_ORIG_SYSCALL_REG)
 
-#endif // #ifndef __KSU_H_ARCH
+#endif // #ifndef __TAMISU_H_ARCH

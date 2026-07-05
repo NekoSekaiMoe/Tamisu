@@ -32,16 +32,16 @@ jobs:
           done
           ls -la Manager/
 
-      - name: Rename ksud
+      - name: Rename tamisu_daemon
         run: |
-          mkdir -p ksud
-          for dir in ./ksud-*; do
+          mkdir -p tamisu_daemon
+          for dir in ./tamisu_daemon-*; do
               if [ -d "$dir" ]; then
                  echo "----- Rename $dir -----"
-                 ksud_platform_name=$(basename "$dir")
-                 find "$dir" -type f -name "ksud" -path "*/release/*" | while read -r ksud_file; do
-                   if [ -f "$ksud_file" ]; then
-                     mv "$ksud_file" "ksud/$ksud_platform_name"
+                 tamisu_daemon_platform_name=$(basename "$dir")
+                 find "$dir" -type f -name "tamisu_daemon" -path "*/release/*" | while read -r tamisu_daemon_file; do
+                   if [ -f "$tamisu_daemon_file" ]; then
+                     mv "$tamisu_daemon_file" "tamisu_daemon/$tamisu_daemon_platform_name"
                    fi
                  done
               fi
@@ -57,4 +57,4 @@ jobs:
             Manager/*.apk
             android*-lkm/*.ko
             *-kasumi-lkm/*.ko
-            ksud/ksud-*
+            tamisu_daemon/tamisu_daemon-*

@@ -1,5 +1,5 @@
 #include "klog.h" // IWYU pragma: keep
-#include "ksu.h"
+#include "tamisu.h"
 #include "linux/cred.h"
 #include "linux/sched.h"
 #include "linux/version.h"
@@ -21,7 +21,7 @@
 static u32 cached_su_sid __read_mostly = 0;
 static u32 cached_zygote_sid __read_mostly = 0;
 static u32 cached_init_sid __read_mostly = 0;
-u32 ksu_file_sid __read_mostly = 0;
+u32 tamisu_file_sid __read_mostly = 0;
 
 static int transive_to_domain(const char *domain, struct cred *cred,
 			      bool clear_exec_sid)
@@ -55,11 +55,11 @@ static int transive_to_domain(const char *domain, struct cred *cred,
 	return error;
 }
 
-void setup_ksu_cred(void)
+void setup_tamisu_cred(void)
 {
-	if (ksu_cred &&
-	    transive_to_domain(KERNEL_SU_CONTEXT, ksu_cred, false)) {
-		pr_err("setup ksu cred failed.\n");
+	if (tamisu_cred &&
+	    transive_to_domain(TAMISU_CONTEXT, tamisu_cred, false)) {
+		pr_err("setup tamisu cred failed.\n");
 	}
 }
 
@@ -114,7 +114,7 @@ void cache_sid(void)
 	int err;
 
 	err = security_secctx_to_secid(
-	    KERNEL_SU_CONTEXT, strlen(KERNEL_SU_CONTEXT), &cached_su_sid);
+	    TAMISU_CONTEXT, strlen(TAMISU_CONTEXT), &cached_su_sid);
 	if (err) {
 		pr_warn("Failed to cache kernel su domain SID: %d\n", err);
 		cached_su_sid = 0;
@@ -140,13 +140,13 @@ void cache_sid(void)
 		pr_info("Cached init SID: %u\n", cached_init_sid);
 	}
 
-	err = security_secctx_to_secid(KSU_FILE_CONTEXT,
-				       strlen(KSU_FILE_CONTEXT), &ksu_file_sid);
+	err = security_secctx_to_secid(TAMISU_FILE_CONTEXT,
+				       strlen(TAMISU_FILE_CONTEXT), &tamisu_file_sid);
 	if (err) {
-		pr_warn("Failed to cache ksu_file SID: %d\n", err);
-		ksu_file_sid = 0;
+		pr_warn("Failed to cache tamisu_file SID: %d\n", err);
+		tamisu_file_sid = 0;
 	} else {
-		pr_info("Cached ksu_file SID: %u\n", ksu_file_sid);
+		pr_info("Cached tamisu_file SID: %u\n", tamisu_file_sid);
 	}
 }
 
@@ -186,9 +186,9 @@ bool is_sid_match(const struct cred *cred, u32 cached_sid,
 	return result;
 }
 
-bool is_task_ksu_domain(const struct cred *cred)
+bool is_task_tamisu_domain(const struct cred *cred)
 {
-	return is_sid_match(cred, cached_su_sid, KERNEL_SU_CONTEXT);
+	return is_sid_match(cred, cached_su_sid, TAMISU_CONTEXT);
 }
 
 bool is_zygote(const struct cred *cred)
@@ -201,13 +201,13 @@ bool is_init(const struct cred *cred)
 	return is_sid_match(cred, cached_init_sid, INIT_CONTEXT);
 }
 
-u32 ksu_get_ksu_file_sid()
+u32 tamisu_get_tamisu_file_sid()
 {
-	u32 ksu_file_sid = 0;
+	u32 tamisu_file_sid = 0;
 	int err = security_secctx_to_secid(
-	    KSU_FILE_CONTEXT, strlen(KSU_FILE_CONTEXT), &ksu_file_sid);
+	    TAMISU_FILE_CONTEXT, strlen(TAMISU_FILE_CONTEXT), &tamisu_file_sid);
 	if (err) {
-		pr_info("get ksufile sid err %d\n", err);
+		pr_info("get tamisufile sid err %d\n", err);
 	}
-	return ksu_file_sid;
+	return tamisu_file_sid;
 }

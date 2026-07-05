@@ -9,7 +9,7 @@
 
 namespace fs = std::filesystem;
 
-namespace ksud {
+namespace tamisu_daemon {
 
 static constexpr const char* SELINUX_XATTR = "security.selinux";
 
@@ -111,4 +111,4 @@ bool restorecon(const fs::path& path, bool recursive) {
     }
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

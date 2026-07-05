@@ -1,5 +1,4 @@
 //
-// Created by weishu on 2022/12/9.
 //
 
 #include <android/log.h>
@@ -60,18 +59,18 @@ static inline int scan_driver_fd() {
   return found;
 }
 
-static int ksuctl(unsigned long op, void *arg) {
+static int tamisuctl(unsigned long op, void *arg) {
   if (fd < 0) {
     fd = scan_driver_fd();
   }
   return ioctl(fd, op, arg);
 }
 
-static struct ksu_get_info_cmd g_version = {0};
+static struct tamisu_get_info_cmd g_version = {0};
 
-struct ksu_get_info_cmd get_info() {
+struct tamisu_get_info_cmd get_info() {
   if (!g_version.version) {
-    ksuctl(KSU_IOCTL_GET_INFO, &g_version);
+    tamisuctl(TAMISU_IOCTL_GET_INFO, &g_version);
   }
   return g_version;
 }
@@ -83,21 +82,21 @@ uint32_t get_version() {
 
 uint32_t get_uapi_version() {
   uint32_t v = 0;
-  ksuctl(KSU_IOCTL_GET_UAPI_VERSION, &v);
+  tamisuctl(TAMISU_IOCTL_GET_UAPI_VERSION, &v);
   return v;
 }
 
 bool is_safe_mode() {
-  struct ksu_check_safemode_cmd cmd = {};
-  if (ksuctl(KSU_IOCTL_CHECK_SAFEMODE, &cmd) == 0) {
+  struct tamisu_check_safemode_cmd cmd = {};
+  if (tamisuctl(TAMISU_IOCTL_CHECK_SAFEMODE, &cmd) == 0) {
     return cmd.in_safe_mode;
   }
   return false;
 }
 
 void get_full_version(char *buff) {
-  struct ksu_get_full_version_cmd cmd = {};
-  if (ksuctl(KSU_IOCTL_GET_FULL_VERSION, &cmd) == 0) {
+  struct tamisu_get_full_version_cmd cmd = {};
+  if (tamisuctl(TAMISU_IOCTL_GET_FULL_VERSION, &cmd) == 0) {
     strcpy(buff, cmd.version_full);
   } else {
     strcpy(buff, "unknown");
@@ -105,8 +104,8 @@ void get_full_version(char *buff) {
 }
 
 void get_hook_type(char *hook_type) {
-  struct ksu_hook_type_cmd cmd = {};
-  if (ksuctl(KSU_IOCTL_HOOK_TYPE, &cmd) == 0) {
+  struct tamisu_hook_type_cmd cmd = {};
+  if (tamisuctl(TAMISU_IOCTL_HOOK_TYPE, &cmd) == 0) {
     strcpy(hook_type, cmd.hook_type);
   } else {
     strcpy(hook_type, "unknown");

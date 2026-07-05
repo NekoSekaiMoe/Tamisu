@@ -4,19 +4,19 @@
  *
  * Author: Anatdx
  */
-#ifndef __KSU_H_ZYGOTE_PROBE
-#define __KSU_H_ZYGOTE_PROBE
+#ifndef __TAMISU_H_ZYGOTE_PROBE
+#define __TAMISU_H_ZYGOTE_PROBE
 
 #include <linux/types.h>
 
 struct yz_native_targets_cmd;
 
-void ksu_zygote_probe_init(void);
-void ksu_zygote_probe_exit(void);
-void ksu_zygote_probe_set_dlopen_off(u64 dlopen_off, u64 dlsym_off);
-void ksu_zygote_probe_set_yukilinker(bool enabled);
-int ksu_zygote_probe_set_native_targets(
+void tamisu_zygote_probe_init(void);
+void tamisu_zygote_probe_exit(void);
+void tamisu_zygote_probe_set_dlopen_off(u64 dlopen_off, u64 dlsym_off);
+void tamisu_zygote_probe_set_yukilinker(bool enabled);
+int tamisu_zygote_probe_set_native_targets(
     const struct yz_native_targets_cmd *cmd);
-int ksu_zygote_probe_restore_native_policy(pid_t tgid);
+int tamisu_zygote_probe_restore_native_policy(pid_t tgid);
 
-#endif // #ifndef __KSU_H_ZYGOTE_PROBE
+#endif // #ifndef __TAMISU_H_ZYGOTE_PROBE

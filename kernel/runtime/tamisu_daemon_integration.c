@@ -25,30 +25,30 @@
 #include "hook/syscall_hook.h"
 #include "hook/syscall_event_bridge.h"
 #include "klog.h" // IWYU pragma: keep
-#include "ksu.h"
-#include "runtime/ksud_boot.h"
-#include "runtime/ksud.h"
+#include "tamisu.h"
+#include "runtime/tamisu_daemon_boot.h"
+#include "runtime/tamisu_daemon.h"
 #include "selinux/selinux.h"
 
-static const char KERNEL_SU_RC[] =
+static const char TAMISU_RC[] =
     "\n"
 
     "on post-fs-data\n"
     "    start logd\n"
     // We should wait for the post-fs-data finish
-    "    exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " post-fs-data\n"
+    "    exec u:r:" TAMISU_DOMAIN ":s0 root -- " TAMISU_DAEMON_PATH " post-fs-data\n"
     "\n"
 
     "on nonencrypted\n"
-    "    exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " services\n"
+    "    exec u:r:" TAMISU_DOMAIN ":s0 root -- " TAMISU_DAEMON_PATH " services\n"
     "\n"
 
     "on property:vold.decrypt=trigger_restart_framework\n"
-    "    exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH " services\n"
+    "    exec u:r:" TAMISU_DOMAIN ":s0 root -- " TAMISU_DAEMON_PATH " services\n"
     "\n"
 
     "on property:sys.boot_completed=1\n"
-    "    exec u:r:" KERNEL_SU_DOMAIN ":s0 root -- " KSUD_PATH
+    "    exec u:r:" TAMISU_DOMAIN ":s0 root -- " TAMISU_DAEMON_PATH
     " boot-completed\n"
     "\n"
 
@@ -60,11 +60,11 @@ static void stop_input_hook(void);
 static struct work_struct stop_init_rc_hook_work;
 static struct work_struct stop_input_hook_work;
 
-static void ksu_initialize_selinux(void)
+static void tamisu_initialize_selinux(void)
 {
-	apply_kernelsu_rules();
+	apply_tamisu_rules();
 	cache_sid();
-	setup_ksu_cred();
+	setup_tamisu_cred();
 }
 
 static const char __user *get_user_arg_ptr(struct user_arg_ptr argv, int nr)
@@ -141,7 +141,7 @@ fail:
  * IMPORTANT NOTE: the TSR execve path still cannot rely on envp on some
  * GKI kernels, so callers may legitimately pass NULL for that argument.
  */
-void ksu_handle_execveat_ksud(const char *filename, struct user_arg_ptr *argv,
+void tamisu_handle_execveat_tamisu_daemon(const char *filename, struct user_arg_ptr *argv,
 			      struct user_arg_ptr *envp)
 {
 	static const char app_process[] = "/system/bin/app_process";
@@ -163,7 +163,7 @@ void ksu_handle_execveat_ksud(const char *filename, struct user_arg_ptr *argv,
 		    check_argv(*argv, 1, "second_stage", buf, sizeof(buf))) {
 			pr_info("/system/bin/init second_stage executed via "
 				"argv1 check\n");
-			ksu_initialize_selinux();
+			tamisu_initialize_selinux();
 			init_second_stage_executed = true;
 		}
 	} else if (unlikely(!memcmp(filename, old_system_init,
@@ -180,7 +180,7 @@ void ksu_handle_execveat_ksud(const char *filename, struct user_arg_ptr *argv,
 				       sizeof(buf))) {
 				pr_info("/init second_stage executed via argv1 "
 					"check\n");
-				ksu_initialize_selinux();
+				tamisu_initialize_selinux();
 				init_second_stage_executed = true;
 			}
 		} else if (argc == 1 && !init_second_stage_executed && envp) {
@@ -211,7 +211,7 @@ void ksu_handle_execveat_ksud(const char *filename, struct user_arg_ptr *argv,
 				     !strcmp(env_value, "true"))) {
 					pr_info("/init second_stage executed "
 						"via envp check\n");
-					ksu_initialize_selinux();
+					tamisu_initialize_selinux();
 					init_second_stage_executed = true;
 					break;
 				}
@@ -230,12 +230,12 @@ void ksu_handle_execveat_ksud(const char *filename, struct user_arg_ptr *argv,
 			    init_second_stage_executed);
 			on_post_fs_data();
 			first_zygote = false;
-			ksu_stop_ksud_execve_hook();
+			tamisu_stop_tamisu_daemon_execve_hook();
 		}
 	}
 }
 
-void ksu_execve_hook_ksud(const struct pt_regs *regs)
+void tamisu_execve_hook_tamisu_daemon(const struct pt_regs *regs)
 {
 	const char __user **filename_user =
 	    (const char __user **)&PT_REGS_PARM1(regs);
@@ -262,7 +262,7 @@ void ksu_execve_hook_ksud(const struct pt_regs *regs)
 		return;
 	}
 
-	ksu_handle_execveat_ksud(path, &argv, NULL);
+	tamisu_handle_execveat_tamisu_daemon(path, &argv, NULL);
 }
 
 // ---------------------------------------------------------------
@@ -272,11 +272,11 @@ void ksu_execve_hook_ksud(const struct pt_regs *regs)
 static ssize_t (*orig_read)(struct file *, char __user *, size_t, loff_t *);
 static ssize_t (*orig_read_iter)(struct kiocb *, struct iov_iter *);
 static struct file_operations fops_proxy;
-static ssize_t ksu_rc_pos = 0;
-const size_t ksu_rc_len = sizeof(KERNEL_SU_RC) - 1;
+static ssize_t tamisu_rc_pos = 0;
+const size_t tamisu_rc_len = sizeof(TAMISU_RC) - 1;
 
-#define MODULE_RC_PATH_WATCHDOG "/metadata/watchdog/ksu/modules.rc"
-#define MODULE_RC_PATH_DEFAULT "/metadata/ksu/modules.rc"
+#define MODULE_RC_PATH_WATCHDOG "/metadata/watchdog/tamisu/modules.rc"
+#define MODULE_RC_PATH_DEFAULT "/metadata/tamisu/modules.rc"
 
 static char *module_rc_buf;
 static size_t module_rc_len;
@@ -315,12 +315,12 @@ static void load_module_rc_once(void)
 		return;
 	loaded = true;
 
-	if (ksu_no_custom_rc) {
+	if (tamisu_no_custom_rc) {
 		pr_info("module rc: custom rc is disabled\n");
 		return;
 	}
 
-	old_cred = ksu_cred ? override_creds(ksu_cred) : NULL;
+	old_cred = tamisu_cred ? override_creds(tamisu_cred) : NULL;
 
 	f = open_module_rc(&path);
 	if (IS_ERR(f)) {
@@ -376,35 +376,35 @@ static ssize_t read_proxy(struct file *file, char __user *buf, size_t count,
 {
 	ssize_t ret = 0;
 	size_t append_count;
-	if (ksu_rc_pos && ksu_rc_pos < ksu_rc_len)
-		goto append_ksu_rc;
-	if (ksu_rc_pos >= ksu_rc_len && module_rc_pos < module_rc_len)
+	if (tamisu_rc_pos && tamisu_rc_pos < tamisu_rc_len)
+		goto append_tamisu_rc;
+	if (tamisu_rc_pos >= tamisu_rc_len && module_rc_pos < module_rc_len)
 		goto append_module_rc;
 
 	ret = orig_read(file, buf, count, pos);
 	if (ret != 0)
 		return ret;
-	if (ksu_rc_pos >= ksu_rc_len && module_rc_pos >= module_rc_len)
+	if (tamisu_rc_pos >= tamisu_rc_len && module_rc_pos >= module_rc_len)
 		return ret;
 
 	pr_info("read_proxy: orig read finished, start append rc\n");
 
-append_ksu_rc:
-	if (ksu_rc_pos < ksu_rc_len) {
-		append_count = ksu_rc_len - ksu_rc_pos;
+append_tamisu_rc:
+	if (tamisu_rc_pos < tamisu_rc_len) {
+		append_count = tamisu_rc_len - tamisu_rc_pos;
 		if (append_count > count - ret)
 			append_count = count - ret;
-		if (copy_to_user(buf + ret, KERNEL_SU_RC + ksu_rc_pos,
+		if (copy_to_user(buf + ret, TAMISU_RC + tamisu_rc_pos,
 				 append_count)) {
 			pr_info(
 			    "read_proxy: append error, totally appended %ld\n",
-			    ksu_rc_pos);
+			    tamisu_rc_pos);
 			return ret;
 		}
 		pr_info("read_proxy: append static %zu\n", append_count);
-		ksu_rc_pos += append_count;
+		tamisu_rc_pos += append_count;
 		ret += append_count;
-		if (ksu_rc_pos == ksu_rc_len)
+		if (tamisu_rc_pos == tamisu_rc_len)
 			pr_info("read_proxy: static append done\n");
 	}
 
@@ -436,33 +436,33 @@ static ssize_t read_iter_proxy(struct kiocb *iocb, struct iov_iter *to)
 {
 	ssize_t ret = 0;
 	size_t append_count;
-	if (ksu_rc_pos && ksu_rc_pos < ksu_rc_len)
-		goto append_ksu_rc;
-	if (ksu_rc_pos >= ksu_rc_len && module_rc_pos < module_rc_len)
+	if (tamisu_rc_pos && tamisu_rc_pos < tamisu_rc_len)
+		goto append_tamisu_rc;
+	if (tamisu_rc_pos >= tamisu_rc_len && module_rc_pos < module_rc_len)
 		goto append_module_rc;
 
 	ret = orig_read_iter(iocb, to);
 	if (ret != 0)
 		return ret;
-	if (ksu_rc_pos >= ksu_rc_len && module_rc_pos >= module_rc_len)
+	if (tamisu_rc_pos >= tamisu_rc_len && module_rc_pos >= module_rc_len)
 		return ret;
 
 	pr_info("read_iter_proxy: orig read finished, start append rc\n");
 
-append_ksu_rc:
-	if (ksu_rc_pos < ksu_rc_len) {
-		append_count = copy_to_iter(KERNEL_SU_RC + ksu_rc_pos,
-					    ksu_rc_len - ksu_rc_pos, to);
+append_tamisu_rc:
+	if (tamisu_rc_pos < tamisu_rc_len) {
+		append_count = copy_to_iter(TAMISU_RC + tamisu_rc_pos,
+					    tamisu_rc_len - tamisu_rc_pos, to);
 		if (!append_count) {
 			pr_info("read_iter_proxy: append error, totally "
 				"appended %ld\n",
-				ksu_rc_pos);
+				tamisu_rc_pos);
 			return ret;
 		}
 		pr_info("read_iter_proxy: append static %zu\n", append_count);
-		ksu_rc_pos += append_count;
+		tamisu_rc_pos += append_count;
 		ret += append_count;
-		if (ksu_rc_pos == ksu_rc_len)
+		if (tamisu_rc_pos == tamisu_rc_len)
 			pr_info("read_iter_proxy: static append done\n");
 	}
 
@@ -515,7 +515,7 @@ static bool is_init_rc(struct file *fp)
 	return true;
 }
 
-static void ksu_handle_sys_read(unsigned int fd)
+static void tamisu_handle_sys_read(unsigned int fd)
 {
 	struct file *file = fget(fd);
 	if (!file) {
@@ -536,7 +536,7 @@ static void ksu_handle_sys_read(unsigned int fd)
 	load_module_rc_once();
 
 	pr_info("read init.rc, comm: %s, rc_count: %zu, module_rc: %zu\n",
-		current->comm, ksu_rc_len, module_rc_len);
+		current->comm, tamisu_rc_len, module_rc_len);
 
 	memcpy(&fops_proxy, file->f_op, sizeof(struct file_operations));
 	orig_read = file->f_op->read;
@@ -560,15 +560,15 @@ skip:
 static syscall_fn_t orig_sys_read;
 static syscall_fn_t orig_sys_fstat;
 
-static long __nocfi ksu_sys_read(const struct pt_regs *regs)
+static long __nocfi tamisu_sys_read(const struct pt_regs *regs)
 {
 	unsigned int fd = PT_REGS_PARM1(regs);
 
-	ksu_handle_sys_read(fd);
+	tamisu_handle_sys_read(fd);
 	return orig_sys_read(regs);
 }
 
-static long __nocfi ksu_sys_fstat(const struct pt_regs *regs)
+static long __nocfi tamisu_sys_fstat(const struct pt_regs *regs)
 {
 	unsigned int fd = PT_REGS_PARM1(regs);
 	long ret;
@@ -589,12 +589,12 @@ static long __nocfi ksu_sys_fstat(const struct pt_regs *regs)
 		long size, new_size;
 		size_t extra;
 		load_module_rc_once();
-		extra = ksu_rc_len + module_rc_len;
+		extra = tamisu_rc_len + module_rc_len;
 		if (!copy_from_user_nofault(&size, st_size_ptr, sizeof(long))) {
 			new_size = size + extra;
 			pr_info(
 			    "adding rc len: %ld -> %ld (static=%zu module=%zu)",
-			    size, new_size, ksu_rc_len, module_rc_len);
+			    size, new_size, tamisu_rc_len, module_rc_len);
 			copy_to_user_nofault(st_size_ptr, &new_size,
 					     sizeof(long));
 		}
@@ -614,7 +614,7 @@ static bool is_volumedown_enough(unsigned int count)
 	return count >= 3;
 }
 
-int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code,
+int tamisu_handle_input_handle_event(unsigned int *type, unsigned int *code,
 				  int *value)
 {
 	if (*type == EV_KEY && *code == KEY_VOLUMEDOWN) {
@@ -631,14 +631,14 @@ int ksu_handle_input_handle_event(unsigned int *type, unsigned int *code,
 	return 0;
 }
 
-bool ksu_is_safe_mode(void)
+bool tamisu_is_safe_mode(void)
 {
 	static bool safe_mode = false;
 	if (safe_mode) {
 		return true;
 	}
 
-	if (ksu_late_loaded) {
+	if (tamisu_late_loaded) {
 		return false;
 	}
 
@@ -665,7 +665,7 @@ static int input_handle_event_handler_pre(struct kprobe *p,
 	unsigned int *type = (unsigned int *)&PT_REGS_PARM2(regs);
 	unsigned int *code = (unsigned int *)&PT_REGS_PARM3(regs);
 	int *value = (int *)&PT_REGS_CCALL_PARM4(regs);
-	return ksu_handle_input_handle_event(type, code, value);
+	return tamisu_handle_input_handle_event(type, code, value);
 }
 
 static struct kprobe input_event_kp = {
@@ -679,9 +679,9 @@ static struct kprobe input_event_kp = {
 
 static void do_stop_init_rc_hook(struct work_struct *work)
 {
-	ksu_syscall_table_unhook(__NR_read);
-	ksu_syscall_table_unhook(__NR_fstat);
-	pr_info("ksud: init_rc syscall table hooks removed\n");
+	tamisu_syscall_table_unhook(__NR_read);
+	tamisu_syscall_table_unhook(__NR_fstat);
+	pr_info("tamisu_daemon: init_rc syscall table hooks removed\n");
 }
 
 static void do_stop_input_hook(struct work_struct *work)
@@ -708,37 +708,37 @@ static void stop_input_hook(void)
 	pr_info("unregister input kprobe: %d!\n", ret);
 }
 
-void ksu_stop_input_hook_runtime(void)
+void tamisu_stop_input_hook_runtime(void)
 {
 	stop_input_hook();
 }
 
 // ---------------------------------------------------------------
-// ksud: module support
+// tamisu_daemon: module support
 // ---------------------------------------------------------------
 
-void ksu_ksud_init(void)
+void tamisu_tamisu_daemon_init(void)
 {
 	int ret;
 
 	/* Install syscall table hooks for init.rc injection */
-	ret = ksu_syscall_table_hook(__NR_read, ksu_sys_read, &orig_sys_read);
-	pr_info("ksud: sys_read table hook: %d\n", ret);
+	ret = tamisu_syscall_table_hook(__NR_read, tamisu_sys_read, &orig_sys_read);
+	pr_info("tamisu_daemon: sys_read table hook: %d\n", ret);
 
 	ret =
-	    ksu_syscall_table_hook(__NR_fstat, ksu_sys_fstat, &orig_sys_fstat);
-	pr_info("ksud: sys_fstat table hook: %d\n", ret);
+	    tamisu_syscall_table_hook(__NR_fstat, tamisu_sys_fstat, &orig_sys_fstat);
+	pr_info("tamisu_daemon: sys_fstat table hook: %d\n", ret);
 
 	/* Input event kprobe (for safe mode detection) */
 	ret = register_kprobe(&input_event_kp);
-	pr_info("ksud: input_event_kp: %d\n", ret);
+	pr_info("tamisu_daemon: input_event_kp: %d\n", ret);
 
 	INIT_WORK(&stop_init_rc_hook_work, do_stop_init_rc_hook);
 	INIT_WORK(&stop_input_hook_work, do_stop_input_hook);
 }
 
-void ksu_ksud_exit(void)
+void tamisu_tamisu_daemon_exit(void)
 {
-	/* Syscall table hooks are cleaned up by ksu_syscall_hook_exit() */
+	/* Syscall table hooks are cleaned up by tamisu_syscall_hook_exit() */
 	unregister_kprobe(&input_event_kp);
 }

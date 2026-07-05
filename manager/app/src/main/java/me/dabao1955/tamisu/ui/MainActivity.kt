@@ -43,7 +43,7 @@ import me.dabao1955.tamisu.ui.activity.util.ThemeChangeContentObserver
 import me.dabao1955.tamisu.ui.activity.util.ThemeUtils
 import me.dabao1955.tamisu.ui.screen.BottomBarDestination
 import me.dabao1955.tamisu.ui.theme.TamisuTheme
-import me.dabao1955.tamisu.ui.util.KsuCli
+import me.dabao1955.tamisu.ui.util.TamisuCli
 import me.dabao1955.tamisu.ui.util.LocalSnackbarHost
 import me.dabao1955.tamisu.ui.util.resetTaskDescriptionToAppName
 import me.dabao1955.tamisu.ui.viewmodel.HomeViewModel
@@ -101,9 +101,9 @@ class MainActivity : ComponentActivity() {
 
                     LaunchedEffect(Unit) {
                         if (getSharedPreferences("settings", MODE_PRIVATE)
-                                .getBoolean("auto_update_ksud", false)
+                                .getBoolean("auto_update_tamisu_daemon", false)
                         ) {
-                            KsuCli.autoSyncKsudIfNeeded()
+                            TamisuCli.autoSyncKsudIfNeeded()
                         }
                     }
 

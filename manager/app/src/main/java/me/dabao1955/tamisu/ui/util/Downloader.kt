@@ -26,7 +26,6 @@ private const val MAX_RETRY_COUNT = 3
 private const val RETRY_DELAY_MS = 3000L
 
 /**
- * @author weishu
  * @date 2023/6/22.
  */
 @SuppressLint("Range")

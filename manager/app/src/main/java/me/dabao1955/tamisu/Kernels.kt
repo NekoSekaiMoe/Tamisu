@@ -3,7 +3,6 @@ package me.dabao1955.tamisu
 import android.system.Os
 
 /**
- * @author weishu
  * @date 2022/12/10.
  */
 

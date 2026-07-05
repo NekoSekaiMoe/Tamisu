@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <string>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 // SELinux contexts
 constexpr const char* SYSTEM_CON = "u:object_r:system_file:s0";
@@ -26,10 +26,10 @@ bool restore_syscon(const std::filesystem::path& dir);
 // Restore system context if unlabeled
 bool restore_syscon_if_unlabeled(const std::filesystem::path& dir);
 
-// Restore contexts for KSU files
+// Restore contexts for tamisu files
 bool restorecon();
 
 // Restore contexts for a specific path
 bool restorecon(const std::filesystem::path& path, bool recursive = true);
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

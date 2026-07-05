@@ -10,9 +10,9 @@ build/
 local.properties
 .gradle/
 
-# ksud build artifacts
-userspace/ksud/build-android/
-build_ksud/
+# tamisu_daemon build artifacts
+userspace/tamisu_daemon/build-android/
+build_tamisu_daemon/
 
 out/
 ReZygisk/

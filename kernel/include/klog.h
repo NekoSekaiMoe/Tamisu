@@ -1,5 +1,5 @@
-#ifndef __KSU_H_KLOG
-#define __KSU_H_KLOG
+#ifndef __TAMISU_H_KLOG
+#define __TAMISU_H_KLOG
 
 #include <linux/printk.h>
 
@@ -8,4 +8,4 @@
 #define pr_fmt(fmt) "Tamisu: " fmt
 #endif // #ifdef pr_fmt
 
-#endif // #ifndef __KSU_H_KLOG
+#endif // #ifndef __TAMISU_H_KLOG

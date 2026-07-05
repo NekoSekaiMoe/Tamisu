@@ -2,7 +2,7 @@
 #include "assets.hpp"
 #include "core/feature.hpp"
 #include "core/hide_bootloader.hpp"
-#include "core/ksucalls.hpp"
+#include "core/tamisuctl.hpp"
 #include "core/restorecon.hpp"
 #include "defs.hpp"
 #include "log.hpp"
@@ -21,7 +21,7 @@
 #include <cstdlib>
 #include <cstring>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 namespace {
 
@@ -160,7 +160,7 @@ int spawn_zygiskd() {
                               nullptr};
         execv(DAEMON_PATH, argv);
 
-        char* const fallback_argv[] = {const_cast<char*>("ksud"), const_cast<char*>("zygiskd"),
+        char* const fallback_argv[] = {const_cast<char*>("tamisu_daemon"), const_cast<char*>("zygiskd"),
                                        nullptr};
         execv("/proc/self/exe", fallback_argv);
         if (ready_pipe[1] >= 0) {
@@ -200,7 +200,7 @@ bool yukizygisk_feature_enabled() {
     if (is_safe_mode()) {
         return false;
     }
-    const auto [value, supported] = get_feature(KSU_FEATURE_YUKIZYGISK);
+    const auto [value, supported] = get_feature(TAMISU_FEATURE_YUKIZYGISK);
     return supported && value != 0;
 }
 
@@ -298,7 +298,7 @@ int on_post_data_fs() {
 
     // Tamisu is a zygisk provider, not a mount solution. Module mounting
     // (metamodule / metamount.sh / built-in mount) is owned by the root
-    // solution coexisting on the device (KernelSU/Magisk/APatch). Tamisu
+    // solution coexisting on the device (Tamisu/Magisk/APatch). Tamisu
     // only runs regular module stage scripts so zygisk modules can react
     // to boot phases.
     exec_stage_script("post-fs-data", true);
@@ -336,4 +336,4 @@ void on_boot_completed() {
     LOGI("boot-completed completed");
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

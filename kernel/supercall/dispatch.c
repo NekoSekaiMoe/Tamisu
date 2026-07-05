@@ -24,9 +24,9 @@
 #include "policy/feature.h"
 #include "infra/file_wrapper.h"
 #include "klog.h" // IWYU pragma: keep
-#include "ksu.h"
-#include "runtime/ksud_boot.h"
-#include "runtime/ksud.h"
+#include "tamisu.h"
+#include "runtime/tamisu_daemon_boot.h"
+#include "runtime/tamisu_daemon.h"
 #include "selinux/selinux.h"
 #include "supercall/supercall.h"
 #include "supercall/internal.h"
@@ -39,14 +39,14 @@
 
 static int do_get_info(void __user *arg)
 {
-	struct ksu_get_info_cmd cmd = {.version = KERNEL_SU_VERSION,
+	struct tamisu_get_info_cmd cmd = {.version = KERNEL_SU_VERSION,
 				       .flags = 0};
 
-	cmd.flags |= KSU_GET_INFO_FLAG_LKM;
-	if (ksu_late_loaded) {
-		cmd.flags |= KSU_GET_INFO_FLAG_LATE_LOAD;
+	cmd.flags |= TAMISU_GET_INFO_FLAG_LKM;
+	if (tamisu_late_loaded) {
+		cmd.flags |= TAMISU_GET_INFO_FLAG_LATE_LOAD;
 	}
-	cmd.features = KSU_FEATURE_MAX;
+	cmd.features = TAMISU_FEATURE_MAX;
 
 	if (copy_to_user(arg, &cmd, sizeof(cmd))) {
 		pr_err("get_version: copy_to_user failed\n");
@@ -58,7 +58,7 @@ static int do_get_info(void __user *arg)
 
 static int do_report_event(void __user *arg)
 {
-	struct ksu_report_event_cmd cmd;
+	struct tamisu_report_event_cmd cmd;
 
 	if (copy_from_user(&cmd, arg, sizeof(cmd))) {
 		return -EFAULT;
@@ -69,7 +69,7 @@ static int do_report_event(void __user *arg)
 		static bool post_fs_data_lock = false;
 		if (!post_fs_data_lock) {
 			post_fs_data_lock = true;
-			if (ksu_late_loaded) {
+			if (tamisu_late_loaded) {
 				pr_info("post-fs-data skipped (late load)\n");
 			} else {
 				pr_info("post-fs-data triggered\n");
@@ -82,7 +82,7 @@ static int do_report_event(void __user *arg)
 		static bool boot_complete_lock = false;
 		if (!boot_complete_lock) {
 			boot_complete_lock = true;
-			if (ksu_late_loaded) {
+			if (tamisu_late_loaded) {
 				pr_info("boot_complete skipped (late load)\n");
 			} else {
 				pr_info("boot_complete triggered\n");
@@ -105,7 +105,7 @@ static int do_report_event(void __user *arg)
 
 static int do_set_sepolicy(void __user *arg)
 {
-	struct ksu_set_sepolicy_cmd cmd;
+	struct tamisu_set_sepolicy_cmd cmd;
 
 	if (copy_from_user(&cmd, arg, sizeof(cmd))) {
 		return -EFAULT;
@@ -116,9 +116,9 @@ static int do_set_sepolicy(void __user *arg)
 
 static int do_check_safemode(void __user *arg)
 {
-	struct ksu_check_safemode_cmd cmd;
+	struct tamisu_check_safemode_cmd cmd;
 
-	cmd.in_safe_mode = ksu_is_safe_mode();
+	cmd.in_safe_mode = tamisu_is_safe_mode();
 
 	if (cmd.in_safe_mode) {
 		pr_warn("safemode enabled!\n");
@@ -165,7 +165,7 @@ out:
 
 static int do_get_feature(void __user *arg)
 {
-	struct ksu_get_feature_cmd cmd;
+	struct tamisu_get_feature_cmd cmd;
 	bool supported;
 	int ret;
 
@@ -174,7 +174,7 @@ static int do_get_feature(void __user *arg)
 		return -EFAULT;
 	}
 
-	ret = ksu_get_feature(cmd.feature_id, &cmd.value, &supported);
+	ret = tamisu_get_feature(cmd.feature_id, &cmd.value, &supported);
 	cmd.supported = supported ? 1 : 0;
 
 	if (ret && supported) {
@@ -193,7 +193,7 @@ static int do_get_feature(void __user *arg)
 
 static int do_set_feature(void __user *arg)
 {
-	struct ksu_set_feature_cmd cmd;
+	struct tamisu_set_feature_cmd cmd;
 	int ret;
 
 	if (copy_from_user(&cmd, arg, sizeof(cmd))) {
@@ -201,7 +201,7 @@ static int do_set_feature(void __user *arg)
 		return -EFAULT;
 	}
 
-	ret = ksu_set_feature(cmd.feature_id, cmd.value);
+	ret = tamisu_set_feature(cmd.feature_id, cmd.value);
 	if (ret) {
 		pr_err("set_feature: failed for feature %u: %d\n",
 		       cmd.feature_id, ret);
@@ -213,23 +213,23 @@ static int do_set_feature(void __user *arg)
 
 static int do_get_wrapper_fd(void __user *arg)
 {
-	if (!ksu_file_sid) {
+	if (!tamisu_file_sid) {
 		return -EINVAL;
 	}
 
-	struct ksu_get_wrapper_fd_cmd cmd;
+	struct tamisu_get_wrapper_fd_cmd cmd;
 
 	if (copy_from_user(&cmd, arg, sizeof(cmd))) {
 		pr_err("get_wrapper_fd: copy_from_user failed\n");
 		return -EFAULT;
 	}
 
-	return ksu_install_file_wrapper(cmd.fd);
+	return tamisu_install_file_wrapper(cmd.fd);
 }
 
 static int do_manage_mark(void __user *arg)
 {
-	struct ksu_manage_mark_cmd cmd;
+	struct tamisu_manage_mark_cmd cmd;
 	int ret = 0;
 
 	if (copy_from_user(&cmd, arg, sizeof(cmd))) {
@@ -238,9 +238,9 @@ static int do_manage_mark(void __user *arg)
 	}
 
 	switch (cmd.operation) {
-	case KSU_MARK_GET: {
+	case TAMISU_MARK_GET: {
 		// Get task mark status
-		ret = ksu_get_task_mark(cmd.pid);
+		ret = tamisu_get_task_mark(cmd.pid);
 		if (ret < 0) {
 			pr_err("manage_mark: get failed for pid %d: %d\n",
 			       cmd.pid, ret);
@@ -249,11 +249,11 @@ static int do_manage_mark(void __user *arg)
 		cmd.result = (u32)ret;
 		break;
 	}
-	case KSU_MARK_MARK: {
+	case TAMISU_MARK_MARK: {
 		if (cmd.pid == 0) {
-			ksu_mark_all_process();
+			tamisu_mark_all_process();
 		} else {
-			ret = ksu_set_task_mark(cmd.pid, true);
+			ret = tamisu_set_task_mark(cmd.pid, true);
 			if (ret < 0) {
 				pr_err("manage_mark: set_mark failed for pid "
 				       "%d: %d\n",
@@ -263,11 +263,11 @@ static int do_manage_mark(void __user *arg)
 		}
 		break;
 	}
-	case KSU_MARK_UNMARK: {
+	case TAMISU_MARK_UNMARK: {
 		if (cmd.pid == 0) {
-			ksu_unmark_all_process();
+			tamisu_unmark_all_process();
 		} else {
-			ret = ksu_set_task_mark(cmd.pid, false);
+			ret = tamisu_set_task_mark(cmd.pid, false);
 			if (ret < 0) {
 				pr_err("manage_mark: set_unmark failed for pid "
 				       "%d: %d\n",
@@ -277,8 +277,8 @@ static int do_manage_mark(void __user *arg)
 		}
 		break;
 	}
-	case KSU_MARK_REFRESH: {
-		ksu_mark_running_process();
+	case TAMISU_MARK_REFRESH: {
+		tamisu_mark_running_process();
 		pr_info("manage_mark: refreshed running processes\n");
 		break;
 	}
@@ -298,9 +298,9 @@ static int do_manage_mark(void __user *arg)
 // 100. GET_FULL_VERSION - Get full version string
 static int do_get_full_version(void __user *arg)
 {
-	struct ksu_get_full_version_cmd cmd = {0};
+	struct tamisu_get_full_version_cmd cmd = {0};
 
-	strscpy(cmd.version_full, KSU_VERSION_STR, sizeof(cmd.version_full));
+	strscpy(cmd.version_full, TAMISU_VERSION_STR, sizeof(cmd.version_full));
 
 	if (copy_to_user(arg, &cmd, sizeof(cmd))) {
 		pr_err("get_full_version: copy_to_user failed\n");
@@ -313,7 +313,7 @@ static int do_get_full_version(void __user *arg)
 // 101. HOOK_TYPE - Get hook type
 static int do_get_hook_type(void __user *arg)
 {
-	struct ksu_hook_type_cmd cmd = {0};
+	struct tamisu_hook_type_cmd cmd = {0};
 	const char *type = "TSR Hook";
 
 	strscpy(cmd.hook_type, type, sizeof(cmd.hook_type));
@@ -328,7 +328,7 @@ static int do_get_hook_type(void __user *arg)
 
 static int do_get_uapi_version(void __user *arg)
 {
-	__u32 v = KERNEL_SU_UAPI_VERSION;
+	__u32 v = TAMISU_UAPI_VERSION;
 
 	if (copy_to_user(arg, &v, sizeof(v))) {
 		pr_err("get_uapi_version: copy_to_user failed\n");
@@ -340,7 +340,7 @@ static int do_get_uapi_version(void __user *arg)
 
 static int do_yz_handoff(void __user *arg)
 {
-	return ksu_zygote_ctl_handoff(arg);
+	return tamisu_zygote_ctl_handoff(arg);
 }
 
 static int do_yz_set_dlopen(void __user *arg)
@@ -349,14 +349,14 @@ static int do_yz_set_dlopen(void __user *arg)
 
 	if (copy_from_user(&cmd, arg, sizeof(cmd)))
 		return -EFAULT;
-	ksu_zygote_probe_set_dlopen_off(cmd.dlopen_offset, cmd.dlsym_offset);
+	tamisu_zygote_probe_set_dlopen_off(cmd.dlopen_offset, cmd.dlsym_offset);
 	return 0;
 }
 
 static int do_yz_reload(void __user *arg)
 {
 	(void)arg;
-	ksu_zygote_nl_emit_reload();
+	tamisu_zygote_nl_emit_reload();
 	return 0;
 }
 
@@ -366,7 +366,7 @@ static int do_yz_set_yukilinker(void __user *arg)
 
 	if (copy_from_user(&cmd, arg, sizeof(cmd)))
 		return -EFAULT;
-	ksu_zygote_probe_set_yukilinker(cmd.enabled != 0);
+	tamisu_zygote_probe_set_yukilinker(cmd.enabled != 0);
 	return 0;
 }
 
@@ -378,7 +378,7 @@ static int do_yz_set_native_targets(void __user *arg)
 	cmd = memdup_user(arg, sizeof(*cmd));
 	if (IS_ERR(cmd))
 		return PTR_ERR(cmd);
-	ret = ksu_zygote_probe_set_native_targets(cmd);
+	ret = tamisu_zygote_probe_set_native_targets(cmd);
 	kfree(cmd);
 	return ret;
 }
@@ -389,7 +389,7 @@ static int do_yz_restore_native_load_policy(void __user *arg)
 
 	if (copy_from_user(&cmd, arg, sizeof(cmd)))
 		return -EFAULT;
-	return ksu_zygote_probe_restore_native_policy((pid_t)cmd.pid);
+	return tamisu_zygote_probe_restore_native_policy((pid_t)cmd.pid);
 }
 
 struct yz_unmap_tw {
@@ -562,126 +562,126 @@ static int do_yz_patch_text(void __user *arg)
 }
 
 // IOCTL handlers mapping table
-static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
-    {.cmd = KSU_IOCTL_GET_INFO,
+static const struct tamisu_ioctl_cmd_map tamisu_ioctl_handlers[] = {
+    {.cmd = TAMISU_IOCTL_GET_INFO,
      .name = "GET_INFO",
      .handler = do_get_info,
      .perm_check = always_allow},
-    {.cmd = KSU_IOCTL_REPORT_EVENT,
+    {.cmd = TAMISU_IOCTL_REPORT_EVENT,
      .name = "REPORT_EVENT",
      .handler = do_report_event,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_SET_SEPOLICY,
+    {.cmd = TAMISU_IOCTL_SET_SEPOLICY,
      .name = "SET_SEPOLICY",
      .handler = do_set_sepolicy,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_CHECK_SAFEMODE,
+    {.cmd = TAMISU_IOCTL_CHECK_SAFEMODE,
      .name = "CHECK_SAFEMODE",
      .handler = do_check_safemode,
      .perm_check = always_allow},
-    {.cmd = KSU_IOCTL_GET_FEATURE,
+    {.cmd = TAMISU_IOCTL_GET_FEATURE,
      .name = "GET_FEATURE",
      .handler = do_get_feature,
      .perm_check = manager_or_root},
-    {.cmd = KSU_IOCTL_SET_FEATURE,
+    {.cmd = TAMISU_IOCTL_SET_FEATURE,
      .name = "SET_FEATURE",
      .handler = do_set_feature,
      .perm_check = manager_or_root},
-    {.cmd = KSU_IOCTL_GET_WRAPPER_FD,
+    {.cmd = TAMISU_IOCTL_GET_WRAPPER_FD,
      .name = "GET_WRAPPER_FD",
      .handler = do_get_wrapper_fd,
      .perm_check = manager_or_root},
-    {.cmd = KSU_IOCTL_MANAGE_MARK,
+    {.cmd = TAMISU_IOCTL_MANAGE_MARK,
      .name = "MANAGE_MARK",
      .handler = do_manage_mark,
      .perm_check = manager_or_root},
-    {.cmd = KSU_IOCTL_SET_INIT_PGRP,
+    {.cmd = TAMISU_IOCTL_SET_INIT_PGRP,
      .name = "SET_INIT_PGRP",
      .handler = do_set_init_pgrp,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_GET_UAPI_VERSION,
+    {.cmd = TAMISU_IOCTL_GET_UAPI_VERSION,
      .name = "GET_UAPI_VERSION",
      .handler = do_get_uapi_version,
      .perm_check = always_allow},
-    {.cmd = KSU_IOCTL_GET_FULL_VERSION,
+    {.cmd = TAMISU_IOCTL_GET_FULL_VERSION,
      .name = "GET_FULL_VERSION",
      .handler = do_get_full_version,
      .perm_check = always_allow},
-    {.cmd = KSU_IOCTL_HOOK_TYPE,
+    {.cmd = TAMISU_IOCTL_HOOK_TYPE,
      .name = "GET_HOOK_TYPE",
      .handler = do_get_hook_type,
      .perm_check = manager_or_root},
-    {.cmd = KSU_IOCTL_YZ_HANDOFF,
+    {.cmd = TAMISU_IOCTL_YZ_HANDOFF,
      .name = "YZ_HANDOFF",
      .handler = do_yz_handoff,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_YZ_SET_DLOPEN,
+    {.cmd = TAMISU_IOCTL_YZ_SET_DLOPEN,
      .name = "YZ_SET_DLOPEN",
      .handler = do_yz_set_dlopen,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_YZ_SET_YUKILINKER,
+    {.cmd = TAMISU_IOCTL_YZ_SET_YUKILINKER,
      .name = "YZ_SET_YUKILINKER",
      .handler = do_yz_set_yukilinker,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_YZ_SET_NATIVE_TARGETS,
+    {.cmd = TAMISU_IOCTL_YZ_SET_NATIVE_TARGETS,
      .name = "YZ_SET_NATIVE_TARGETS",
      .handler = do_yz_set_native_targets,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_YZ_RESTORE_NATIVE_LOAD_POLICY,
+    {.cmd = TAMISU_IOCTL_YZ_RESTORE_NATIVE_LOAD_POLICY,
      .name = "YZ_RESTORE_NATIVE_LOAD_POLICY",
      .handler = do_yz_restore_native_load_policy,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_YZ_UNMAP_PID,
+    {.cmd = TAMISU_IOCTL_YZ_UNMAP_PID,
      .name = "YZ_UNMAP_PID",
      .handler = do_yz_unmap_pid,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_YZ_UNMAP_SELF,
+    {.cmd = TAMISU_IOCTL_YZ_UNMAP_SELF,
      .name = "YZ_UNMAP_SELF",
      .handler = do_yz_unmap_self,
      .perm_check = injected_app},
-    {.cmd = KSU_IOCTL_YZ_PATCH_TEXT,
+    {.cmd = TAMISU_IOCTL_YZ_PATCH_TEXT,
      .name = "YZ_PATCH_TEXT",
      .handler = do_yz_patch_text,
      .perm_check = only_root},
-    {.cmd = KSU_IOCTL_YZ_RELOAD,
+    {.cmd = TAMISU_IOCTL_YZ_RELOAD,
      .name = "YZ_RELOAD",
      .handler = do_yz_reload,
      .perm_check = manager_or_root},
     {.cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL} // Sentinel
 };
 
-void ksu_supercall_dump_commands(void)
+void tamisu_supercall_dump_commands(void)
 {
 	int i;
 
-	pr_info("KernelSU IOCTL Commands:\n");
-	for (i = 0; ksu_ioctl_handlers[i].handler; i++) {
-		pr_info("  %-18s = 0x%08x\n", ksu_ioctl_handlers[i].name,
-			ksu_ioctl_handlers[i].cmd);
+	pr_info("Tamisu IOCTL Commands:\n");
+	for (i = 0; tamisu_ioctl_handlers[i].handler; i++) {
+		pr_info("  %-18s = 0x%08x\n", tamisu_ioctl_handlers[i].name,
+			tamisu_ioctl_handlers[i].cmd);
 	}
 }
 
-long ksu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
+long tamisu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
 {
 	int i;
 
-#ifdef CONFIG_KSU_DEBUG
-	pr_info("ksu ioctl: cmd=0x%x from uid=%d\n", cmd, current_uid().val);
-#endif // #ifdef CONFIG_KSU_DEBUG
+#ifdef CONFIG_TAMISU_DEBUG
+	pr_info("tamisu ioctl: cmd=0x%x from uid=%d\n", cmd, current_uid().val);
+#endif // #ifdef CONFIG_TAMISU_DEBUG
 
-	for (i = 0; ksu_ioctl_handlers[i].handler; i++) {
-		if (cmd == ksu_ioctl_handlers[i].cmd) {
-			if (ksu_ioctl_handlers[i].perm_check &&
-			    !ksu_ioctl_handlers[i].perm_check()) {
-				pr_warn("ksu ioctl: permission denied for "
+	for (i = 0; tamisu_ioctl_handlers[i].handler; i++) {
+		if (cmd == tamisu_ioctl_handlers[i].cmd) {
+			if (tamisu_ioctl_handlers[i].perm_check &&
+			    !tamisu_ioctl_handlers[i].perm_check()) {
+				pr_warn("tamisu ioctl: permission denied for "
 					"cmd=0x%x uid=%d\n",
 					cmd, current_uid().val);
 				return -EPERM;
 			}
-			return ksu_ioctl_handlers[i].handler(argp);
+			return tamisu_ioctl_handlers[i].handler(argp);
 		}
 	}
 
-	pr_warn("ksu ioctl: unknown cmd 0x%x uid=%d\n", cmd, current_uid().val);
+	pr_warn("tamisu ioctl: unknown cmd 0x%x uid=%d\n", cmd, current_uid().val);
 	return -EINVAL;
 }

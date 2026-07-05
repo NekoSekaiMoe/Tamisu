@@ -1,5 +1,5 @@
-# clang-tidy configuration for YukiSU (ksud, magiskboot, manager JNI).
-# Always on in ksud CMake; any diagnostic fails the build (WarningsAsErrors: '*').
+# clang-tidy configuration for YukiSU (tamisu_daemon, magiskboot, manager JNI).
+# Always on in tamisu_daemon CMake; any diagnostic fails the build (WarningsAsErrors: '*').
 ---
 FormatStyle: none
 HeaderFilterRegex: '^(?!.*/third_party/)(?!.*/external/)(?!.*/miniz/)(?!.*miniz-src/)(?!.*/picosha2/).*'

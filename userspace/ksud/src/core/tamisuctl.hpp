@@ -13,20 +13,20 @@ extern "C" {
 #include "uapi/supercall.h"
 }
 
-namespace ksud {
+namespace tamisu_daemon {
 
 // C++ convenience aliases (keep callers unchanged)
-using GetInfoCmd = ksu_get_info_cmd;
-using ReportEventCmd = ksu_report_event_cmd;
-using SetSepolicyCmd = ksu_set_sepolicy_cmd;
-using CheckSafemodeCmd = ksu_check_safemode_cmd;
-using GetFeatureCmd = ksu_get_feature_cmd;
-using SetFeatureCmd = ksu_set_feature_cmd;
-using GetWrapperFdCmd = ksu_get_wrapper_fd_cmd;
-using ManageMarkCmd = ksu_manage_mark_cmd;
+using GetInfoCmd = tamisu_get_info_cmd;
+using ReportEventCmd = tamisu_report_event_cmd;
+using SetSepolicyCmd = tamisu_set_sepolicy_cmd;
+using CheckSafemodeCmd = tamisu_check_safemode_cmd;
+using GetFeatureCmd = tamisu_get_feature_cmd;
+using SetFeatureCmd = tamisu_set_feature_cmd;
+using GetWrapperFdCmd = tamisu_get_wrapper_fd_cmd;
+using ManageMarkCmd = tamisu_manage_mark_cmd;
 
 // API functions
-int ksuctl(int request, void* arg);
+int tamisuctl(int request, void* arg);
 
 int32_t get_version();
 uint32_t get_flags();
@@ -61,4 +61,4 @@ int set_init_pgrp();
 bool uid_granted_root(uint32_t uid);
 bool uid_should_umount(uint32_t uid);
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

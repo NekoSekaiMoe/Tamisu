@@ -1,5 +1,4 @@
 //
-// Created by weishu on 2022/12/9.
 //
 
 #ifndef TAMISU_H
@@ -11,7 +10,7 @@
 #include <sys/types.h>
 
 // --- Kernel UAPI headers (single source of truth) ---
-// Zygisk-only build: app_profile/ksu/sulog headers were removed.
+// Zygisk-only build: app_profile/tamisu/sulog headers were removed.
 // supercall.h now carries only the ioctls we keep (info, feature,
 // sepolicy, safemode, mark, yz_*).
 #include "uapi/feature.h"

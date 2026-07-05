@@ -5,15 +5,15 @@ import androidx.compose.runtime.remember
 import me.dabao1955.tamisu.Natives
 
 @Composable
-fun KsuIsValid(
+fun TamisuIsValid(
     content: @Composable () -> Unit
 ) {
-    // Cache the JNI roundtrip; manager status and KSU version do not change
+    // Cache the JNI roundtrip; manager status and tamisu version do not change
     // for the lifetime of this composition.
-    val ksuVersion = remember {
+    val tamisuVersion = remember {
         if (Natives.isManager) Natives.version else null
     }
-    if (ksuVersion != null) {
+    if (tamisuVersion != null) {
         content()
     }
 }

@@ -3,7 +3,7 @@
 #include "../log.hpp"
 #include "../module/module.hpp"
 #include "../utils.hpp"
-#include "ksucalls.hpp"
+#include "tamisuctl.hpp"
 
 #include <cinttypes>
 #include <cstdio>
@@ -14,7 +14,7 @@
 #include <sstream>
 #include <vector>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 namespace {
 
@@ -27,14 +27,14 @@ constexpr uint32_t FEATURE_VERSION = 1;
 
 const std::map<std::string, uint32_t>& get_feature_map() {
     static const std::map<std::string, uint32_t> map = {
-        {"yukizygisk", KSU_FEATURE_YUKIZYGISK},
+        {"yukizygisk", TAMISU_FEATURE_YUKIZYGISK},
     };
     return map;
 }
 
 const std::map<uint32_t, const char*>& get_feature_descriptions() {
     static const std::map<uint32_t, const char*> desc = {
-        {KSU_FEATURE_YUKIZYGISK,
+        {TAMISU_FEATURE_YUKIZYGISK,
          "YukiZygisk - kernel captures zygote and injects Zygisk modules; the daemon is brought "
          "up at post-fs-data when enabled (off by default)"},
     };
@@ -173,7 +173,7 @@ int feature_check(const std::string& id) {
 }
 
 int feature_load_config() {
-    const std::string config_path = std::string(KSURC_PATH);
+    const std::string config_path = std::string(TAMISURC_PATH);
     auto content = read_file(config_path);
     if (!content) {
         LOGI("No feature config file found");
@@ -217,7 +217,7 @@ int feature_load_config() {
 }
 
 int feature_save_config() {
-    const std::string config_path = std::string(KSURC_PATH);
+    const std::string config_path = std::string(TAMISURC_PATH);
     const auto current_features = get_current_feature_values();
     std::ofstream ofs(config_path);
     if (!ofs) {
@@ -225,7 +225,7 @@ int feature_save_config() {
         return 1;
     }
 
-    ofs << "# KernelSU feature configuration\n";
+    ofs << "# Tamisu feature configuration\n";
     for (const auto& [name, id] : get_feature_map()) {
         auto it = current_features.find(id);
         if (it != current_features.end()) {
@@ -383,4 +383,4 @@ int init_features() {
     return 0;
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

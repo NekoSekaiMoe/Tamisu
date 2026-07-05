@@ -21,7 +21,7 @@
 #define MINIZ_HEADER_FILE_ONLY
 #include "miniz.h"
 
-namespace ksud::flash {
+namespace tamisu_daemon::flash {
 
 namespace fs = std::filesystem;
 
@@ -701,7 +701,7 @@ std::string get_kernel_version(const std::string& slot_suffix) {
 
     // Create a temporary directory for unpacking
     std::array<char, 64> tmp_dir_template{};
-    (void)strcpy(tmp_dir_template.data(), "/data/local/tmp/ksu_unpack_XXXXXX");
+    (void)strcpy(tmp_dir_template.data(), "/data/local/tmp/tamisu_unpack_XXXXXX");
     if (mkdtemp(tmp_dir_template.data()) == nullptr) {
         LOGE("Failed to create temp directory: %s", strerror(errno));
         return "";
@@ -817,4 +817,4 @@ std::string get_boot_slot_info() {
     return json;
 }
 
-}  // namespace ksud::flash
+}  // namespace tamisu_daemon::flash

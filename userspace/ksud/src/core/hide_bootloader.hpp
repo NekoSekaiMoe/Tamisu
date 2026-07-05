@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ksud {
+namespace tamisu_daemon {
 
 /**
  * Hide bootloader unlock status by resetting system properties
@@ -20,4 +20,4 @@ bool is_bl_hiding_enabled();
  */
 void set_bl_hiding_enabled(bool enabled);
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

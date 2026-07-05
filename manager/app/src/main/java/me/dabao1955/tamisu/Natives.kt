@@ -1,7 +1,6 @@
 package me.dabao1955.tamisu
 
 /**
- * @author weishu
  * @date 2022/12/8.
  */
 object Natives {
@@ -14,7 +13,7 @@ object Natives {
 
     external fun getFullVersion(): String
 
-    /** Kernel UAPI contract version (KERNEL_SU_UAPI_VERSION); 0 if unsupported. */
+    /** Kernel UAPI contract version (TAMISU_UAPI_VERSION); 0 if unsupported. */
     external fun getUapiVersion(): Int
 
     /** UAPI contract version this manager binary was built against. */

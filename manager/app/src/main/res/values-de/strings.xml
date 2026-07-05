@@ -30,7 +30,6 @@
     <string name="safe_mode">Sicherer Modus</string>
     <string name="jailbreak_timeout">Jailbreak ist möglicherweise fehlgeschlagen, bitte prüfe die Protokolle</string>
     <string name="reboot_to_apply">Neustarten, damit Änderungen wirksam werden</string>
-    <string name="home_support_title">Unterstützen Sie die Entwicklung</string>
     <string name="about_source_code">Den Quellcode finden Sie unter %1$s&lt;br/&gt;Begleiten Sie uns %2$s-Kanal</string>
     <string name="profile_default">Standard</string>
     <string name="profile_template">Vorlage</string>
@@ -357,16 +356,16 @@
     
 
     
-    <string name="home_ksud_daemon_title">ksud-Daemon</string>
-    <string name="home_ksud_daemon_apk_version">Im Manager gebündeltes ksud: %1$s</string>
-    <string name="home_ksud_daemon_installed_version">Installiertes ksud (/data/adb/ksud): %1$s</string>
-    <string name="home_ksud_daemon_unknown">Unbekannt</string>
-    <string name="home_ksud_daemon_sync">ksud-Daemon synchronisieren</string>
-    <string name="home_ksud_daemon_syncing">Synchronisieren…</string>
+    <string name="home_tamisu_daemon_daemon_title">tamisu_daemon-Daemon</string>
+    <string name="home_tamisu_daemon_daemon_apk_version">Im Manager gebündeltes tamisu_daemon: %1$s</string>
+    <string name="home_tamisu_daemon_daemon_installed_version">Installiertes tamisu_daemon (/data/tamisu_daemon): %1$s</string>
+    <string name="home_tamisu_daemon_daemon_unknown">Unbekannt</string>
+    <string name="home_tamisu_daemon_daemon_sync">tamisu_daemon-Daemon synchronisieren</string>
+    <string name="home_tamisu_daemon_daemon_syncing">Synchronisieren…</string>
     <string name="setting_change_saved_reboot">Einstellung gespeichert, zum Anwenden neu starten</string>
     <string name="setting_change_failed">Einstellung fehlgeschlagen</string>
-    <string name="settings_auto_update_ksud">ksud-Daemon automatisch aktualisieren</string>
-    <string name="settings_auto_update_ksud_summary">Die gebündelte ksud-Binärdatei beim Kaltstart der App nach /data/adb/ksud synchronisieren. Standardmäßig deaktiviert; verwende sonst die manuelle Schaltfläche auf der Startseite.</string>
+    <string name="settings_auto_update_tamisu_daemon">tamisu_daemon-Daemon automatisch aktualisieren</string>
+    <string name="settings_auto_update_tamisu_daemon_summary">Die gebündelte tamisu_daemon-Binärdatei beim Kaltstart der App nach /data/tamisu_daemon synchronisieren. Standardmäßig deaktiviert; verwende sonst die manuelle Schaltfläche auf der Startseite.</string>
 
     <string name="su_request_desc">Eine App fordert Superuser-Zugriff (su) an.</string>
     <string name="su_request_allow_forever">Immer erlauben</string>

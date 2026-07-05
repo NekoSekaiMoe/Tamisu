@@ -5,7 +5,7 @@
 #include <optional>
 #include <string>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 // File system utilities
 bool ensure_dir_exists(const std::string& path);
@@ -73,7 +73,7 @@ struct ExecResult {
 };
 ExecResult exec_command(const std::vector<std::string>& args);
 ExecResult exec_command(const std::vector<std::string>& args, const std::string& workdir);
-/** Run magiskboot binary (path may be multi-call ksud); argv[0] is set to "magiskboot". */
+/** Run magiskboot binary (path may be multi-call tamisu_daemon); argv[0] is set to "magiskboot". */
 ExecResult exec_command_magiskboot(const std::string& magiskboot_path,
                                    const std::vector<std::string>& sub_args,
                                    const std::string& workdir = "");
@@ -83,4 +83,4 @@ int exec_command_async(const std::vector<std::string>& args);
 bool parse_uint32(const std::string& s, uint32_t* out);
 bool parse_uint64(const std::string& s, uint64_t* out);
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

@@ -30,7 +30,6 @@
     <string name="safe_mode">Безопасный режим</string>
     <string name="jailbreak_timeout">Джейлбрейк, возможно, не удался, проверьте журналы</string>
     <string name="reboot_to_apply">Перезагрузите, чтобы изменения вступили в силу</string>
-    <string name="home_support_title">Поддержка развития</string>
     <string name="about_source_code">Просмотреть исходный код на %1$s&lt;br/&gt;Присоединяйтесь к нашему %2$s каналу</string>
     <string name="profile_default">По умолчанию</string>
     <string name="profile_template">Шаблон</string>
@@ -358,16 +357,16 @@
     
 
     
-    <string name="home_ksud_daemon_title">демон ksud</string>
-    <string name="home_ksud_daemon_apk_version">ksud из менеджера: %1$s</string>
-    <string name="home_ksud_daemon_installed_version">Установленный ksud (/data/adb/ksud): %1$s</string>
-    <string name="home_ksud_daemon_unknown">Неизвестно</string>
-    <string name="home_ksud_daemon_sync">Синхронизировать демон ksud</string>
-    <string name="home_ksud_daemon_syncing">Синхронизация…</string>
+    <string name="home_tamisu_daemon_daemon_title">демон tamisu_daemon</string>
+    <string name="home_tamisu_daemon_daemon_apk_version">tamisu_daemon из менеджера: %1$s</string>
+    <string name="home_tamisu_daemon_daemon_installed_version">Установленный tamisu_daemon (/data/tamisu_daemon): %1$s</string>
+    <string name="home_tamisu_daemon_daemon_unknown">Неизвестно</string>
+    <string name="home_tamisu_daemon_daemon_sync">Синхронизировать демон tamisu_daemon</string>
+    <string name="home_tamisu_daemon_daemon_syncing">Синхронизация…</string>
     <string name="setting_change_saved_reboot">Настройка сохранена, перезагрузите для применения</string>
     <string name="setting_change_failed">Не удалось применить настройку</string>
-    <string name="settings_auto_update_ksud">Автообновление демона ksud</string>
-    <string name="settings_auto_update_ksud_summary">Синхронизировать встроенный бинарный файл ksud в /data/adb/ksud при холодном запуске приложения. По умолчанию отключено; иначе используйте кнопку ручного обновления на главной странице.</string>
+    <string name="settings_auto_update_tamisu_daemon">Автообновление демона tamisu_daemon</string>
+    <string name="settings_auto_update_tamisu_daemon_summary">Синхронизировать встроенный бинарный файл tamisu_daemon в /data/tamisu_daemon при холодном запуске приложения. По умолчанию отключено; иначе используйте кнопку ручного обновления на главной странице.</string>
 
     <string name="su_request_desc">Приложение запрашивает права суперпользователя (su).</string>
     <string name="su_request_allow_forever">Разрешить всегда</string>

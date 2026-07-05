@@ -12,23 +12,23 @@
 #include "hook/syscall_hook.h"
 #include "hook/tp_marker.h"
 #include "klog.h" // IWYU pragma: keep
-#include "runtime/ksud.h"
+#include "runtime/tamisu_daemon.h"
 #include "selinux/selinux.h"
 
 /*
- * ksud execve hook: controlled by a static key so that the common case
+ * tamisu_daemon execve hook: controlled by a static key so that the common case
  * (hook disabled after boot) has zero overhead.
  */
-DEFINE_STATIC_KEY_TRUE(ksud_execve_key);
+DEFINE_STATIC_KEY_TRUE(tamisu_daemon_execve_key);
 
-void ksu_stop_ksud_execve_hook(void)
+void tamisu_stop_tamisu_daemon_execve_hook(void)
 {
-	static_branch_disable(&ksud_execve_key);
-	pr_info("hook_manager: ksud execve hook disabled\n");
+	static_branch_disable(&tamisu_daemon_execve_key);
+	pr_info("hook_manager: tamisu_daemon execve hook disabled\n");
 }
 
-// Unmark init's child that are not zygote, adbd or ksud
-static void ksu_handle_init_mark_tracker(const char __user *filename_user)
+// Unmark init's child that are not zygote, adbd or tamisu_daemon
+static void tamisu_handle_init_mark_tracker(const char __user *filename_user)
 {
 	char path[64];
 	unsigned long addr;
@@ -50,28 +50,28 @@ static void ksu_handle_init_mark_tracker(const char __user *filename_user)
 		   strstr(path, "/adbd") == NULL)) {
 		pr_info("hook_manager: unmark %d exec %s\n", current->pid,
 			path);
-		ksu_clear_task_tracepoint_flag_if_needed(current);
+		tamisu_clear_task_tracepoint_flag_if_needed(current);
 	}
 }
 
-long __nocfi ksu_hook_execve(int orig_nr, const struct pt_regs *regs)
+long __nocfi tamisu_hook_execve(int orig_nr, const struct pt_regs *regs)
 {
 	const char __user **filename_user =
 	    (const char __user **)&PT_REGS_PARM1(regs);
 
-	/* ksud boot-time tracking (init second_stage, zygote detection).
-	 * Gated by a static key that ksu_stop_ksud_execve_hook() disables
+	/* tamisu_daemon boot-time tracking (init second_stage, zygote detection).
+	 * Gated by a static key that tamisu_stop_tamisu_daemon_execve_hook() disables
 	 * once init second_stage has run, so the common case post-boot is
 	 * zero-overhead. Persistent zygote re-detection is handled entirely
 	 * by the LSM bprm_committed_creds hook in zygote_probe.c — the
 	 * syscall path no longer carries a long-lived execve interceptor. */
-	if (static_branch_unlikely(&ksud_execve_key))
-		ksu_execve_hook_ksud(regs);
+	if (static_branch_unlikely(&tamisu_daemon_execve_key))
+		tamisu_execve_hook_tamisu_daemon(regs);
 
 	if (current->pid != 1 && is_init(current_cred())) {
-		ksu_handle_init_mark_tracker(*filename_user);
-		return ksu_syscall_table[orig_nr](regs);
+		tamisu_handle_init_mark_tracker(*filename_user);
+		return tamisu_syscall_table[orig_nr](regs);
 	}
 
-	return ksu_syscall_table[orig_nr](regs);
+	return tamisu_syscall_table[orig_nr](regs);
 }

@@ -1,4 +1,4 @@
-#include "ksucalls.hpp"
+#include "tamisuctl.hpp"
 #include "../defs.hpp"
 #include "../log.hpp"
 
@@ -14,7 +14,7 @@
 #include <cstdlib>
 #include <cstring>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 namespace {
 
@@ -79,7 +79,7 @@ auto init_driver_fd() -> int {
 
     // Method 2: Fallback to reboot syscall (may be blocked by SECCOMP)
     int fd_reboot = -1;  // NOLINT(misc-const-correctness) written via pointer by syscall
-    syscall(SYS_reboot, KSU_INSTALL_MAGIC1, KSU_INSTALL_MAGIC2, 0, &fd_reboot);
+    syscall(SYS_reboot, TAMISU_INSTALL_MAGIC1, TAMISU_INSTALL_MAGIC2, 0, &fd_reboot);
     if (fd_reboot >= 0) {
         LOGD("Got driver fd via reboot syscall: %d", fd_reboot);
         return fd_reboot;
@@ -99,7 +99,7 @@ auto get_driver_fd() -> int {
 
 }  // namespace
 
-int ksuctl(int request, void* arg) {
+int tamisuctl(int request, void* arg) {
     const int fd = get_driver_fd();
     if (fd < 0) {
         return -1;
@@ -119,7 +119,7 @@ namespace {
 const GetInfoCmd& get_info() {
     if (!g_info_cached) {
         GetInfoCmd cmd = {0, 0};
-        ksuctl(KSU_IOCTL_GET_INFO, &cmd);
+        tamisuctl(TAMISU_IOCTL_GET_INFO, &cmd);
         g_info_cache = cmd;
         g_info_cached = true;
     }
@@ -128,7 +128,7 @@ const GetInfoCmd& get_info() {
 
 void report_event(uint32_t event) {
     ReportEventCmd cmd = {event};
-    ksuctl(KSU_IOCTL_REPORT_EVENT, &cmd);
+    tamisuctl(TAMISU_IOCTL_REPORT_EVENT, &cmd);
 }
 
 }  // namespace
@@ -143,7 +143,7 @@ uint32_t get_flags() {
 
 uint32_t get_uapi_version() {
     uint32_t v = 0;
-    ksuctl(KSU_IOCTL_GET_UAPI_VERSION, &v);
+    tamisuctl(TAMISU_IOCTL_GET_UAPI_VERSION, &v);
     return v;
 }
 
@@ -161,18 +161,18 @@ void report_module_mounted() {
 
 bool check_kernel_safemode() {
     CheckSafemodeCmd cmd = {0};
-    ksuctl(KSU_IOCTL_CHECK_SAFEMODE, &cmd);
+    tamisuctl(TAMISU_IOCTL_CHECK_SAFEMODE, &cmd);
     return cmd.in_safe_mode != 0;
 }
 
 int set_sepolicy(const void* payload, uint64_t payload_len) {
     SetSepolicyCmd ioctl_cmd = {payload_len, reinterpret_cast<uint64_t>(payload)};
-    return ksuctl(KSU_IOCTL_SET_SEPOLICY, &ioctl_cmd);
+    return tamisuctl(TAMISU_IOCTL_SET_SEPOLICY, &ioctl_cmd);
 }
 
 std::pair<uint64_t, bool> get_feature(uint32_t feature_id) {
     GetFeatureCmd cmd = {feature_id, 0, 0};
-    const int ret = ksuctl(KSU_IOCTL_GET_FEATURE, &cmd);
+    const int ret = tamisuctl(TAMISU_IOCTL_GET_FEATURE, &cmd);
     if (ret < 0) {
         return {0, false};
     }
@@ -182,7 +182,7 @@ std::pair<uint64_t, bool> get_feature(uint32_t feature_id) {
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 int set_feature(uint32_t feature_id, uint64_t value) {
     SetFeatureCmd cmd = {feature_id, value};
-    return ksuctl(KSU_IOCTL_SET_FEATURE, &cmd);
+    return tamisuctl(TAMISU_IOCTL_SET_FEATURE, &cmd);
 }
 
 // Zygisk compatibility stubs: su/profile/allowlist removed from kernel.
@@ -196,32 +196,32 @@ bool uid_should_umount(uint32_t /*uid*/) {
 
 int get_wrapped_fd(int fd) {
     GetWrapperFdCmd cmd = {static_cast<__u32>(fd), 0};
-    return ksuctl(KSU_IOCTL_GET_WRAPPER_FD, &cmd);
+    return tamisuctl(TAMISU_IOCTL_GET_WRAPPER_FD, &cmd);
 }
 
 uint32_t mark_get(int32_t pid) {
-    ManageMarkCmd cmd = {KSU_MARK_GET, pid, 0};
-    ksuctl(KSU_IOCTL_MANAGE_MARK, &cmd);
+    ManageMarkCmd cmd = {TAMISU_MARK_GET, pid, 0};
+    tamisuctl(TAMISU_IOCTL_MANAGE_MARK, &cmd);
     return cmd.result;
 }
 
 int mark_set(int32_t pid) {
-    ManageMarkCmd cmd = {KSU_MARK_MARK, pid, 0};
-    return ksuctl(KSU_IOCTL_MANAGE_MARK, &cmd);
+    ManageMarkCmd cmd = {TAMISU_MARK_MARK, pid, 0};
+    return tamisuctl(TAMISU_IOCTL_MANAGE_MARK, &cmd);
 }
 
 int mark_unset(int32_t pid) {
-    ManageMarkCmd cmd = {KSU_MARK_UNMARK, pid, 0};
-    return ksuctl(KSU_IOCTL_MANAGE_MARK, &cmd);
+    ManageMarkCmd cmd = {TAMISU_MARK_UNMARK, pid, 0};
+    return tamisuctl(TAMISU_IOCTL_MANAGE_MARK, &cmd);
 }
 
 int mark_refresh() {
-    ManageMarkCmd cmd = {KSU_MARK_REFRESH, 0, 0};
-    return ksuctl(KSU_IOCTL_MANAGE_MARK, &cmd);
+    ManageMarkCmd cmd = {TAMISU_MARK_REFRESH, 0, 0};
+    return tamisuctl(TAMISU_IOCTL_MANAGE_MARK, &cmd);
 }
 
 int set_init_pgrp() {
-    return ksuctl(KSU_IOCTL_SET_INIT_PGRP, nullptr);
+    return tamisuctl(TAMISU_IOCTL_SET_INIT_PGRP, nullptr);
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

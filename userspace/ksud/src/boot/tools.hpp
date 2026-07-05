@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 // Find magiskboot binary
 // If specified_path is provided, checks it.
@@ -13,4 +13,4 @@ std::string find_magiskboot(const std::string& specified_path = "",
 // Simple DD command wrapper
 bool exec_dd(const std::string& input, const std::string& output);
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

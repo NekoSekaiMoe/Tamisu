@@ -20,21 +20,21 @@
  */
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
-typedef const struct cred ksu_cred_arg_t;
+typedef const struct cred tamisu_cred_arg_t;
 #else
-typedef struct cred ksu_cred_arg_t;
+typedef struct cred tamisu_cred_arg_t;
 #endif
 
-typedef int (*task_fix_setuid_fn)(ksu_cred_arg_t *new, const struct cred *old,
+typedef int (*task_fix_setuid_fn)(tamisu_cred_arg_t *new, const struct cred *old,
 				  int flags);
 
-static int __nocfi my_task_fix_setuid(ksu_cred_arg_t *new,
+static int __nocfi my_task_fix_setuid(tamisu_cred_arg_t *new,
 				      const struct cred *old, int flags);
 
-static struct ksu_lsm_hook setuid_lsm_hook = KSU_LSM_HOOK_INIT(
+static struct tamisu_lsm_hook setuid_lsm_hook = TAMISU_LSM_HOOK_INIT(
     task_fix_setuid, "apparmor_task_setrlimit", my_task_fix_setuid, 0);
 
-static int __nocfi my_task_fix_setuid(ksu_cred_arg_t *new,
+static int __nocfi my_task_fix_setuid(tamisu_cred_arg_t *new,
 				      const struct cred *old, int flags)
 {
 	uid_t old_uid = old->uid.val;
@@ -48,15 +48,15 @@ static int __nocfi my_task_fix_setuid(ksu_cred_arg_t *new,
 
 	/* Feed the orchestrator when UID changes to app range */
 	if (old_uid != new_uid) {
-		ksu_zygote_orch_on_uid_change(old_uid, new_uid);
+		tamisu_zygote_orch_on_uid_change(old_uid, new_uid);
 	}
 
 	return 0;
 }
 
-void ksu_setuid_hook_init(void)
+void tamisu_setuid_hook_init(void)
 {
-	int ret = ksu_register_lsm_hook(&setuid_lsm_hook);
+	int ret = tamisu_register_lsm_hook(&setuid_lsm_hook);
 
 	if (ret)
 		pr_err("setuid_hook: failed to register LSM hook: %d\n", ret);
@@ -64,8 +64,8 @@ void ksu_setuid_hook_init(void)
 		pr_info("setuid_hook: task_fix_setuid LSM hook registered\n");
 }
 
-void ksu_setuid_hook_exit(void)
+void tamisu_setuid_hook_exit(void)
 {
-	ksu_unregister_lsm_hook(&setuid_lsm_hook);
+	tamisu_unregister_lsm_hook(&setuid_lsm_hook);
 	pr_info("setuid_hook: LSM hook unregistered\n");
 }

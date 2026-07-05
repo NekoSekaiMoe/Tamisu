@@ -1,20 +1,23 @@
 menu "Tamisu"
 
 config TAMISU
-	  tristate "KernelSU function support"
+	  tristate "Tamisu Zygisk provider support"
 	  depends on ARM64
 	  default m
 	  help
-		Enable kernel-level root privileges on Android System.
-		YukiSU only supports loadable kernel module (LKM). Choose M.
-		Built-in (=y) is no longer supported.
-		The module will be called kernelsu.
+		Tamisu is a kernel-level Zygisk provider (à la ZygiskNext),
+		not a root provider. It coexists with a separate root solution
+		(KernelSU, Magisk, APatch) and owns only zygote injection.
+
+		Only loadable kernel module (LKM, =m) is supported.
+		Built-in (=y) is not supported.
+		The module will be called tamisu.
 
 config TAMISU_DEBUG
-	  bool "TAMISU debug mode"
+	  bool "Tamisu debug mode"
 	  depends on TAMISU
 	  default n
 	  help
-		Enable KernelSU debug mode.
+		Enable Tamisu debug mode (verbose klog).
 
 endmenu

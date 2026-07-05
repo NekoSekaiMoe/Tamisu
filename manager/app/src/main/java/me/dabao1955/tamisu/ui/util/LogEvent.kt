@@ -31,7 +31,7 @@ fun getBugreportFile(context: Context): File {
     val fileSystemsFile = File(bugreportDir, "filesystems.txt")
     val adbFileTree = File(bugreportDir, "adb_tree.txt")
     val adbFileDetails = File(bugreportDir, "adb_details.txt")
-    val ksuFileSize = File(bugreportDir, "ksu_size.txt")
+    val tamisuFileSize = File(bugreportDir, "tamisu_size.txt")
     val appListFile = File(bugreportDir, "packages.txt")
     val propFile = File(bugreportDir, "props.txt")
     val allowListFile = File(bugreportDir, "allowlist.bin")
@@ -51,16 +51,16 @@ fun getBugreportFile(context: Context): File {
     shell.newJob().add("tar -czf ${pstoreFile.absolutePath} -C /sys/fs/pstore .").exec()
     shell.newJob().add("tar -czf ${diagFile.absolutePath} -C /data/vendor/diag . --exclude=./minidump.gz").exec()
     shell.newJob().add("tar -czf ${oplusFile.absolutePath} -C /mnt/oplus/op2/media/log/boot_log/ .").exec()
-    shell.newJob().add("tar -czf ${bootlogFile.absolutePath} -C /data/adb/ksu/log .").exec()
+    shell.newJob().add("tar -czf ${bootlogFile.absolutePath} -C /data/tamisu/log .").exec()
 
     shell.newJob().add("cat /proc/1/mountinfo > ${mountsFile.absolutePath}").exec()
     shell.newJob().add("cat /proc/filesystems > ${fileSystemsFile.absolutePath}").exec()
     shell.newJob().add("busybox tree /data/adb > ${adbFileTree.absolutePath}").exec()
     shell.newJob().add("ls -alRZ /data/adb > ${adbFileDetails.absolutePath}").exec()
-    shell.newJob().add("du -sh /data/adb/ksu/* > ${ksuFileSize.absolutePath}").exec()
+    shell.newJob().add("du -sh /data/tamisu/* > ${tamisuFileSize.absolutePath}").exec()
     shell.newJob().add("cp /data/system/packages.list ${appListFile.absolutePath}").exec()
     shell.newJob().add("getprop > ${propFile.absolutePath}").exec()
-    shell.newJob().add("cp /data/adb/ksu/.allowlist ${allowListFile.absolutePath}").exec()
+    shell.newJob().add("cp /data/tamisu/.allowlist ${allowListFile.absolutePath}").exec()
     shell.newJob().add("cp /proc/modules ${procModules.absolutePath}").exec()
     shell.newJob().add("cp /proc/bootconfig ${bootConfig.absolutePath}").exec()
     shell.newJob().add("cp /proc/config.gz ${kernelConfig.absolutePath}").exec()
@@ -90,14 +90,14 @@ fun getBugreportFile(context: Context): File {
         pw.println("Nodename: ${uname.nodename}")
         pw.println("Sysname: ${uname.sysname}")
 
-        val ksuKernel = Natives.version
-        pw.println("Tamisu: $ksuKernel")
+        val tamisuKernel = Natives.version
+        pw.println("Tamisu: $tamisuKernel")
         val safeMode = Natives.isSafeMode
         pw.println("SafeMode: $safeMode")
         pw.println("LKM: true")
     }
 
-    // modules: ksud no longer exposes module management (zygisk provider scope);
+    // modules: tamisu_daemon no longer exposes module management (zygisk provider scope);
     // module list is owned by the external root solution, so emit an empty array.
     val modulesFile = File(bugreportDir, "modules.json")
     modulesFile.writeText("[]")

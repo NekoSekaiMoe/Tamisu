@@ -10,12 +10,12 @@
 #include <map>
 #include <sstream>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 namespace {
 
 std::string get_module_id() {
-    const char* id = getenv("KSU_MODULE");
+    const char* id = getenv("TAMISU_MODULE");
     return id ? std::string(id) : "";
 }
 
@@ -59,13 +59,13 @@ bool save_config(const std::string& path, const std::map<std::string, std::strin
 
 int module_config_handle(const std::vector<std::string>& args) {
     if (args.empty()) {
-        printf("USAGE: ksud module config <get|set|list|delete|clear> ...\n");
+        printf("USAGE: tamisu_daemon module config <get|set|list|delete|clear> ...\n");
         return 1;
     }
 
     const std::string module_id = get_module_id();
     if (module_id.empty()) {
-        printf("Error: KSU_MODULE environment variable not set\n");
+        printf("Error: TAMISU_MODULE environment variable not set\n");
         return 1;
     }
 
@@ -180,4 +180,4 @@ void clear_all_temp_configs() {
     closedir(dir);
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

@@ -13,7 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import me.dabao1955.tamisu.BuildConfig
-import me.dabao1955.tamisu.ksu.KsuPaths
+import me.dabao1955.tamisu.tamisu_paths.TamisuPaths
 import me.dabao1955.tamisu.tamisuApp
 import me.dabao1955.tamisu.utils.AssetsUtil
 import com.topjohnwu.superuser.io.SuFile
@@ -22,28 +22,27 @@ import java.util.Properties
 
 
 /**
- * @author weishu
  * @date 2023/1/1.
  */
-private const val TAG = "KsuCli"
+private const val TAG = "TamisuCli"
 
-private fun getKsuDaemonPath(): String {
-    return tamisuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud.so"
+private fun getTamisuDaemonPath(): String {
+    return tamisuApp.applicationInfo.nativeLibraryDir + File.separator + "libtamisu_daemon.so"
 }
 
 /**
- * Public function to get ksud path for other modules
+ * Public function to get tamisu_daemon path for other modules
  */
-fun getKsud(): String = getKsuDaemonPath()
+fun getTamisuDaemon(): String = getTamisuDaemonPath()
 
-object KsuCli {
+object TamisuCli {
     var SHELL: Shell = createRootShell()
         private set
     var GLOBAL_MNT_SHELL: Shell = createRootShell(true)
         private set
 
     /**
-     * Check if ksud needs to be installed or updated.
+     * Check if tamisu_daemon needs to be installed or updated.
      */
     private fun checkAndInstallKsud() {
         try {
@@ -52,31 +51,31 @@ object KsuCli {
 
             Log.i(TAG, "checkAndInstallKsud: apk=$apkKsudVersion, installed=$installedKsudVersion")
 
-            // Install if: ksud not installed, or version mismatch
+            // Install if: tamisu_daemon not installed, or version mismatch
             if (installedKsudVersion == null || apkKsudVersion != installedKsudVersion) {
-                Log.i(TAG, "Installing/updating ksud daemon only: apk=$apkKsudVersion, installed=$installedKsudVersion")
+                Log.i(TAG, "Installing/updating tamisu_daemon daemon only: apk=$apkKsudVersion, installed=$installedKsudVersion")
                 installOrUpdateKsudDaemon()
             } else {
-                Log.d(TAG, "ksud is up-to-date: $installedKsudVersion")
+                Log.d(TAG, "tamisu_daemon is up-to-date: $installedKsudVersion")
             }
         } catch (e: Exception) {
             Log.e(TAG, "checkAndInstallKsud failed, falling back to install", e)
-            // Fallback: always try to sync ksud daemon on error
+            // Fallback: always try to sync tamisu_daemon daemon on error
             installOrUpdateKsudDaemon()
         }
     }
 
     /**
-     * The APK-bundled ksud version is pinned at build time by
+     * The APK-bundled tamisu_daemon version is pinned at build time by
      * manager/build.gradle.kts (`computeKsudBundledVersion`), which mirrors
-     * userspace/ksud/scripts/generate_version.py. No need to fork-exec the
+     * userspace/tamisu_daemon/scripts/generate_version.py. No need to fork-exec the
      * daemon just to read its version.
      */
     private fun getApkKsudVersion(): String? =
-        BuildConfig.KSUD_BUNDLED_VERSION.takeIf { it.isNotBlank() }
+        BuildConfig.TAMISU_DAEMON_BUNDLED_VERSION.takeIf { it.isNotBlank() }
 
     /**
-     * Normalize ksud version string to app-style display: vx.x.x-xxxxxxxx.
+     * Normalize tamisu_daemon version string to app-style display: vx.x.x-xxxxxxxx.
      * e.g. "1.3.0-1-g56b0efb0" -> "v1.3.0-56b0efb0"
      */
     fun formatKsudVersionForDisplay(raw: String?): String? {
@@ -101,32 +100,32 @@ object KsuCli {
     }
 
     /**
-     * Get installed ksud version from /data/adb/ksud.
+     * Get installed tamisu_daemon version from /data/tamisu_daemon.
      */
     private fun getInstalledKsudVersion(): String? {
         return try {
-            val result = ShellUtils.fastCmd(SHELL, "${KsuPaths.KSUD_BIN} version 2>/dev/null")
+            val result = ShellUtils.fastCmd(SHELL, "${TamisuPaths.TAMISU_DAEMON_BIN} version 2>/dev/null")
             if (result.isBlank()) return null
             val match = Regex("""version\s+([^\s]+)""").find(result)
             match?.groupValues?.get(1)
         } catch (e: Exception) {
-            Log.w(TAG, "Failed to get installed ksud version", e)
+            Log.w(TAG, "Failed to get installed tamisu_daemon version", e)
             null
         }
     }
 
     /**
-     * Public helper for UI: get ksud versions (APK-bundled and installed daemon),
+     * Public helper for UI: get tamisu_daemon versions (APK-bundled and installed daemon),
      * formatted as vx.x.x-xxxxxxxx. Returns (formattedApk, formattedInstalled).
      */
-    suspend fun getKsudVersionsForUi(): Pair<String?, String?> = withContext(Dispatchers.IO) {
+    suspend fun getTamisuDaemonVersionsForUi(): Pair<String?, String?> = withContext(Dispatchers.IO) {
         val apk = getApkKsudVersion()
         val installed = getInstalledKsudVersion()
         formatKsudVersionForDisplay(apk) to formatKsudVersionForDisplay(installed)
     }
 
     /**
-     * Public helper for UI: sync ksud daemon binary from APK into /data/adb/ksud.
+     * Public helper for UI: sync tamisu_daemon daemon binary from APK into /data/tamisu_daemon.
      */
     suspend fun updateKsudDaemonForUi(): Boolean = withContext(Dispatchers.IO) {
         installOrUpdateKsudDaemon()
@@ -147,12 +146,12 @@ object KsuCli {
     }
 
     /**
-     * Install or update the ksud daemon binary itself, without touching boot image.
+     * Install or update the tamisu_daemon daemon binary itself, without touching boot image.
      *
      * This mirrors APatch's "安装/升级系统补丁(apd)" flow:
-     * we copy the manager-bundled ksud ELF (`libksud.so`) into:
-     *   - `/data/adb/ksud` (daemon binary used by kernel/su wrapper)
-     *   - `/data/adb/ksu/bin/ksud` (symlink for convenience/tools)
+     * we copy the manager-bundled tamisu_daemon ELF (`libtamisu_daemon.so`) into:
+     *   - `/data/tamisu_daemon` (daemon binary used by kernel/su wrapper)
+     *   - `/data/tamisu/bin/tamisu_daemon` (symlink for convenience/tools)
      */
     private fun installOrUpdateKsudDaemon() {
         val shell = getRootShell()
@@ -162,38 +161,38 @@ object KsuCli {
         }
 
         val nativeDir = tamisuApp.applicationInfo.nativeLibraryDir
-        val ksudSo = File(nativeDir, "libksud.so")
-        if (!ksudSo.exists()) {
-            Log.e(TAG, "installOrUpdateKsudDaemon: libksud.so not found in $nativeDir")
+        val tamisu_daemonSo = File(nativeDir, "libtamisu_daemon.so")
+        if (!tamisu_daemonSo.exists()) {
+            Log.e(TAG, "installOrUpdateKsudDaemon: libtamisu_daemon.so not found in $nativeDir")
             return
         }
 
         val cmds = arrayOf(
             // Ensure directories
-            "mkdir -p ${KsuPaths.KSU_BIN_DIR}",
-            "mkdir -p ${KsuPaths.KSU_LOG_DIR}",
-            // Copy new daemon binary (multi-call: ksud + magiskboot via argv0)
-            "cp -f ${ksudSo.absolutePath} ${KsuPaths.KSUD_BIN}",
-            "chmod 0755 ${KsuPaths.KSUD_BIN}",
-            // Symlinks in ksu/bin: ksud, magiskboot, bootctl, resetprop all point to the same binary (multi-call)
-            "ln -sf ${KsuPaths.KSUD_BIN} ${KsuPaths.KSU_BIN_DIR}/ksud",
-            "ln -sf ${KsuPaths.KSUD_BIN} ${KsuPaths.KSU_BIN_DIR}/magiskboot",
-            "ln -sf ${KsuPaths.KSUD_BIN} ${KsuPaths.KSU_BIN_DIR}/bootctl",
-            "ln -sf ${KsuPaths.KSUD_BIN} ${KsuPaths.KSU_BIN_DIR}/resetprop",
+            "mkdir -p ${TamisuPaths.TAMISU_BIN_DIR}",
+            "mkdir -p ${TamisuPaths.TAMISU_LOG_DIR}",
+            // Copy new daemon binary (multi-call: tamisu_daemon + magiskboot via argv0)
+            "cp -f ${tamisu_daemonSo.absolutePath} ${TamisuPaths.TAMISU_DAEMON_BIN}",
+            "chmod 0755 ${TamisuPaths.TAMISU_DAEMON_BIN}",
+            // Symlinks in tamisu/bin: tamisu_daemon, magiskboot, bootctl, resetprop all point to the same binary (multi-call)
+            "ln -sf ${TamisuPaths.TAMISU_DAEMON_BIN} ${TamisuPaths.TAMISU_BIN_DIR}/tamisu_daemon",
+            "ln -sf ${TamisuPaths.TAMISU_DAEMON_BIN} ${TamisuPaths.TAMISU_BIN_DIR}/magiskboot",
+            "ln -sf ${TamisuPaths.TAMISU_DAEMON_BIN} ${TamisuPaths.TAMISU_BIN_DIR}/bootctl",
+            "ln -sf ${TamisuPaths.TAMISU_DAEMON_BIN} ${TamisuPaths.TAMISU_BIN_DIR}/resetprop",
             // Fix SELinux contexts (ignore errors on non-SEAndroid systems)
-            "restorecon ${KsuPaths.KSUD_BIN} || true",
-            "restorecon -R ${KsuPaths.KSU_ROOT} || true"
+            "restorecon ${TamisuPaths.TAMISU_DAEMON_BIN} || true",
+            "restorecon -R ${TamisuPaths.TAMISU_ROOT} || true"
         )
 
-        Log.i(TAG, "installOrUpdateKsudDaemon: syncing ${ksudSo.absolutePath} -> /data/adb/ksud")
+        Log.i(TAG, "installOrUpdateKsudDaemon: syncing ${tamisu_daemonSo.absolutePath} -> /data/tamisu_daemon")
         val result = shell.newJob().add(*cmds).exec()
         Log.i(TAG, "installOrUpdateKsudDaemon: result code=${result.code}, isSuccess=${result.isSuccess}")
     }
 }
 
 fun getRootShell(globalMnt: Boolean = false): Shell {
-    return if (globalMnt) KsuCli.GLOBAL_MNT_SHELL else {
-        KsuCli.SHELL
+    return if (globalMnt) TamisuCli.GLOBAL_MNT_SHELL else {
+        TamisuCli.SHELL
     }
 }
 
@@ -209,14 +208,14 @@ fun createRootShell(globalMnt: Boolean = false): Shell {
     val builder = Shell.Builder.create()
     return try {
         val shell = if (globalMnt) {
-            builder.build(getKsuDaemonPath(), "debug", "su", "-g")
+            builder.build(getTamisuDaemonPath(), "debug", "su", "-g")
         } else {
-            builder.build(getKsuDaemonPath(), "debug", "su")
+            builder.build(getTamisuDaemonPath(), "debug", "su")
         }
-        Log.d(TAG, "ksud shell created, isRoot=${shell.isRoot}, globalMnt=$globalMnt")
+        Log.d(TAG, "tamisu_daemon shell created, isRoot=${shell.isRoot}, globalMnt=$globalMnt")
         shell
     } catch (e: Throwable) {
-        Log.w(TAG, "ksu failed (globalMnt=$globalMnt): ", e)
+        Log.w(TAG, "tamisu failed (globalMnt=$globalMnt): ", e)
         try {
             val shell = if (globalMnt) {
                 builder.build("su", "-mm")
@@ -234,42 +233,42 @@ fun createRootShell(globalMnt: Boolean = false): Shell {
     }
 }
 
-/** Build a "ksud <args>" command string. Use this instead of pasting
- *  `${getKsuDaemonPath()}` next to a subcommand literal. */
-internal fun ksudCmd(args: String): String = "${getKsuDaemonPath()} $args"
+/** Build a "tamisu_daemon <args>" command string. Use this instead of pasting
+ *  `${getTamisuDaemonPath()}` next to a subcommand literal. */
+internal fun tamisu_daemonCmd(args: String): String = "${getTamisuDaemonPath()} $args"
 
 fun execKsud(args: String, newShell: Boolean = false): Boolean {
     return if (newShell) {
         withNewRootShell {
-            ShellUtils.fastCmdResult(this, ksudCmd(args))
+            ShellUtils.fastCmdResult(this, tamisu_daemonCmd(args))
         }
     } else {
-        ShellUtils.fastCmdResult(getRootShell(), ksudCmd(args))
+        ShellUtils.fastCmdResult(getRootShell(), tamisu_daemonCmd(args))
     }
 }
 
-/** Run a ksud subcommand and return its trimmed stdout (single value). */
-internal fun ksudReadString(args: String, shell: Shell = getRootShell()): String =
-    ShellUtils.fastCmd(shell, ksudCmd(args)).trim()
+/** Run a tamisu_daemon subcommand and return its trimmed stdout (single value). */
+internal fun tamisu_daemonReadString(args: String, shell: Shell = getRootShell()): String =
+    ShellUtils.fastCmd(shell, tamisu_daemonCmd(args)).trim()
 
-/** Run a ksud subcommand and return non-blank trimmed stdout lines. */
-internal fun ksudReadLines(args: String, shell: Shell = getRootShell()): List<String> =
-    shell.newJob().add(ksudCmd(args)).to(ArrayList(), null).exec().out
+/** Run a tamisu_daemon subcommand and return non-blank trimmed stdout lines. */
+internal fun tamisu_daemonReadLines(args: String, shell: Shell = getRootShell()): List<String> =
+    shell.newJob().add(tamisu_daemonCmd(args)).to(ArrayList(), null).exec().out
         .filter { it.isNotBlank() }.map { it.trim() }
 
 suspend fun getFeatureStatus(feature: String): String = withContext(Dispatchers.IO) {
-    ksudReadLines("feature check $feature")
+    tamisu_daemonReadLines("feature check $feature")
         .firstOrNull { it == "supported" || it == "unsupported" || it == "managed" }
         .orEmpty()
 }
 
-/** Read a feature's current on/off value via `ksud feature get` (parses the
+/** Read a feature's current on/off value via `tamisu_daemon feature get` (parses the
  *  "Status: enabled/disabled" line). Returns false when unsupported. */
 suspend fun getFeatureValue(feature: String): Boolean = withContext(Dispatchers.IO) {
-    ksudReadLines("feature get $feature").any { it.equals("Status: enabled", ignoreCase = true) }
+    tamisu_daemonReadLines("feature get $feature").any { it.equals("Status: enabled", ignoreCase = true) }
 }
 
-/** Set a feature value and persist it; returns whether ksud reported success. */
+/** Set a feature value and persist it; returns whether tamisu_daemon reported success. */
 suspend fun setFeatureValue(feature: String, enabled: Boolean): Boolean =
     withContext(Dispatchers.IO) {
         execKsud("feature set $feature ${if (enabled) 1 else 0}", true) &&
@@ -278,10 +277,10 @@ suspend fun setFeatureValue(feature: String, enabled: Boolean): Boolean =
 
 fun install() {
     val start = SystemClock.elapsedRealtime()
-    val ksudPath = getKsuDaemonPath()
-    // magiskboot is built into ksud (multi-call binary); pass ksud path so it can exec itself as magiskboot
-    Log.i(TAG, "install: ksud=$ksudPath")
-    val result = execKsud("install --magiskboot $ksudPath", true)
+    val tamisu_daemonPath = getTamisuDaemonPath()
+    // magiskboot is built into tamisu_daemon (multi-call binary); pass tamisu_daemon path so it can exec itself as magiskboot
+    Log.i(TAG, "install: tamisu_daemon=$tamisu_daemonPath")
+    val result = execKsud("install --magiskboot $tamisu_daemonPath", true)
     Log.w(TAG, "install result: $result, cost: ${SystemClock.elapsedRealtime() - start}ms")
 }
 
@@ -303,7 +302,7 @@ private fun flashWithIO(
         }
     }
 
-    // Set TMPDIR to app cache directory so ksud can create temp files without root
+    // Set TMPDIR to app cache directory so tamisu_daemon can create temp files without root
     val tmpDir = tamisuApp.cacheDir.absolutePath
     val cmdWithEnv = "TMPDIR=$tmpDir $cmd"
 
@@ -315,9 +314,9 @@ private fun flashWithIO(
 fun restoreBoot(
     onFinish: (Boolean, Int) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
 ): Boolean {
-    val ksudPath = getKsuDaemonPath()
+    val tamisu_daemonPath = getTamisuDaemonPath()
     val result = flashWithIO(
-        ksudCmd("boot-restore -f --magiskboot $ksudPath"),
+        tamisu_daemonCmd("boot-restore -f --magiskboot $tamisu_daemonPath"),
         onStdout,
         onStderr
     )
@@ -328,9 +327,9 @@ fun restoreBoot(
 fun uninstallPermanently(
     onFinish: (Boolean, Int) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
 ): Boolean {
-    val ksudPath = getKsuDaemonPath()
+    val tamisu_daemonPath = getTamisuDaemonPath()
     val result =
-        flashWithIO(ksudCmd("uninstall --magiskboot $ksudPath"), onStdout, onStderr)
+        flashWithIO(tamisu_daemonCmd("uninstall --magiskboot $tamisu_daemonPath"), onStdout, onStderr)
     onFinish(result.isSuccess, result.code)
     return result.isSuccess
 }
@@ -348,7 +347,7 @@ fun installBoot(
     ota: Boolean,
     partition: String?,
     enableAdb: Boolean = false,
-    kasumiInCpio: Boolean = false,  // Experimental: embed Kasumi LKM in cpio, load after KernelSU
+    kasumiInCpio: Boolean = false,  // Experimental: embed Kasumi LKM in cpio, load after Tamisu
     kasumiLkmUri: Uri? = null,      // Custom Kasumi LKM file; when null, use embedded
     onFinish: (Boolean, Int) -> Unit,
     onStdout: (String) -> Unit,
@@ -367,8 +366,8 @@ fun installBoot(
         }
     }
 
-    val ksudPath = getKsuDaemonPath()
-    var cmd = "boot-patch --magiskboot $ksudPath"
+    val tamisu_daemonPath = getTamisuDaemonPath()
+    var cmd = "boot-patch --magiskboot $tamisu_daemonPath"
 
     // Extract kernel-version-specific mkbootfs tools for 5.10/5.15+ ramdisk format compatibility
     val mkbootfsDir = File(tamisuApp.cacheDir, "mkbootfs").apply { mkdirs() }
@@ -445,7 +444,7 @@ fun installBoot(
         }
     }
 
-    val result = flashWithIO(ksudCmd(cmd), onStdout, onStderr)
+    val result = flashWithIO(tamisu_daemonCmd(cmd), onStdout, onStderr)
     Log.i("Tamisu", "install boot result: ${result.isSuccess}")
 
     bootFile?.delete()
@@ -482,20 +481,20 @@ fun rootAvailable(): Boolean {
 
 
 suspend fun getCurrentKmi(): String = withContext(Dispatchers.IO) {
-    ksudReadString("boot-info current-kmi")
+    tamisu_daemonReadString("boot-info current-kmi")
 }
 
 suspend fun getSupportedKmis(): List<String> = withContext(Dispatchers.IO) {
-    ksudReadLines("boot-info supported-kmis")
+    tamisu_daemonReadLines("boot-info supported-kmis")
 }
 
 suspend fun isAbDevice(): Boolean = withContext(Dispatchers.IO) {
-    ksudReadString("boot-info is-ab-device").toBoolean()
+    tamisu_daemonReadString("boot-info is-ab-device").toBoolean()
 }
 
 suspend fun getDefaultPartition(): String = withContext(Dispatchers.IO) {
     if (getRootShell().isRoot) {
-        ksudReadString("boot-info default-partition")
+        tamisu_daemonReadString("boot-info default-partition")
     } else {
         if (!Os.uname().release.contains("android12-")) "init_boot" else "boot"
     }
@@ -503,11 +502,11 @@ suspend fun getDefaultPartition(): String = withContext(Dispatchers.IO) {
 
 suspend fun getSlotSuffix(ota: Boolean): String = withContext(Dispatchers.IO) {
     val args = if (ota) "boot-info slot-suffix --ota" else "boot-info slot-suffix"
-    ksudReadString(args)
+    tamisu_daemonReadString(args)
 }
 
 suspend fun getAvailablePartitions(): List<String> = withContext(Dispatchers.IO) {
-    ksudReadLines("boot-info available-partitions")
+    tamisu_daemonReadLines("boot-info available-partitions")
 }
 
 fun hasMagisk(): Boolean {

@@ -32,7 +32,7 @@ static struct policydb *get_policydb(void)
 	return db;
 }
 
-static DEFINE_MUTEX(ksu_rules);
+static DEFINE_MUTEX(tamisu_rules);
 
 static void reset_avc_cache(void);
 
@@ -43,7 +43,7 @@ static void backup_original_sepolicy_once(void)
 	if (backup_sepolicy)
 		return;
 
-	backup_sepolicy = ksu_dup_sepolicy(selinux_state.policy);
+	backup_sepolicy = tamisu_dup_sepolicy(selinux_state.policy);
 	if (IS_ERR(backup_sepolicy)) {
 		pr_err("failed to create backup sepolicy: %ld\n",
 		       PTR_ERR(backup_sepolicy));
@@ -55,7 +55,7 @@ static void backup_original_sepolicy_once(void)
 	    kzalloc(sizeof(*backup_sepolicy->sidtab), GFP_KERNEL);
 	if (!backup_sepolicy->sidtab) {
 		pr_err("failed to alloc backup sidtab\n");
-		ksu_destroy_sepolicy(backup_sepolicy);
+		tamisu_destroy_sepolicy(backup_sepolicy);
 		backup_sepolicy = NULL;
 		return;
 	}
@@ -65,7 +65,7 @@ static void backup_original_sepolicy_once(void)
 	if (ret) {
 		pr_err("failed to load isids for backup sepolicy: %d\n", ret);
 		kfree(backup_sepolicy->sidtab);
-		ksu_destroy_sepolicy(backup_sepolicy);
+		tamisu_destroy_sepolicy(backup_sepolicy);
 		backup_sepolicy = NULL;
 		return;
 	}
@@ -73,15 +73,15 @@ static void backup_original_sepolicy_once(void)
 	pr_info("backup sepolicy success\n");
 }
 
-static const char *ksu_file_load_perms[] = {
+static const char *tamisu_file_load_perms[] = {
     "read", "open", "getattr", "map", "execute",
 };
 
-static const char *ksu_tmpfs_hook_perms[] = {
+static const char *tamisu_tmpfs_hook_perms[] = {
     "read", "write", "open", "getattr", "map", "execute",
 };
 
-static u32 ksu_file_perm_mask(struct class_datum *cls, const char *perm_name)
+static u32 tamisu_file_perm_mask(struct class_datum *cls, const char *perm_name)
 {
 	struct perm_datum *perm;
 
@@ -96,18 +96,18 @@ static u32 ksu_file_perm_mask(struct class_datum *cls, const char *perm_name)
 	return 1U << (perm->value - 1);
 }
 
-static u32 ksu_required_av(struct class_datum *cls, const char *const *perms,
+static u32 tamisu_required_av(struct class_datum *cls, const char *const *perms,
 			   int count)
 {
 	u32 av = 0;
 	int i;
 
 	for (i = 0; i < count; i++)
-		av |= ksu_file_perm_mask(cls, perms[i]);
+		av |= tamisu_file_perm_mask(cls, perms[i]);
 	return av;
 }
 
-static u32 ksu_direct_allowed_av(struct policydb *db, u32 src_type,
+static u32 tamisu_direct_allowed_av(struct policydb *db, u32 src_type,
 				 u32 tgt_type, u16 target_class)
 {
 	struct avtab_key key = {};
@@ -121,7 +121,7 @@ static u32 ksu_direct_allowed_av(struct policydb *db, u32 src_type,
 	return node ? node->datum.u.data : 0;
 }
 
-static const char *ksu_type_name_by_value(struct policydb *db, u32 type)
+static const char *tamisu_type_name_by_value(struct policydb *db, u32 type)
 {
 	if (!db || type == 0 || type > db->p_types.nprim)
 		return NULL;
@@ -130,7 +130,7 @@ static const char *ksu_type_name_by_value(struct policydb *db, u32 type)
 	return db->sym_val_to_name[SYM_TYPES][type - 1];
 }
 
-static u32 ksu_type_value_by_name(struct policydb *db, const char *name)
+static u32 tamisu_type_value_by_name(struct policydb *db, const char *name)
 {
 	struct type_datum *type;
 
@@ -140,7 +140,7 @@ static u32 ksu_type_value_by_name(struct policydb *db, const char *name)
 	return type ? type->value : 0;
 }
 
-static bool ksu_apply_file_av(struct policydb *db, const char *src,
+static bool tamisu_apply_file_av(struct policydb *db, const char *src,
 			      const char *tgt, u32 av, bool allow,
 			      const char *const *perms, int count)
 {
@@ -153,20 +153,20 @@ static bool ksu_apply_file_av(struct policydb *db, const char *src,
 		return false;
 
 	for (i = 0; i < count; i++) {
-		u32 mask = ksu_file_perm_mask(cls, perms[i]);
+		u32 mask = tamisu_file_perm_mask(cls, perms[i]);
 
 		if (!(av & mask))
 			continue;
 		if (allow)
-			ok = ksu_allow(db, src, tgt, "file", perms[i]) && ok;
+			ok = tamisu_allow(db, src, tgt, "file", perms[i]) && ok;
 		else
-			ok = ksu_deny(db, src, tgt, "file", perms[i]) && ok;
+			ok = tamisu_deny(db, src, tgt, "file", perms[i]) && ok;
 	}
 	return ok;
 }
 
-int ksu_file_load_policy_allow_current(struct file *file,
-				       struct ksu_file_load_policy *state)
+int tamisu_file_load_policy_allow_current(struct file *file,
+				       struct tamisu_file_load_policy *state)
 {
 	struct selinux_policy *pol, *old_pol;
 	struct policydb *db;
@@ -214,25 +214,25 @@ int ksu_file_load_policy_allow_current(struct file *file,
 		ret = -ENOENT;
 		goto out_unlock;
 	}
-	src_name = ksu_type_name_by_value(db, scontext->type);
-	tgt_name = ksu_type_name_by_value(db, tcontext->type);
+	src_name = tamisu_type_name_by_value(db, scontext->type);
+	tgt_name = tamisu_type_name_by_value(db, tcontext->type);
 	if (!src_name || !tgt_name) {
 		ret = -ENOENT;
 		goto out_unlock;
 	}
 
-	required_av = ksu_required_av(cls, ksu_file_load_perms,
-				      ARRAY_SIZE(ksu_file_load_perms));
-	direct_av = ksu_direct_allowed_av(db, scontext->type, tcontext->type,
+	required_av = tamisu_required_av(cls, tamisu_file_load_perms,
+				      ARRAY_SIZE(tamisu_file_load_perms));
+	direct_av = tamisu_direct_allowed_av(db, scontext->type, tcontext->type,
 					  cls->value);
 	add_av = required_av & ~direct_av;
 
-	tmpfs_type = ksu_type_value_by_name(db, "tmpfs");
+	tmpfs_type = tamisu_type_value_by_name(db, "tmpfs");
 	if (tmpfs_type) {
 		tmpfs_required_av =
-		    ksu_required_av(cls, ksu_tmpfs_hook_perms,
-				    ARRAY_SIZE(ksu_tmpfs_hook_perms));
-		tmpfs_direct_av = ksu_direct_allowed_av(db, scontext->type,
+		    tamisu_required_av(cls, tamisu_tmpfs_hook_perms,
+				    ARRAY_SIZE(tamisu_tmpfs_hook_perms));
+		tmpfs_direct_av = tamisu_direct_allowed_av(db, scontext->type,
 							tmpfs_type, cls->value);
 		tmpfs_add_av = tmpfs_required_av & ~tmpfs_direct_av;
 	}
@@ -240,7 +240,7 @@ int ksu_file_load_policy_allow_current(struct file *file,
 	if (!add_av && !tmpfs_add_av)
 		goto out_unlock;
 
-	pol = ksu_dup_sepolicy(rcu_dereference_protected(
+	pol = tamisu_dup_sepolicy(rcu_dereference_protected(
 	    old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
 	if (IS_ERR(pol)) {
 		ret = PTR_ERR(pol);
@@ -248,18 +248,18 @@ int ksu_file_load_policy_allow_current(struct file *file,
 		goto out_unlock;
 	}
 	db = &pol->policydb;
-	if (add_av && !ksu_apply_file_av(db, src_name, tgt_name, add_av, true,
-					 ksu_file_load_perms,
-					 ARRAY_SIZE(ksu_file_load_perms))) {
-		ksu_destroy_sepolicy(pol);
+	if (add_av && !tamisu_apply_file_av(db, src_name, tgt_name, add_av, true,
+					 tamisu_file_load_perms,
+					 ARRAY_SIZE(tamisu_file_load_perms))) {
+		tamisu_destroy_sepolicy(pol);
 		ret = -EINVAL;
 		goto out_unlock;
 	}
 	if (tmpfs_add_av &&
-	    !ksu_apply_file_av(db, src_name, "tmpfs", tmpfs_add_av, true,
-			       ksu_tmpfs_hook_perms,
-			       ARRAY_SIZE(ksu_tmpfs_hook_perms))) {
-		ksu_destroy_sepolicy(pol);
+	    !tamisu_apply_file_av(db, src_name, "tmpfs", tmpfs_add_av, true,
+			       tamisu_tmpfs_hook_perms,
+			       ARRAY_SIZE(tamisu_tmpfs_hook_perms))) {
+		tamisu_destroy_sepolicy(pol);
 		ret = -EINVAL;
 		goto out_unlock;
 	}
@@ -276,7 +276,7 @@ int ksu_file_load_policy_allow_current(struct file *file,
 		src_name, tgt_name, add_av, tmpfs_add_av);
 	rcu_assign_pointer(selinux_state.policy, pol);
 	synchronize_rcu();
-	ksu_destroy_sepolicy(old_pol);
+	tamisu_destroy_sepolicy(old_pol);
 	reset_avc_cache();
 
 out_unlock:
@@ -284,7 +284,7 @@ out_unlock:
 	return ret;
 }
 
-int ksu_file_load_policy_restore(const struct ksu_file_load_policy *state)
+int tamisu_file_load_policy_restore(const struct tamisu_file_load_policy *state)
 {
 	struct selinux_policy *pol, *old_pol;
 	struct policydb *db;
@@ -300,18 +300,18 @@ int ksu_file_load_policy_restore(const struct ksu_file_load_policy *state)
 
 	old_pol = selinux_state.policy;
 	db = &old_pol->policydb;
-	src_name = ksu_type_name_by_value(db, state->src_type);
+	src_name = tamisu_type_name_by_value(db, state->src_type);
 	if (state->added_av)
-		tgt_name = ksu_type_name_by_value(db, state->tgt_type);
+		tgt_name = tamisu_type_name_by_value(db, state->tgt_type);
 	if (state->tmpfs_added_av)
-		tmpfs_name = ksu_type_name_by_value(db, state->tmpfs_type);
+		tmpfs_name = tamisu_type_name_by_value(db, state->tmpfs_type);
 	if (!src_name || (state->added_av && !tgt_name) ||
 	    (state->tmpfs_added_av && !tmpfs_name)) {
 		ret = -ENOENT;
 		goto out_unlock;
 	}
 
-	pol = ksu_dup_sepolicy(rcu_dereference_protected(
+	pol = tamisu_dup_sepolicy(rcu_dereference_protected(
 	    old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
 	if (IS_ERR(pol)) {
 		ret = PTR_ERR(pol);
@@ -320,18 +320,18 @@ int ksu_file_load_policy_restore(const struct ksu_file_load_policy *state)
 	}
 	db = &pol->policydb;
 	if (state->added_av &&
-	    !ksu_apply_file_av(db, src_name, tgt_name, state->added_av, false,
-			       ksu_file_load_perms,
-			       ARRAY_SIZE(ksu_file_load_perms))) {
-		ksu_destroy_sepolicy(pol);
+	    !tamisu_apply_file_av(db, src_name, tgt_name, state->added_av, false,
+			       tamisu_file_load_perms,
+			       ARRAY_SIZE(tamisu_file_load_perms))) {
+		tamisu_destroy_sepolicy(pol);
 		ret = -EINVAL;
 		goto out_unlock;
 	}
 	if (state->tmpfs_added_av &&
-	    !ksu_apply_file_av(db, src_name, tmpfs_name, state->tmpfs_added_av,
-			       false, ksu_tmpfs_hook_perms,
-			       ARRAY_SIZE(ksu_tmpfs_hook_perms))) {
-		ksu_destroy_sepolicy(pol);
+	    !tamisu_apply_file_av(db, src_name, tmpfs_name, state->tmpfs_added_av,
+			       false, tamisu_tmpfs_hook_perms,
+			       ARRAY_SIZE(tamisu_tmpfs_hook_perms))) {
+		tamisu_destroy_sepolicy(pol);
 		ret = -EINVAL;
 		goto out_unlock;
 	}
@@ -342,7 +342,7 @@ int ksu_file_load_policy_restore(const struct ksu_file_load_policy *state)
 		state->tmpfs_added_av);
 	rcu_assign_pointer(selinux_state.policy, pol);
 	synchronize_rcu();
-	ksu_destroy_sepolicy(old_pol);
+	tamisu_destroy_sepolicy(old_pol);
 	reset_avc_cache();
 
 out_unlock:
@@ -350,7 +350,7 @@ out_unlock:
 	return ret;
 }
 
-void apply_kernelsu_rules(void)
+void apply_tamisu_rules(void)
 {
 	struct policydb *db;
 
@@ -358,93 +358,93 @@ void apply_kernelsu_rules(void)
 		pr_info("SELinux permissive or disabled, apply rules!\n");
 	}
 
-	mutex_lock(&ksu_rules);
+	mutex_lock(&tamisu_rules);
 
 	backup_original_sepolicy_once();
 
 	db = get_policydb();
 
-	ksu_permissive(db, KERNEL_SU_DOMAIN);
-	ksu_typeattribute(db, KERNEL_SU_DOMAIN, "mlstrustedsubject");
-	ksu_typeattribute(db, KERNEL_SU_DOMAIN, "netdomain");
-	ksu_typeattribute(db, KERNEL_SU_DOMAIN, "bluetoothdomain");
+	tamisu_permissive(db, TAMISU_DOMAIN);
+	tamisu_typeattribute(db, TAMISU_DOMAIN, "mlstrustedsubject");
+	tamisu_typeattribute(db, TAMISU_DOMAIN, "netdomain");
+	tamisu_typeattribute(db, TAMISU_DOMAIN, "bluetoothdomain");
 
 	// Create unconstrained file type
-	ksu_type(db, KERNEL_SU_FILE, "file_type");
-	ksu_typeattribute(db, KERNEL_SU_FILE, "mlstrustedobject");
-	ksu_allow(db, ALL, KERNEL_SU_FILE, ALL, ALL);
+	tamisu_type(db, KERNEL_SU_FILE, "file_type");
+	tamisu_typeattribute(db, KERNEL_SU_FILE, "mlstrustedobject");
+	tamisu_allow(db, ALL, KERNEL_SU_FILE, ALL, ALL);
 
 	// allow all!
-	ksu_allow(db, KERNEL_SU_DOMAIN, ALL, ALL, ALL);
+	tamisu_allow(db, TAMISU_DOMAIN, ALL, ALL, ALL);
 
 	// allow us do any ioctl
 	if (db->policyvers >= POLICYDB_VERSION_XPERMS_IOCTL) {
-		ksu_allowxperm(db, KERNEL_SU_DOMAIN, ALL, "blk_file", ALL);
-		ksu_allowxperm(db, KERNEL_SU_DOMAIN, ALL, "fifo_file", ALL);
-		ksu_allowxperm(db, KERNEL_SU_DOMAIN, ALL, "chr_file", ALL);
-		ksu_allowxperm(db, KERNEL_SU_DOMAIN, ALL, "file", ALL);
+		tamisu_allowxperm(db, TAMISU_DOMAIN, ALL, "blk_file", ALL);
+		tamisu_allowxperm(db, TAMISU_DOMAIN, ALL, "fifo_file", ALL);
+		tamisu_allowxperm(db, TAMISU_DOMAIN, ALL, "chr_file", ALL);
+		tamisu_allowxperm(db, TAMISU_DOMAIN, ALL, "file", ALL);
 	}
 
-	// our ksud triggered by init
-	ksu_allow(db, "init", KERNEL_SU_DOMAIN, ALL, ALL);
+	// our tamisu_daemon triggered by init
+	tamisu_allow(db, "init", TAMISU_DOMAIN, ALL, ALL);
 
 	// copied from Magisk rules
 	// suRights
-	ksu_allow(db, "servicemanager", KERNEL_SU_DOMAIN, "dir", "search");
-	ksu_allow(db, "servicemanager", KERNEL_SU_DOMAIN, "dir", "read");
-	ksu_allow(db, "servicemanager", KERNEL_SU_DOMAIN, "file", "open");
-	ksu_allow(db, "servicemanager", KERNEL_SU_DOMAIN, "file", "read");
-	ksu_allow(db, "servicemanager", KERNEL_SU_DOMAIN, "process", "getattr");
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "process", "sigchld");
+	tamisu_allow(db, "servicemanager", TAMISU_DOMAIN, "dir", "search");
+	tamisu_allow(db, "servicemanager", TAMISU_DOMAIN, "dir", "read");
+	tamisu_allow(db, "servicemanager", TAMISU_DOMAIN, "file", "open");
+	tamisu_allow(db, "servicemanager", TAMISU_DOMAIN, "file", "read");
+	tamisu_allow(db, "servicemanager", TAMISU_DOMAIN, "process", "getattr");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "process", "sigchld");
 
 	// allowLog
-	ksu_allow(db, "logd", KERNEL_SU_DOMAIN, "dir", "search");
-	ksu_allow(db, "logd", KERNEL_SU_DOMAIN, "file", "read");
-	ksu_allow(db, "logd", KERNEL_SU_DOMAIN, "file", "open");
-	ksu_allow(db, "logd", KERNEL_SU_DOMAIN, "file", "getattr");
+	tamisu_allow(db, "logd", TAMISU_DOMAIN, "dir", "search");
+	tamisu_allow(db, "logd", TAMISU_DOMAIN, "file", "read");
+	tamisu_allow(db, "logd", TAMISU_DOMAIN, "file", "open");
+	tamisu_allow(db, "logd", TAMISU_DOMAIN, "file", "getattr");
 
 	// dumpsys
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "fd", "use");
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "fifo_file", "write");
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "fifo_file", "read");
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "fifo_file", "open");
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "fifo_file", "getattr");
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "unix_stream_socket", "read");
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "unix_stream_socket", "write");
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "unix_stream_socket", "connectto");
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "unix_stream_socket", "getopt");
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "unix_stream_socket", "getattr");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "fd", "use");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "fifo_file", "write");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "fifo_file", "read");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "fifo_file", "open");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "fifo_file", "getattr");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "unix_stream_socket", "read");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "unix_stream_socket", "write");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "unix_stream_socket", "connectto");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "unix_stream_socket", "getopt");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "unix_stream_socket", "getattr");
 
 	// use memfd created by su domain
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "memfd_file", "execute");
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "memfd_file", "getattr");
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "memfd_file", "map");
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "memfd_file", "read");
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "memfd_file", "write");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "memfd_file", "execute");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "memfd_file", "getattr");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "memfd_file", "map");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "memfd_file", "read");
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "memfd_file", "write");
 
 	// bootctl
-	ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "dir", "search");
-	ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "file", "read");
-	ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "file", "open");
-	ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "process",
+	tamisu_allow(db, "hwservicemanager", TAMISU_DOMAIN, "dir", "search");
+	tamisu_allow(db, "hwservicemanager", TAMISU_DOMAIN, "file", "read");
+	tamisu_allow(db, "hwservicemanager", TAMISU_DOMAIN, "file", "open");
+	tamisu_allow(db, "hwservicemanager", TAMISU_DOMAIN, "process",
 		  "getattr");
 
 	// Allow all binder transactions
-	ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "binder", ALL);
+	tamisu_allow(db, ALL, TAMISU_DOMAIN, "binder", ALL);
 
 	// Allow system server kill su process
-	ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "getpgid");
-	ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "sigkill");
+	tamisu_allow(db, "system_server", TAMISU_DOMAIN, "process", "getpgid");
+	tamisu_allow(db, "system_server", TAMISU_DOMAIN, "process", "sigkill");
 
 	// YukiZygisk system_server trampolines.
-	ksu_allow(db, "system_server", "system_server", "process", "execmem");
+	tamisu_allow(db, "system_server", "system_server", "process", "execmem");
 	// https://android-review.googlesource.com/c/platform/system/logging/+/3725346
-	ksu_dontaudit(db, "untrusted_app", KERNEL_SU_DOMAIN, "dir", "getattr");
-	mutex_unlock(&ksu_rules);
+	tamisu_dontaudit(db, "untrusted_app", TAMISU_DOMAIN, "dir", "getattr");
+	mutex_unlock(&tamisu_rules);
 }
 
-#define KSU_SEPOLICY_MAX_BATCH_SIZE (8U * 1024U * 1024U)
-#define KSU_SEPOLICY_MAX_ARGS 5
+#define TAMISU_SEPOLICY_MAX_BATCH_SIZE (8U * 1024U * 1024U)
+#define TAMISU_SEPOLICY_MAX_ARGS 5
 
 struct sepol_data {
 	u32 cmd;
@@ -514,22 +514,22 @@ static int sepol_require_not_all(const char *value, const char *name)
 static int sepol_expected_argc(u32 cmd)
 {
 	switch (cmd) {
-	case KSU_SEPOLICY_CMD_NORMAL_PERM:
+	case TAMISU_SEPOLICY_CMD_NORMAL_PERM:
 		return 4;
-	case KSU_SEPOLICY_CMD_XPERM:
+	case TAMISU_SEPOLICY_CMD_XPERM:
 		return 5;
-	case KSU_SEPOLICY_CMD_TYPE_STATE:
+	case TAMISU_SEPOLICY_CMD_TYPE_STATE:
 		return 1;
-	case KSU_SEPOLICY_CMD_TYPE:
-	case KSU_SEPOLICY_CMD_TYPE_ATTR:
+	case TAMISU_SEPOLICY_CMD_TYPE:
+	case TAMISU_SEPOLICY_CMD_TYPE_ATTR:
 		return 2;
-	case KSU_SEPOLICY_CMD_ATTR:
+	case TAMISU_SEPOLICY_CMD_ATTR:
 		return 1;
-	case KSU_SEPOLICY_CMD_TYPE_TRANSITION:
+	case TAMISU_SEPOLICY_CMD_TYPE_TRANSITION:
 		return 5;
-	case KSU_SEPOLICY_CMD_TYPE_CHANGE:
+	case TAMISU_SEPOLICY_CMD_TYPE_CHANGE:
 		return 4;
-	case KSU_SEPOLICY_CMD_GENFSCON:
+	case TAMISU_SEPOLICY_CMD_GENFSCON:
 		return 3;
 	default:
 		return -EINVAL;
@@ -544,26 +544,26 @@ static int apply_one_sepolicy_cmd(struct policydb *db,
 	int ret;
 
 	switch (header->cmd) {
-	case KSU_SEPOLICY_CMD_NORMAL_PERM:
-		if (header->subcmd == KSU_SEPOLICY_SUBCMD_NORMAL_PERM_ALLOW)
+	case TAMISU_SEPOLICY_CMD_NORMAL_PERM:
+		if (header->subcmd == TAMISU_SEPOLICY_SUBCMD_NORMAL_PERM_ALLOW)
 			success =
-			    ksu_allow(db, args[0], args[1], args[2], args[3]);
-		else if (header->subcmd == KSU_SEPOLICY_SUBCMD_NORMAL_PERM_DENY)
+			    tamisu_allow(db, args[0], args[1], args[2], args[3]);
+		else if (header->subcmd == TAMISU_SEPOLICY_SUBCMD_NORMAL_PERM_DENY)
 			success =
-			    ksu_deny(db, args[0], args[1], args[2], args[3]);
+			    tamisu_deny(db, args[0], args[1], args[2], args[3]);
 		else if (header->subcmd ==
-			 KSU_SEPOLICY_SUBCMD_NORMAL_PERM_AUDITALLOW)
-			success = ksu_auditallow(db, args[0], args[1], args[2],
+			 TAMISU_SEPOLICY_SUBCMD_NORMAL_PERM_AUDITALLOW)
+			success = tamisu_auditallow(db, args[0], args[1], args[2],
 						 args[3]);
 		else if (header->subcmd ==
-			 KSU_SEPOLICY_SUBCMD_NORMAL_PERM_DONTAUDIT)
-			success = ksu_dontaudit(db, args[0], args[1], args[2],
+			 TAMISU_SEPOLICY_SUBCMD_NORMAL_PERM_DONTAUDIT)
+			success = tamisu_dontaudit(db, args[0], args[1], args[2],
 						args[3]);
 		else
 			pr_err("sepol: unknown subcmd: %d\n", header->subcmd);
 		return success ? 0 : -EINVAL;
 
-	case KSU_SEPOLICY_CMD_XPERM:
+	case TAMISU_SEPOLICY_CMD_XPERM:
 		ret = sepol_require_not_all(args[3], "operation");
 		if (ret < 0)
 			return ret;
@@ -571,35 +571,35 @@ static int apply_one_sepolicy_cmd(struct policydb *db,
 		if (ret < 0)
 			return ret;
 
-		if (header->subcmd == KSU_SEPOLICY_SUBCMD_XPERM_ALLOW)
-			success = ksu_allowxperm(db, args[0], args[1], args[2],
+		if (header->subcmd == TAMISU_SEPOLICY_SUBCMD_XPERM_ALLOW)
+			success = tamisu_allowxperm(db, args[0], args[1], args[2],
 						 args[4]);
-		else if (header->subcmd == KSU_SEPOLICY_SUBCMD_XPERM_AUDITALLOW)
-			success = ksu_auditallowxperm(db, args[0], args[1],
+		else if (header->subcmd == TAMISU_SEPOLICY_SUBCMD_XPERM_AUDITALLOW)
+			success = tamisu_auditallowxperm(db, args[0], args[1],
 						      args[2], args[4]);
-		else if (header->subcmd == KSU_SEPOLICY_SUBCMD_XPERM_DONTAUDIT)
-			success = ksu_dontauditxperm(db, args[0], args[1],
+		else if (header->subcmd == TAMISU_SEPOLICY_SUBCMD_XPERM_DONTAUDIT)
+			success = tamisu_dontauditxperm(db, args[0], args[1],
 						     args[2], args[4]);
 		else
 			pr_err("sepol: unknown subcmd: %d\n", header->subcmd);
 		return success ? 0 : -EINVAL;
 
-	case KSU_SEPOLICY_CMD_TYPE_STATE:
+	case TAMISU_SEPOLICY_CMD_TYPE_STATE:
 		ret = sepol_require_not_all(args[0], "type");
 		if (ret < 0)
 			return ret;
 
-		if (header->subcmd == KSU_SEPOLICY_SUBCMD_TYPE_STATE_PERMISSIVE)
-			success = ksu_permissive(db, args[0]);
+		if (header->subcmd == TAMISU_SEPOLICY_SUBCMD_TYPE_STATE_PERMISSIVE)
+			success = tamisu_permissive(db, args[0]);
 		else if (header->subcmd ==
-			 KSU_SEPOLICY_SUBCMD_TYPE_STATE_ENFORCE)
-			success = ksu_enforce(db, args[0]);
+			 TAMISU_SEPOLICY_SUBCMD_TYPE_STATE_ENFORCE)
+			success = tamisu_enforce(db, args[0]);
 		else
 			pr_err("sepol: unknown subcmd: %d\n", header->subcmd);
 		return success ? 0 : -EINVAL;
 
-	case KSU_SEPOLICY_CMD_TYPE:
-	case KSU_SEPOLICY_CMD_TYPE_ATTR:
+	case TAMISU_SEPOLICY_CMD_TYPE:
+	case TAMISU_SEPOLICY_CMD_TYPE_ATTR:
 		ret = sepol_require_not_all(args[0], "type");
 		if (ret < 0)
 			return ret;
@@ -607,28 +607,28 @@ static int apply_one_sepolicy_cmd(struct policydb *db,
 		if (ret < 0)
 			return ret;
 
-		if (header->cmd == KSU_SEPOLICY_CMD_TYPE)
-			success = ksu_type(db, args[0], args[1]);
+		if (header->cmd == TAMISU_SEPOLICY_CMD_TYPE)
+			success = tamisu_type(db, args[0], args[1]);
 		else
-			success = ksu_typeattribute(db, args[0], args[1]);
+			success = tamisu_typeattribute(db, args[0], args[1]);
 		if (!success) {
 			pr_err("sepol: %d failed.\n", header->cmd);
 			return -EINVAL;
 		}
 		return 0;
 
-	case KSU_SEPOLICY_CMD_ATTR:
+	case TAMISU_SEPOLICY_CMD_ATTR:
 		ret = sepol_require_not_all(args[0], "attribute");
 		if (ret < 0)
 			return ret;
 
-		if (!ksu_attribute(db, args[0])) {
+		if (!tamisu_attribute(db, args[0])) {
 			pr_err("sepol: %d failed.\n", header->cmd);
 			return -EINVAL;
 		}
 		return 0;
 
-	case KSU_SEPOLICY_CMD_TYPE_TRANSITION:
+	case TAMISU_SEPOLICY_CMD_TYPE_TRANSITION:
 		ret = sepol_require_not_all(args[0], "src");
 		if (ret < 0)
 			return ret;
@@ -642,11 +642,11 @@ static int apply_one_sepolicy_cmd(struct policydb *db,
 		if (ret < 0)
 			return ret;
 
-		success = ksu_type_transition(db, args[0], args[1], args[2],
+		success = tamisu_type_transition(db, args[0], args[1], args[2],
 					      args[3], args[4]);
 		return success ? 0 : -EINVAL;
 
-	case KSU_SEPOLICY_CMD_TYPE_CHANGE:
+	case TAMISU_SEPOLICY_CMD_TYPE_CHANGE:
 		ret = sepol_require_not_all(args[0], "src");
 		if (ret < 0)
 			return ret;
@@ -660,18 +660,18 @@ static int apply_one_sepolicy_cmd(struct policydb *db,
 		if (ret < 0)
 			return ret;
 
-		if (header->subcmd == KSU_SEPOLICY_SUBCMD_TYPE_CHANGE_CHANGE)
-			success = ksu_type_change(db, args[0], args[1], args[2],
+		if (header->subcmd == TAMISU_SEPOLICY_SUBCMD_TYPE_CHANGE_CHANGE)
+			success = tamisu_type_change(db, args[0], args[1], args[2],
 						  args[3]);
 		else if (header->subcmd ==
-			 KSU_SEPOLICY_SUBCMD_TYPE_CHANGE_MEMBER)
-			success = ksu_type_member(db, args[0], args[1], args[2],
+			 TAMISU_SEPOLICY_SUBCMD_TYPE_CHANGE_MEMBER)
+			success = tamisu_type_member(db, args[0], args[1], args[2],
 						  args[3]);
 		else
 			pr_err("sepol: unknown subcmd: %d\n", header->subcmd);
 		return success ? 0 : -EINVAL;
 
-	case KSU_SEPOLICY_CMD_GENFSCON:
+	case TAMISU_SEPOLICY_CMD_GENFSCON:
 		ret = sepol_require_not_all(args[0], "name");
 		if (ret < 0)
 			return ret;
@@ -682,7 +682,7 @@ static int apply_one_sepolicy_cmd(struct policydb *db,
 		if (ret < 0)
 			return ret;
 
-		if (!ksu_genfscon(db, args[0], args[1], args[2])) {
+		if (!tamisu_genfscon(db, args[0], args[1], args[2])) {
 			pr_err("sepol: %d failed.\n", header->cmd);
 			return -EINVAL;
 		}
@@ -728,7 +728,7 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 	if (!user_data || !data_len)
 		return -EINVAL;
 
-	if (data_len > KSU_SEPOLICY_MAX_BATCH_SIZE)
+	if (data_len > TAMISU_SEPOLICY_MAX_BATCH_SIZE)
 		return -E2BIG;
 
 	payload = kvmalloc((size_t)data_len, GFP_KERNEL);
@@ -747,11 +747,11 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 	mutex_lock(&selinux_state.policy_mutex);
 
 	old_pol = selinux_state.policy;
-	pol = ksu_dup_sepolicy(rcu_dereference_protected(
+	pol = tamisu_dup_sepolicy(rcu_dereference_protected(
 	    old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
 	if (IS_ERR(pol)) {
 		ret = PTR_ERR(pol);
-		pr_err("ksu_dup_sepolicy err: %d\n", ret);
+		pr_err("tamisu_dup_sepolicy err: %d\n", ret);
 		goto out_unlock;
 	}
 	db = &pol->policydb;
@@ -764,7 +764,7 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 	cmd_index = 0;
 	while (cursor.cur < cursor.end) {
 		struct sepol_data header;
-		const char *args[KSU_SEPOLICY_MAX_ARGS] = {0};
+		const char *args[TAMISU_SEPOLICY_MAX_ARGS] = {0};
 		int expected_argc;
 		u32 arg_index;
 
@@ -777,7 +777,7 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 
 		expected_argc = sepol_expected_argc(header.cmd);
 		if (expected_argc < 0 ||
-		    expected_argc > KSU_SEPOLICY_MAX_ARGS) {
+		    expected_argc > TAMISU_SEPOLICY_MAX_ARGS) {
 			ret = -EINVAL;
 			pr_err("sepol: invalid cmd header #%u.\n", cmd_index);
 			goto out_drop_new_policy;
@@ -806,14 +806,14 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 
 	rcu_assign_pointer(selinux_state.policy, pol);
 	synchronize_rcu();
-	ksu_destroy_sepolicy(old_pol);
+	tamisu_destroy_sepolicy(old_pol);
 
 	reset_avc_cache();
 	ret = success_cmd_count;
 	goto out_unlock;
 
 out_drop_new_policy:
-	ksu_destroy_sepolicy(pol);
+	tamisu_destroy_sepolicy(pol);
 out_unlock:
 	mutex_unlock(&selinux_state.policy_mutex);
 out_free:

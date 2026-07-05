@@ -42,7 +42,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import me.dabao1955.tamisu.KernelVersion
 import me.dabao1955.tamisu.Natives
 import me.dabao1955.tamisu.R
-import me.dabao1955.tamisu.ui.component.KsuIsValid
+import me.dabao1955.tamisu.ui.component.TamisuIsValid
 import me.dabao1955.tamisu.ui.component.rememberConfirmDialog
 import me.dabao1955.tamisu.ui.component.rememberLoadingDialog
 import me.dabao1955.tamisu.ui.theme.getCardColors
@@ -51,7 +51,7 @@ import me.dabao1955.tamisu.ui.util.checkNewVersion
 import me.dabao1955.tamisu.ui.util.module.LatestVersionInfo
 import me.dabao1955.tamisu.ui.util.reboot
 import me.dabao1955.tamisu.ui.viewmodel.HomeViewModel
-import me.dabao1955.tamisu.ui.util.KsuCli
+import me.dabao1955.tamisu.ui.util.TamisuCli
 import me.dabao1955.tamisu.ui.activity.util.AppData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -138,7 +138,6 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                     // 链接卡片
                     if (!viewModel.isSimpleMode) {
                         ContributionCard()
-                        DonateCard()
                     }
                 }
 
@@ -241,7 +240,7 @@ private fun TopBar(
             if (isDataLoaded) {
                 // 重启按钮
                 var showDropdown by remember { mutableStateOf(false) }
-                KsuIsValid {
+                TamisuIsValid {
                     IconButton(onClick = {
                         showDropdown = true
                     }) {
@@ -284,7 +283,7 @@ private fun StatusCard(
     ElevatedCard(
         colors = getCardColors(
             when {
-                systemStatus.ksuVersion != null -> MaterialTheme.colorScheme.secondaryContainer
+                systemStatus.tamisuVersion != null -> MaterialTheme.colorScheme.secondaryContainer
                 else -> MaterialTheme.colorScheme.errorContainer
             }
         ),
@@ -298,7 +297,7 @@ private fun StatusCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             when {
-                systemStatus.ksuVersion != null -> {
+                systemStatus.tamisuVersion != null -> {
 
                     val workingModeText = when {
                         Natives.isSafeMode -> stringResource(id = R.string.safe_mode)
@@ -351,15 +350,15 @@ private fun StatusCard(
                         }
 
                         Spacer(Modifier.height(4.dp))
-                        systemStatus.ksuFullVersion?.let {
-                            // version_full (…@Tamisu) + (内核ksuver[/uapi]) in parens,
+                        systemStatus.tamisuFullVersion?.let {
+                            // version_full (…@Tamisu) + (内核tamisuver[/uapi]) in parens,
                             // matching the manager version's "(code/uapi)" style.
-                            val ksuver = systemStatus.ksuVersion
+                            val tamisuver = systemStatus.tamisuVersion
                             val versionText = when {
-                                ksuver == null -> it
+                                tamisuver == null -> it
                                 systemStatus.kernelUapiVersion > 0 ->
-                                    "$it ($ksuver/${systemStatus.kernelUapiVersion})"
-                                else -> "$it ($ksuver)"
+                                    "$it ($tamisuver/${systemStatus.kernelUapiVersion})"
+                                else -> "$it ($tamisuver)"
                             }
                             Text(
                                 text = stringResource(R.string.home_working_version, versionText),
@@ -469,54 +468,21 @@ fun ContributionCard() {
 }
 
 @Composable
-fun DonateCard() {
-    val uriHandler = LocalUriHandler.current
-
-    ElevatedCard(
-        colors = getCardColors(MaterialTheme.colorScheme.surfaceContainer),
-        elevation = getCardElevation(),
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    uriHandler.openUri("https://patreon.com/weishu")
-                }
-                .padding(24.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = stringResource(R.string.home_support_title),
-                    style = MaterialTheme.typography.titleSmall,
-                )
-
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.home_support_content),
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-        }
-    }
-}
-
-@Composable
 private fun InfoCard(
     systemInfo: HomeViewModel.SystemInfo,
     isSimpleMode: Boolean,
     onKernelClick: () -> Unit = {},
 ) {
     var showKsudDialog by remember { mutableStateOf(false) }
-    var ksudApkVersion by remember { mutableStateOf<String?>(null) }
-    var ksudInstalledVersion by remember { mutableStateOf<String?>(null) }
+    var tamisu_daemonApkVersion by remember { mutableStateOf<String?>(null) }
+    var tamisu_daemonInstalledVersion by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         val (apk, installed) = withContext(Dispatchers.IO) {
-            KsuCli.getKsudVersionsForUi()
+            TamisuCli.getTamisuDaemonVersionsForUi()
         }
-        ksudApkVersion = apk
-        ksudInstalledVersion = installed
+        tamisu_daemonApkVersion = apk
+        tamisu_daemonInstalledVersion = installed
     }
 
     ElevatedCard(
@@ -608,23 +574,23 @@ private fun InfoCard(
                 "${systemInfo.managerVersion.first} (${systemInfo.managerVersion.second.toInt()}/${Natives.getManagerUapiVersion()})",
                 icon = Icons.Default.SettingsSuggest,
             )
-            // ksud daemon info row: same style as other InfoCard items, clickable, highlight on mismatch
-            val ksudUnknown = stringResource(id = R.string.home_ksud_daemon_unknown)
-            val apkVer = ksudApkVersion
-            val installedVer = ksudInstalledVersion
+            // tamisu_daemon daemon info row: same style as other InfoCard items, clickable, highlight on mismatch
+            val tamisu_daemonUnknown = stringResource(id = R.string.home_tamisu_daemon_daemon_unknown)
+            val apkVer = tamisu_daemonApkVersion
+            val installedVer = tamisu_daemonInstalledVersion
             val hasMismatch = apkVer != null && installedVer != null && apkVer != installedVer
 
-            val ksudContent = when {
-                apkVer == null && installedVer == null -> ksudUnknown
-                installedVer == null -> apkVer ?: ksudUnknown
+            val tamisu_daemonContent = when {
+                apkVer == null && installedVer == null -> tamisu_daemonUnknown
+                installedVer == null -> apkVer ?: tamisu_daemonUnknown
                 apkVer == null -> installedVer
                 apkVer == installedVer -> apkVer
                 else -> "$installedVer / APK: $apkVer"
             }
 
             InfoCardItem(
-                label = stringResource(id = R.string.home_ksud_daemon_title),
-                content = ksudContent,
+                label = stringResource(id = R.string.home_tamisu_daemon_daemon_title),
+                content = tamisu_daemonContent,
                 icon = Icons.Filled.Engineering,
                 contentColor = if (hasMismatch) MaterialTheme.colorScheme.error else Color.Unspecified,
                 onClick = { showKsudDialog = true }
@@ -669,8 +635,8 @@ private fun InfoCard(
                 KsudVersionDialog(
                     onDismiss = { showKsudDialog = false },
                     onVersionsUpdated = { apk, installed ->
-                        ksudApkVersion = apk
-                        ksudInstalledVersion = installed
+                        tamisu_daemonApkVersion = apk
+                        tamisu_daemonInstalledVersion = installed
                     }
                 )
             }
@@ -693,7 +659,7 @@ private fun KsudVersionDialog(
 
     LaunchedEffect(Unit) {
         loading = true
-        val (apk, installed) = KsuCli.getKsudVersionsForUi()
+        val (apk, installed) = TamisuCli.getTamisuDaemonVersionsForUi()
         apkVersion = apk
         installedVersion = installed
         loading = false
@@ -701,7 +667,7 @@ private fun KsudVersionDialog(
 
     AlertDialog(
         onDismissRequest = { if (!syncing) onDismiss() },
-        title = { Text(stringResource(id = R.string.home_ksud_daemon_title)) },
+        title = { Text(stringResource(id = R.string.home_tamisu_daemon_daemon_title)) },
         text = {
             if (loading) {
                 Box(
@@ -716,16 +682,16 @@ private fun KsudVersionDialog(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
                         text = stringResource(
-                            id = R.string.home_ksud_daemon_apk_version,
-                            apkVersion ?: context.getString(R.string.home_ksud_daemon_unknown)
+                            id = R.string.home_tamisu_daemon_daemon_apk_version,
+                            apkVersion ?: context.getString(R.string.home_tamisu_daemon_daemon_unknown)
                         ),
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
                         text = stringResource(
-                            id = R.string.home_ksud_daemon_installed_version,
+                            id = R.string.home_tamisu_daemon_daemon_installed_version,
                             installedVersion
-                                ?: context.getString(R.string.home_ksud_daemon_unknown)
+                                ?: context.getString(R.string.home_tamisu_daemon_daemon_unknown)
                         ),
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -746,8 +712,8 @@ private fun KsudVersionDialog(
                     if (loading || syncing) return@TextButton
                     syncing = true
                     scope.launch {
-                        KsuCli.updateKsudDaemonForUi()
-                        val (apk, installed) = KsuCli.getKsudVersionsForUi()
+                        TamisuCli.updateKsudDaemonForUi()
+                        val (apk, installed) = TamisuCli.getTamisuDaemonVersionsForUi()
                         apkVersion = apk
                         installedVersion = installed
                         onVersionsUpdated(apk, installed)
@@ -757,9 +723,9 @@ private fun KsudVersionDialog(
             ) {
                 Text(
                     text = if (syncing)
-                        stringResource(id = R.string.home_ksud_daemon_syncing)
+                        stringResource(id = R.string.home_tamisu_daemon_daemon_syncing)
                     else
-                        stringResource(id = R.string.home_ksud_daemon_sync)
+                        stringResource(id = R.string.home_tamisu_daemon_daemon_sync)
                 )
             }
         }
@@ -779,7 +745,7 @@ private fun StatusCardPreview() {
         StatusCard(
             HomeViewModel.SystemStatus(
                 isManager = true,
-                ksuVersion = 1,
+                tamisuVersion = 1,
                 kernelVersion = KernelVersion(5, 10, 101),
                 isRootAvailable = true
             )
@@ -788,7 +754,7 @@ private fun StatusCardPreview() {
         StatusCard(
             HomeViewModel.SystemStatus(
                 isManager = true,
-                ksuVersion = 10000,
+                tamisuVersion = 10000,
                 kernelVersion = KernelVersion(5, 10, 101),
                 isRootAvailable = true
             )
@@ -797,7 +763,7 @@ private fun StatusCardPreview() {
         StatusCard(
             HomeViewModel.SystemStatus(
                 isManager = false,
-                ksuVersion = null,
+                tamisuVersion = null,
                 kernelVersion = KernelVersion(5, 10, 101),
                 isRootAvailable = false
             )
@@ -806,7 +772,7 @@ private fun StatusCardPreview() {
         StatusCard(
             HomeViewModel.SystemStatus(
                 isManager = false,
-                ksuVersion = null,
+                tamisuVersion = null,
                 kernelVersion = KernelVersion(4, 10, 101),
                 isRootAvailable = false
             )

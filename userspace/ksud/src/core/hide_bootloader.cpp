@@ -11,10 +11,10 @@
 #include <fstream>
 #include <string>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 // Config file path (used by is_bl_hiding_enabled/set_bl_hiding_enabled)
-constexpr const char* BL_HIDE_CONFIG = "/data/adb/ksu/.hide_bootloader";
+constexpr const char* BL_HIDE_CONFIG = "/data/tamisu/.hide_bootloader";
 
 // Property definitions: {name, expected_value}
 struct PropDef {
@@ -207,4 +207,4 @@ void hide_bootloader_status() {
     LOGI("hide_bl: started (pid %d), not blocking service stage", pid);
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

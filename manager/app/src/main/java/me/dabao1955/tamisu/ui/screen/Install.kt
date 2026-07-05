@@ -48,7 +48,7 @@ import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import me.dabao1955.tamisu.Natives
 import me.dabao1955.tamisu.R
-import me.dabao1955.tamisu.ui.component.KsuIsValid
+import me.dabao1955.tamisu.ui.component.TamisuIsValid
 import me.dabao1955.tamisu.ui.component.DialogHandle
 import me.dabao1955.tamisu.ui.component.SuperDropdown
 import me.dabao1955.tamisu.ui.component.rememberConfirmDialog

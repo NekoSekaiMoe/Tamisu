@@ -8,7 +8,7 @@
 #include <fstream>
 #include <vector>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 namespace {
 
@@ -239,4 +239,4 @@ ApkSignatureInfo get_apk_signature(const std::string& apk_path) {
     return info;
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

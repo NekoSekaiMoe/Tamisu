@@ -63,7 +63,7 @@ def main():
 #include <vector>
 #include <zlib.h>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 '''
     
@@ -172,8 +172,8 @@ bool copy_asset_to_file(const std::string& name, const std::string& dest_path) {
 std::vector<std::string> list_supported_kmi() {
     std::vector<std::string> result;
     for (const auto& name : list_assets()) {
-        // Format: android15-6.6_kernelsu.ko
-        const char* suffix = "_kernelsu.ko";
+        // Format: android15-6.6_tamisu.ko
+        const char* suffix = "_tamisu.ko";
         const size_t suffix_len = strlen(suffix);
         if (name.size() > suffix_len && 
             name.compare(name.size() - suffix_len, suffix_len, suffix) == 0) {
@@ -191,7 +191,7 @@ int ensure_binaries(bool ignore_if_exist) {
     
     for (const auto& name : list_assets()) {
         // Skip kernel modules and zygisk payloads - they are extracted on demand
-        if (name.find("_kernelsu.ko") != std::string::npos ||
+        if (name.find("_tamisu.ko") != std::string::npos ||
             name.find("_kasumi_lkm.ko") != std::string::npos ||
             name == "libzygisk.so" || name == "libyukizncore.so" ||
             name == "libyukilinker.so") {
@@ -210,8 +210,8 @@ int ensure_binaries(bool ignore_if_exist) {
         chmod(dest.c_str(), 0755);
     }
     
-    // Ensure the multi-call entries are symlinks to ksud -- NOT real files. A
-    // real busybox/ksud binary (e.g. left by another manager or an older build)
+    // Ensure the multi-call entries are symlinks to tamisu_daemon -- NOT real files. A
+    // real busybox/tamisu_daemon binary (e.g. left by another manager or an older build)
     // would shadow the multi-call dispatch, so unless the path is already the
     // correct symlink (verified via readlink), drop whatever is there -- real
     // file, wrong link, or nothing -- and recreate the link.
@@ -234,14 +234,14 @@ int ensure_binaries(bool ignore_if_exist) {
             }
         };
         const std::string busybox_link = std::string(BINARY_DIR) + "busybox";
-        ensure_link(DAEMON_LINK_PATH, "ksud");
+        ensure_link(DAEMON_LINK_PATH, "tamisu_daemon");
         ensure_link(busybox_link.c_str(), "busybox");
     }
     
     return 0;
 }
 
-} // namespace ksud
+} // namespace tamisu_daemon
 '''
     
     # Write output

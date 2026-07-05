@@ -3,7 +3,7 @@
 #include <cstdarg>
 #include <string>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 enum class LogLevel {
     VERBOSE,
@@ -24,10 +24,10 @@ void log_w(const char* fmt, ...);
 void log_e(const char* fmt, ...);
 
 // Helper macros
-#define LOGV(...) ksud::log_v(__VA_ARGS__)
-#define LOGD(...) ksud::log_d(__VA_ARGS__)
-#define LOGI(...) ksud::log_i(__VA_ARGS__)
-#define LOGW(...) ksud::log_w(__VA_ARGS__)
-#define LOGE(...) ksud::log_e(__VA_ARGS__)
+#define LOGV(...) tamisu_daemon::log_v(__VA_ARGS__)
+#define LOGD(...) tamisu_daemon::log_d(__VA_ARGS__)
+#define LOGI(...) tamisu_daemon::log_i(__VA_ARGS__)
+#define LOGW(...) tamisu_daemon::log_w(__VA_ARGS__)
+#define LOGE(...) tamisu_daemon::log_e(__VA_ARGS__)
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

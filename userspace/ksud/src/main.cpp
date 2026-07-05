@@ -28,10 +28,10 @@ const char* path_basename(const char* path) {
 }  // namespace
 
 int main(int argc, char** argv) {
-    // Dispatch by argv[0] basename (e.g. when invoked as /data/adb/ksu/bin/magiskboot ->
+    // Dispatch by argv[0] basename (e.g. when invoked as /data/tamisu/bin/magiskboot ->
     // magiskboot)
     const char* base = (argc >= 1 && argv[0]) ? path_basename(argv[0]) : nullptr;
-    // When invoked as libksud.so (Manager loads .so path), argv[0] is the .so path; app passes tool
+    // When invoked as libtamisu_daemon.so (Manager loads .so path), argv[0] is the .so path; app passes tool
     // name as argv[1]
     const char* first_arg = (argc >= 2 && argv[1]) ? argv[1] : nullptr;
 
@@ -80,9 +80,9 @@ int main(int argc, char** argv) {
             return r;
     }
     // If invoked via a symlink whose name matches a busybox applet (e.g. "ls"),
-    // and it's not one of ksud's own tools or a .so path, delegate to busybox.
-    // Exclude "su": sucompat hijacks root shell to ksud; must not be delegated to busybox.
-    if (base && base[0] && std::strcmp(base, "ksud") != 0 && std::strcmp(base, "magiskboot") != 0 &&
+    // and it's not one of tamisu_daemon's own tools or a .so path, delegate to busybox.
+    // Exclude "su": sucompat hijacks root shell to tamisu_daemon; must not be delegated to busybox.
+    if (base && base[0] && std::strcmp(base, "tamisu_daemon") != 0 && std::strcmp(base, "magiskboot") != 0 &&
         std::strcmp(base, "bootctl") != 0 && std::strcmp(base, "resetprop") != 0 &&
         std::strcmp(base, "su") != 0 && std::strcmp(base, "zygiskd") != 0 &&
         std::strstr(base, ".so") == nullptr) {
@@ -90,5 +90,5 @@ int main(int argc, char** argv) {
     }
 #endif  // #if defined(NDK_BUSYBOX_AVAILABLE) && N...
 
-    return ksud::cli_run(argc, argv);
+    return tamisu_daemon::cli_run(argc, argv);
 }

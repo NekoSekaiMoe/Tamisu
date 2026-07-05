@@ -4,7 +4,7 @@
 
 /*
  * Zygisk-only build: there is no manager app and no su allowlist. Every
- * privileged ioctl is gated on root (uid 0) only; the daemon (ksud/zygiskd)
+ * privileged ioctl is gated on root (uid 0) only; the daemon (tamisu_daemon/zygiskd)
  * always runs as root. "manager_or_root" collapses to root-only as well,
  * since the only legitimate caller is root.
  */

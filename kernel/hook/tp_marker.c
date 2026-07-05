@@ -25,12 +25,12 @@
 static int tracepoint_reg_count = 0;
 static DEFINE_SPINLOCK(tracepoint_reg_lock);
 
-void ksu_clear_task_tracepoint_flag_if_needed(struct task_struct *t)
+void tamisu_clear_task_tracepoint_flag_if_needed(struct task_struct *t)
 {
 	unsigned long flags;
 	spin_lock_irqsave(&tracepoint_reg_lock, flags);
 	if (tracepoint_reg_count <= 1) {
-		ksu_clear_task_tracepoint_flag(t);
+		tamisu_clear_task_tracepoint_flag(t);
 	}
 	spin_unlock_irqrestore(&tracepoint_reg_lock, flags);
 }
@@ -43,26 +43,26 @@ static void handle_process_mark(bool mark)
 	for_each_process_thread(p, t)
 	{
 		if (mark)
-			ksu_set_task_tracepoint_flag(t);
+			tamisu_set_task_tracepoint_flag(t);
 		else
-			ksu_clear_task_tracepoint_flag(t);
+			tamisu_clear_task_tracepoint_flag(t);
 	}
 	read_unlock(&tasklist_lock);
 }
 
-void ksu_mark_all_process(void)
+void tamisu_mark_all_process(void)
 {
 	handle_process_mark(true);
 	pr_info("tp_marker: mark all user process done!\n");
 }
 
-void ksu_unmark_all_process(void)
+void tamisu_unmark_all_process(void)
 {
 	handle_process_mark(false);
 	pr_info("tp_marker: unmark all user process done!\n");
 }
 
-static void ksu_mark_running_process_locked(void)
+static void tamisu_mark_running_process_locked(void)
 {
 	struct task_struct *p, *t;
 	read_lock(&tasklist_lock);
@@ -75,19 +75,19 @@ static void ksu_mark_running_process_locked(void)
 		}
 		int uid = task_uid(t).val;
 		const struct cred *cred = get_task_cred(t);
-		bool ksu_root_process = uid == 0 && is_task_ksu_domain(cred);
+		bool tamisu_root_process = uid == 0 && is_task_tamisu_domain(cred);
 		bool is_zygote_process = is_zygote(cred);
 		bool is_shell = uid == 2000;
 		// before boot completed, we shall mark init for marking zygote
 		bool is_init = t->pid == 1;
-		if (ksu_root_process || is_zygote_process || is_shell ||
+		if (tamisu_root_process || is_zygote_process || is_shell ||
 		    is_init) {
-			ksu_set_task_tracepoint_flag(t);
+			tamisu_set_task_tracepoint_flag(t);
 			pr_info("tp_marker: mark process: pid:%d, uid: %d, "
 				"comm:%s\n",
 				t->pid, uid, t->comm);
 		} else {
-			ksu_clear_task_tracepoint_flag(t);
+			tamisu_clear_task_tracepoint_flag(t);
 			pr_info("tp_marker: unmark process: pid:%d, uid: "
 				"%d, comm:%s\n",
 				t->pid, uid, t->comm);
@@ -97,12 +97,12 @@ static void ksu_mark_running_process_locked(void)
 	read_unlock(&tasklist_lock);
 }
 
-void ksu_mark_running_process(void)
+void tamisu_mark_running_process(void)
 {
 	unsigned long flags;
 	spin_lock_irqsave(&tracepoint_reg_lock, flags);
 	if (tracepoint_reg_count <= 1) {
-		ksu_mark_running_process_locked();
+		tamisu_mark_running_process_locked();
 	} else {
 		pr_info("tp_marker: not mark running process since syscall "
 			"tracepoint is in use\n");
@@ -112,7 +112,7 @@ void ksu_mark_running_process(void)
 
 // Get task mark status
 // Returns: 1 if marked, 0 if not marked, -ESRCH if task not found
-int ksu_get_task_mark(pid_t pid)
+int tamisu_get_task_mark(pid_t pid)
 {
 	struct task_struct *task;
 	int marked = -ESRCH;
@@ -139,7 +139,7 @@ int ksu_get_task_mark(pid_t pid)
 
 // Set task mark status
 // Returns: 0 on success, -ESRCH if task not found
-int ksu_set_task_mark(pid_t pid, bool mark)
+int tamisu_set_task_mark(pid_t pid, bool mark)
 {
 	struct task_struct *task;
 	int ret = -ESRCH;
@@ -150,11 +150,11 @@ int ksu_set_task_mark(pid_t pid, bool mark)
 		get_task_struct(task);
 		rcu_read_unlock();
 		if (mark) {
-			ksu_set_task_tracepoint_flag(task);
+			tamisu_set_task_tracepoint_flag(task);
 			pr_info("tp_marker: marked task pid=%d comm=%s\n", pid,
 				task->comm);
 		} else {
-			ksu_clear_task_tracepoint_flag(task);
+			tamisu_clear_task_tracepoint_flag(task);
 			pr_info("tp_marker: unmarked task pid=%d comm=%s\n",
 				pid, task->comm);
 		}
@@ -208,10 +208,10 @@ static int syscall_regfunc_handler(struct kretprobe_instance *ri,
 	spin_lock_irqsave(&tracepoint_reg_lock, flags);
 	if (tracepoint_reg_count < 1) {
 		// while install our tracepoint, mark our processes
-		ksu_mark_running_process_locked();
+		tamisu_mark_running_process_locked();
 	} else if (tracepoint_reg_count == 1) {
 		// while other tracepoint first added, mark all processes
-		ksu_mark_all_process();
+		tamisu_mark_all_process();
 	}
 	tracepoint_reg_count++;
 	spin_unlock_irqrestore(&tracepoint_reg_lock, flags);
@@ -226,10 +226,10 @@ static int syscall_unregfunc_handler(struct kretprobe_instance *ri,
 	tracepoint_reg_count--;
 	if (tracepoint_reg_count <= 0) {
 		// while no tracepoint left, unmark all processes
-		ksu_unmark_all_process();
+		tamisu_unmark_all_process();
 	} else if (tracepoint_reg_count == 1) {
 		// while just our tracepoint left, unmark disallowed processes
-		ksu_mark_running_process_locked();
+		tamisu_mark_running_process_locked();
 	}
 	spin_unlock_irqrestore(&tracepoint_reg_lock, flags);
 	return 0;
@@ -239,7 +239,7 @@ static struct kretprobe *syscall_regfunc_rp = NULL;
 static struct kretprobe *syscall_unregfunc_rp = NULL;
 #endif /* CONFIG_KRETPROBES */
 
-void ksu_tp_marker_init(void)
+void tamisu_tp_marker_init(void)
 {
 #ifdef CONFIG_KRETPROBES
 	syscall_regfunc_rp =
@@ -249,11 +249,11 @@ void ksu_tp_marker_init(void)
 #endif // #ifdef CONFIG_KRETPROBES
 
 #ifndef CONFIG_KRETPROBES
-	ksu_mark_running_process_locked();
+	tamisu_mark_running_process_locked();
 #endif // #ifndef CONFIG_KRETPROBES
 }
 
-void ksu_tp_marker_exit(void)
+void tamisu_tp_marker_exit(void)
 {
 #ifdef CONFIG_KRETPROBES
 	destroy_kretprobe(&syscall_regfunc_rp);

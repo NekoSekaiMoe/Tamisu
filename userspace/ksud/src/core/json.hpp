@@ -2,7 +2,7 @@
 /*
  * Minimal self-contained JSON (value / parse / dump). Extracted from the
  * to-be-removed hymo component so YukiZygisk config code carries no dependency
- * on it. Header-only; suitable for ksud + zygiskd config (yzconfig.json).
+ * on it. Header-only; suitable for tamisu_daemon + zygiskd config (yzconfig.json).
  */
 #pragma once
 

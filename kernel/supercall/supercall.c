@@ -21,22 +21,22 @@
 #include "hook/syscall_hook.h"
 #include "infra/file_wrapper.h"
 #include "klog.h" // IWYU pragma: keep
-#include "runtime/ksud.h"
+#include "runtime/tamisu_daemon.h"
 #include "selinux/selinux.h"
 #include "supercall/supercall.h"
 #include "supercall/internal.h"
 
-struct ksu_install_fd_tw {
+struct tamisu_install_fd_tw {
 	struct callback_head cb;
 	int __user *outp;
 };
 
-static void ksu_install_fd_tw_func(struct callback_head *cb)
+static void tamisu_install_fd_tw_func(struct callback_head *cb)
 {
-	struct ksu_install_fd_tw *tw =
-	    container_of(cb, struct ksu_install_fd_tw, cb);
-	int fd = ksu_install_fd();
-	pr_info("[%d] install ksu fd: %d\n", current->pid, fd);
+	struct tamisu_install_fd_tw *tw =
+	    container_of(cb, struct tamisu_install_fd_tw, cb);
+	int fd = tamisu_install_fd();
+	pr_info("[%d] install tamisu fd: %d\n", current->pid, fd);
 
 	if (copy_to_user(tw->outp, &fd, sizeof(fd))) {
 		pr_err("install fd reply err\n");
@@ -52,27 +52,27 @@ static void ksu_install_fd_tw_func(struct callback_head *cb)
 
 // downstream: make sure to pass arg as reference, this can allow us to extend
 // things.
-int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
+int tamisu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 			  void __user **arg)
 {
-	struct ksu_install_fd_tw *tw;
+	struct tamisu_install_fd_tw *tw;
 
-	if (magic1 != KSU_INSTALL_MAGIC1)
+	if (magic1 != TAMISU_INSTALL_MAGIC1)
 		return 0;
 
-#ifdef CONFIG_KSU_DEBUG
+#ifdef CONFIG_TAMISU_DEBUG
 	pr_info("sys_reboot: intercepted call! magic: 0x%x id: %d\n", magic1,
 		magic2);
-#endif // #ifdef CONFIG_KSU_DEBUG
+#endif // #ifdef CONFIG_TAMISU_DEBUG
 
-	// Check if this is a request to install KSU fd
-	if (magic2 == KSU_INSTALL_MAGIC2) {
+	// Check if this is a request to install tamisu fd
+	if (magic2 == TAMISU_INSTALL_MAGIC2) {
 		tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
 		if (!tw)
 			return 0;
 
 		tw->outp = (int __user *)*arg;
-		tw->cb.func = ksu_install_fd_tw_func;
+		tw->cb.func = tamisu_install_fd_tw_func;
 
 		if (task_work_add(current, &tw->cb, TWA_RESUME)) {
 			kfree(tw);
@@ -94,7 +94,7 @@ static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	int cmd = (int)PT_REGS_PARM3(real_regs);
 	void __user **arg = (void __user **)&PT_REGS_SYSCALL_PARM4(real_regs);
 
-	return ksu_handle_sys_reboot(magic1, magic2, cmd, arg);
+	return tamisu_handle_sys_reboot(magic1, magic2, cmd, arg);
 }
 
 static struct kprobe reboot_kp = {
@@ -102,11 +102,11 @@ static struct kprobe reboot_kp = {
     .pre_handler = reboot_handler_pre,
 };
 
-void ksu_supercalls_init(void)
+void tamisu_supercalls_init(void)
 {
 	int rc;
 
-	ksu_supercall_dump_commands();
+	tamisu_supercall_dump_commands();
 	rc = register_kprobe(&reboot_kp);
 	if (rc) {
 		pr_err("reboot kprobe failed: %d\n", rc);
@@ -115,35 +115,35 @@ void ksu_supercalls_init(void)
 	}
 }
 
-void ksu_supercalls_exit(void)
+void tamisu_supercalls_exit(void)
 {
 	unregister_kprobe(&reboot_kp);
 }
 
 // IOCTL dispatcher
-static long anon_ksu_ioctl(struct file *filp, unsigned int cmd,
+static long anon_tamisu_ioctl(struct file *filp, unsigned int cmd,
 			   unsigned long arg)
 {
-	return ksu_supercall_handle_ioctl(cmd, (void __user *)arg);
+	return tamisu_supercall_handle_ioctl(cmd, (void __user *)arg);
 }
 
 // File release handler
-static int anon_ksu_release(struct inode *inode, struct file *filp)
+static int anon_tamisu_release(struct inode *inode, struct file *filp)
 {
-	pr_info("ksu fd released\n");
+	pr_info("tamisu fd released\n");
 	return 0;
 }
 
 // File operations structure
-static const struct file_operations anon_ksu_fops = {
+static const struct file_operations anon_tamisu_fops = {
     .owner = THIS_MODULE,
-    .unlocked_ioctl = anon_ksu_ioctl,
-    .compat_ioctl = anon_ksu_ioctl,
-    .release = anon_ksu_release,
+    .unlocked_ioctl = anon_tamisu_ioctl,
+    .compat_ioctl = anon_tamisu_ioctl,
+    .release = anon_tamisu_release,
 };
 
-// Install KSU fd to current process
-int ksu_install_fd(void)
+// Install tamisu fd to current process
+int tamisu_install_fd(void)
 {
 	struct file *filp;
 	int fd;
@@ -151,20 +151,20 @@ int ksu_install_fd(void)
 	// Get unused fd
 	fd = get_unused_fd_flags(O_CLOEXEC);
 	if (fd < 0) {
-		pr_err("ksu_install_fd: failed to get unused fd\n");
+		pr_err("tamisu_install_fd: failed to get unused fd\n");
 		return fd;
 	}
 
 	// Create anonymous inode file.
 	//
 	// The name is visible via readlink("/proc/<pid>/fd/<n>") and is what
-	// userspace (ksud, manager JNI) scans to discover the driver fd after
+	// userspace (tamisu_daemon, manager JNI) scans to discover the driver fd after
 	// the reboot-syscall handshake. The "[tamisu]" name keeps Tamisu
-	// distinct from KernelSU's "[ksu_driver]" so the two can coexist.
-	filp = anon_inode_getfile("[tamisu]", &anon_ksu_fops, NULL,
+	// distinct from Tamisu's "[tamisu_driver]" so the two can coexist.
+	filp = anon_inode_getfile("[tamisu]", &anon_tamisu_fops, NULL,
 				  O_RDWR | O_CLOEXEC);
 	if (IS_ERR(filp)) {
-		pr_err("ksu_install_fd: failed to create anon inode file\n");
+		pr_err("tamisu_install_fd: failed to create anon inode file\n");
 		put_unused_fd(fd);
 		return PTR_ERR(filp);
 	}
@@ -172,7 +172,7 @@ int ksu_install_fd(void)
 	// Install fd
 	fd_install(fd, filp);
 
-	pr_info("ksu fd installed: %d for pid %d\n", fd, current->pid);
+	pr_info("tamisu fd installed: %d for pid %d\n", fd, current->pid);
 
 	return fd;
 }

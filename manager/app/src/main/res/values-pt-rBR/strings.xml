@@ -30,7 +30,6 @@
     <string name="safe_mode">Modo de segurança</string>
     <string name="jailbreak_timeout">O jailbreak pode ter falhado, verifique os registros</string>
     <string name="reboot_to_apply">Reinicie para entrar em vigor</string>
-    <string name="home_support_title">Apoio ao Desenvolvimento</string>
     <string name="about_source_code">Veja o código-fonte em %1$s&lt;br/&gt;Junte-se ao nosso canal %2$s</string>
     <string name="profile_default">Padrão</string>
     <string name="profile_template">Modelo</string>
@@ -357,16 +356,16 @@
     
 
     
-    <string name="home_ksud_daemon_title">daemon ksud</string>
-    <string name="home_ksud_daemon_apk_version">ksud incluído no gerenciador: %1$s</string>
-    <string name="home_ksud_daemon_installed_version">ksud instalado (/data/adb/ksud): %1$s</string>
-    <string name="home_ksud_daemon_unknown">Desconhecido</string>
-    <string name="home_ksud_daemon_sync">Sincronizar o daemon ksud</string>
-    <string name="home_ksud_daemon_syncing">Sincronizando…</string>
+    <string name="home_tamisu_daemon_daemon_title">daemon tamisu_daemon</string>
+    <string name="home_tamisu_daemon_daemon_apk_version">tamisu_daemon incluído no gerenciador: %1$s</string>
+    <string name="home_tamisu_daemon_daemon_installed_version">tamisu_daemon instalado (/data/tamisu_daemon): %1$s</string>
+    <string name="home_tamisu_daemon_daemon_unknown">Desconhecido</string>
+    <string name="home_tamisu_daemon_daemon_sync">Sincronizar o daemon tamisu_daemon</string>
+    <string name="home_tamisu_daemon_daemon_syncing">Sincronizando…</string>
     <string name="setting_change_saved_reboot">Configuração salva, reinicie para aplicar</string>
     <string name="setting_change_failed">Falha na configuração</string>
-    <string name="settings_auto_update_ksud">Atualizar automaticamente o daemon ksud</string>
-    <string name="settings_auto_update_ksud_summary">Sincronizar o binário ksud incluído para /data/adb/ksud na inicialização a frio do aplicativo. Desativado por padrão; caso contrário, use o botão manual na página inicial.</string>
+    <string name="settings_auto_update_tamisu_daemon">Atualizar automaticamente o daemon tamisu_daemon</string>
+    <string name="settings_auto_update_tamisu_daemon_summary">Sincronizar o binário tamisu_daemon incluído para /data/tamisu_daemon na inicialização a frio do aplicativo. Desativado por padrão; caso contrário, use o botão manual na página inicial.</string>
 
     <string name="su_request_desc">Um aplicativo está solicitando acesso de superusuário (su).</string>
     <string name="su_request_allow_forever">Permitir sempre</string>

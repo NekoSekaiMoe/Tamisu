@@ -1,4 +1,4 @@
-#include "kernelsu_loader.hpp"
+#include "tamisu_loader.hpp"
 
 #include "log.hpp"
 
@@ -17,7 +17,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace ksud::kernelsu_loader {
+namespace tamisu_daemon::tamisu_loader {
 
 namespace {
 
@@ -231,4 +231,4 @@ bool load_module(const char* path, const std::string& param_values) {
     return true;
 }
 
-}  // namespace ksud::kernelsu_loader
+}  // namespace tamisu_daemon::tamisu_loader

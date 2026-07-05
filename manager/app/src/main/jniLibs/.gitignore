@@ -1,8 +1,8 @@
-libksud.so
+libtamisu_daemon.so
 libmagiskboot.so
-libkernelsu.so
+libtamisu.so
 libsusfsd.so
 libandroidx.graphics.path.so
 libmmrl-file-manager.so
-libmmrl-kernelsu.so
+libmmrl-tamisu.so
 libzakosign.so

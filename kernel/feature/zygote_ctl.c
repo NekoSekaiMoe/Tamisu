@@ -52,7 +52,7 @@ static struct yz_pending *yz_slot_of(pid_t pid)
 /*
  * Runs in the TARGET's context (task_work), on its next return to userspace or
  * during its exit. Install the brokered files as fds in the target -- the same
- * "install into current" primitive KSU uses for its own wrapper fds.
+ * "install into current" primitive tamisu uses for its own wrapper fds.
  */
 static void yz_deliver_cb(struct callback_head *head)
 {
@@ -93,7 +93,7 @@ static void yz_deliver_cb(struct callback_head *head)
 	pr_info("zygote_ctl: pushed %d/%d fd(s) into pid=%d\n", done, n, pid);
 }
 
-int ksu_zygote_ctl_handoff(void __user *arg)
+int tamisu_zygote_ctl_handoff(void __user *arg)
 {
 	struct yz_handoff_cmd cmd;
 	struct file *files[YZ_MAX_MODULE_FDS] = {NULL};
@@ -169,7 +169,7 @@ err:
 	return ret;
 }
 
-void ksu_zygote_ctl_release(pid_t pid)
+void tamisu_zygote_ctl_release(pid_t pid)
 {
 	struct file *to_put[YZ_MAX_MODULE_FDS];
 	int n = 0, i;
@@ -190,12 +190,12 @@ void ksu_zygote_ctl_release(pid_t pid)
 			fput(to_put[i]);
 }
 
-void ksu_zygote_ctl_init(void)
+void tamisu_zygote_ctl_init(void)
 {
 	pr_info("zygote_ctl: control plane armed\n");
 }
 
-void ksu_zygote_ctl_exit(void)
+void tamisu_zygote_ctl_exit(void)
 {
 	int i, j;
 

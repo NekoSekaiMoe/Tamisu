@@ -9,7 +9,7 @@
 #include "../log.hpp"
 #include "../utils.hpp"
 
-namespace ksud {
+namespace tamisu_daemon {
 
 // Hand-written asset helpers.
 // Stage YukiZygisk payloads when embedded.
@@ -61,4 +61,4 @@ int ensure_yukizygisk(bool ignore_if_exist) {
     return 0;
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

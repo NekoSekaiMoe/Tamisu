@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 int cli_run(int argc, char** argv);
 
@@ -39,4 +39,4 @@ private:
     std::string subcommand_;
 };
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

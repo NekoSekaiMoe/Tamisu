@@ -4,7 +4,7 @@
 #include <sys/xattr.h>
 #include <cstring>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 int lsetfilecon(const std::string& path, const std::string& context) {
     int ret = lsetxattr(path.c_str(), "security.selinux", context.c_str(), context.length() + 1, 0);
@@ -21,4 +21,4 @@ int restorecon(const std::string& path, bool recursive) {
     return lsetfilecon(path, ADB_CON);
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

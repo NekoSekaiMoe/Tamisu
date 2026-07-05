@@ -119,18 +119,18 @@ def find_latest_apk(app_build_type: str) -> Path:
     return apks[-1]
 
 
-def find_ksud_binaries_by_arch(ksud_build_type: str, arches: List[str]) -> Dict[str, Path]:
+def find_tamisu_daemon_binaries_by_arch(tamisu_daemon_build_type: str, arches: List[str]) -> Dict[str, Path]:
     result: Dict[str, Path] = {}
     for arch in arches:
         triple = ARCH_TO_TRIPLE.get(arch)
         if not triple:
             print(f"[WARN] Unknown arch '{arch}', cannot map to target triple.", file=sys.stderr)
             continue
-        candidate = workspace_root() / "target" / triple / ksud_build_type / "ksud"
+        candidate = workspace_root() / "target" / triple / tamisu_daemon_build_type / "tamisu_daemon"
         if candidate.exists():
             result[arch] = candidate
         else:
-            print(f"[WARN] ksud not found for {arch}: {candidate}", file=sys.stderr)
+            print(f"[WARN] tamisu_daemon not found for {arch}: {candidate}", file=sys.stderr)
     return result
 
 
@@ -148,12 +148,12 @@ def collect_existing_arches(apk_path: Path) -> List[str]:
     return arches
 
 
-def collect_existing_ksud_arches(apk_path: Path) -> List[str]:
+def collect_existing_tamisu_daemon_arches(apk_path: Path) -> List[str]:
     arches: List[str] = []
     seen = set()
     with ZipFile(apk_path, "r") as zf:
         for name in zf.namelist():
-            if not (name.startswith("lib/") and name.endswith("/libksud.so")):
+            if not (name.startswith("lib/") and name.endswith("/libtamisu_daemon.so")):
                 continue
             parts = name.split("/")
             if len(parts) >= 3 and parts[1] not in seen:
@@ -173,17 +173,17 @@ def repack_apk(
     apk_path: Path,
     out_unsigned_path: Path,
     arches: List[str],
-    ksud_by_arch: Dict[str, Path],
+    tamisu_daemon_by_arch: Dict[str, Path],
     strip_tool: Optional[Path],
 ) -> None:
     with tempfile.TemporaryDirectory() as tmp:
         tmp_dir = Path(tmp)
-        ksud_bytes_by_arch: Dict[str, bytes] = {}
-        for arch, ksud_path in ksud_by_arch.items():
+        tamisu_daemon_bytes_by_arch: Dict[str, bytes] = {}
+        for arch, tamisu_daemon_path in tamisu_daemon_by_arch.items():
             if strip_tool is not None:
-                ksud_bytes_by_arch[arch] = strip_binary(ksud_path, strip_tool, tmp_dir)
+                tamisu_daemon_bytes_by_arch[arch] = strip_binary(tamisu_daemon_path, strip_tool, tmp_dir)
             else:
-                ksud_bytes_by_arch[arch] = ksud_path.read_bytes()
+                tamisu_daemon_bytes_by_arch[arch] = tamisu_daemon_path.read_bytes()
 
         with ZipFile(apk_path, "r") as zin, ZipFile(out_unsigned_path, "w") as zout:
             for info in zin.infolist():
@@ -194,9 +194,9 @@ def repack_apk(
                     if len(parts) >= 3 and parts[1] not in arches:
                         continue
 
-                if name.startswith("lib/") and name.endswith("/libksud.so"):
+                if name.startswith("lib/") and name.endswith("/libtamisu_daemon.so"):
                     parts = name.split("/")
-                    if len(parts) >= 3 and parts[1] in ksud_bytes_by_arch:
+                    if len(parts) >= 3 and parts[1] in tamisu_daemon_bytes_by_arch:
                         continue
 
                 new_info = ZipInfo(filename=name, date_time=info.date_time)
@@ -212,20 +212,20 @@ def repack_apk(
                     zout.writestr(new_info, data)
 
             for arch in arches:
-                ksud_bytes = ksud_bytes_by_arch.get(arch)
-                if ksud_bytes is None:
+                tamisu_daemon_bytes = tamisu_daemon_bytes_by_arch.get(arch)
+                if tamisu_daemon_bytes is None:
                     continue
-                entry = ZipInfo(filename=f"lib/{arch}/libksud.so")
+                entry = ZipInfo(filename=f"lib/{arch}/libtamisu_daemon.so")
                 entry.compress_type = ZIP_DEFLATED
-                zout.writestr(entry, ksud_bytes)
+                zout.writestr(entry, tamisu_daemon_bytes)
 
 
 def assert_required_libs(apk_path: Path, arches: List[str]) -> None:
     with ZipFile(apk_path, "r") as zf:
         names = set(zf.namelist())
-    missing = [arch for arch in arches if f"lib/{arch}/libksud.so" not in names]
+    missing = [arch for arch in arches if f"lib/{arch}/libtamisu_daemon.so" not in names]
     if missing:
-        raise RuntimeError("Missing libksud.so in APK for architecture(s): " + ", ".join(missing))
+        raise RuntimeError("Missing libtamisu_daemon.so in APK for architecture(s): " + ", ".join(missing))
 
 
 def validate_signing_args(args: argparse.Namespace) -> None:
@@ -247,7 +247,7 @@ def validate_signing_args(args: argparse.Namespace) -> None:
 
 def do_repack(args: argparse.Namespace) -> int:
     app_build_type = args.app_build_type or "release"
-    ksud_build_type = args.ksud_build_type or "release"
+    tamisu_daemon_build_type = args.tamisu_daemon_build_type or "release"
     arches = normalize_arch_values(args.arch or [])
 
     apk = find_latest_apk(app_build_type)
@@ -255,20 +255,20 @@ def do_repack(args: argparse.Namespace) -> int:
         arches = collect_existing_arches(apk) or ["arm64-v8a"]
         print(f"[INFO] No arch configured, using: {', '.join(arches)}")
 
-    ksud_by_arch = find_ksud_binaries_by_arch(ksud_build_type, arches)
-    missing_ksud = [arch for arch in arches if arch not in ksud_by_arch]
-    if missing_ksud:
-        existing_ksud = set(collect_existing_ksud_arches(apk))
-        missing_in_apk = [arch for arch in missing_ksud if arch not in existing_ksud]
+    tamisu_daemon_by_arch = find_tamisu_daemon_binaries_by_arch(tamisu_daemon_build_type, arches)
+    missing_tamisu_daemon = [arch for arch in arches if arch not in tamisu_daemon_by_arch]
+    if missing_tamisu_daemon:
+        existing_tamisu_daemon = set(collect_existing_tamisu_daemon_arches(apk))
+        missing_in_apk = [arch for arch in missing_tamisu_daemon if arch not in existing_tamisu_daemon]
         if missing_in_apk:
             raise RuntimeError(
-                "ksud binary not found and APK has no existing libksud.so for architecture(s): "
+                "tamisu_daemon binary not found and APK has no existing libtamisu_daemon.so for architecture(s): "
                 + ", ".join(missing_in_apk)
             )
         print(
-            "[WARN] ksud binary not found for architecture(s): "
-            + ", ".join(missing_ksud)
-            + ". Using existing libksud.so from input APK.",
+            "[WARN] tamisu_daemon binary not found for architecture(s): "
+            + ", ".join(missing_tamisu_daemon)
+            + ". Using existing libtamisu_daemon.so from input APK.",
             file=sys.stderr,
         )
 
@@ -292,7 +292,7 @@ def do_repack(args: argparse.Namespace) -> int:
             print(f"[INFO] Strip tool: {strip_tool}")
 
     try:
-        repack_apk(apk, unsigned_apk, arches, ksud_by_arch, strip_tool)
+        repack_apk(apk, unsigned_apk, arches, tamisu_daemon_by_arch, strip_tool)
         assert_required_libs(unsigned_apk, arches)
 
         zipalign = find_android_tool("zipalign")
@@ -335,21 +335,21 @@ def do_repack(args: argparse.Namespace) -> int:
             if tmp.exists():
                 tmp.unlink()
 
-    ksud_desc = ", ".join(f"{arch}={path}" for arch, path in ksud_by_arch.items()) or "NOT FOUND"
+    tamisu_daemon_desc = ", ".join(f"{arch}={path}" for arch, path in tamisu_daemon_by_arch.items()) or "NOT FOUND"
     print(f"Input APK : {apk}")
-    print(f"ksud      : {ksud_desc}")
+    print(f"tamisu_daemon      : {tamisu_daemon_desc}")
     print(f"Arch      : {', '.join(arches)}")
     print(f"Output    : {signed_apk}")
     return 0
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Repack manager APK with current ksud binaries.")
+    parser = argparse.ArgumentParser(description="Repack manager APK with current tamisu_daemon binaries.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     repack = subparsers.add_parser("repack", help="Repack and resign APK")
     repack.add_argument("-b", "--app-build-type", help="APK build type, e.g. release")
-    repack.add_argument("-t", "--ksud-build-type", help="ksud build type, e.g. release")
+    repack.add_argument("-t", "--tamisu_daemon-build-type", help="tamisu_daemon build type, e.g. release")
     repack.add_argument("-a", "--arch", action="append", help="Target ABI, repeat or use comma list")
     repack.add_argument("-K", "--keystore-path", help="Keystore path")
     repack.add_argument("-A", "--key-alias", help="Key alias")
@@ -357,7 +357,7 @@ def build_parser() -> argparse.ArgumentParser:
     repack.add_argument("-S", "--key-pass", help="Private key password")
     repack.add_argument("-n", "--output-name", help="Base name for output APK")
     repack.add_argument("-o", "--out-dir", help="Output directory")
-    repack.add_argument("--strip", action="store_true", help="Strip libksud.so before packing")
+    repack.add_argument("--strip", action="store_true", help="Strip libtamisu_daemon.so before packing")
     repack.set_defaults(func=do_repack)
 
     return parser

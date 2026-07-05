@@ -28,7 +28,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import ui.screen.moreSettings.util.LocaleHelper
 import me.dabao1955.tamisu.R
-import me.dabao1955.tamisu.ui.component.KsuIsValid
+import me.dabao1955.tamisu.ui.component.TamisuIsValid
 import me.dabao1955.tamisu.ui.theme.*
 import me.dabao1955.tamisu.ui.util.getFeatureStatus
 import androidx.compose.material.icons.rounded.EnhancedEncryption
@@ -119,7 +119,7 @@ fun MoreSettingsScreen(
             )
 
 
-            KsuIsValid {
+            TamisuIsValid {
                 AdvancedSettings(
                     state = settingsState,
                     handlers = settingsHandlers,

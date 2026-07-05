@@ -8,9 +8,9 @@
 #include <climits>
 #include <vector>
 
-namespace ksud {
+namespace tamisu_daemon {
 
-// Find magiskboot binary: always use current process (multi-call ksud embeds magiskboot).
+// Find magiskboot binary: always use current process (multi-call tamisu_daemon embeds magiskboot).
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters) - keep API for callers
 std::string find_magiskboot(const std::string& specified_path, const std::string& workdir) {
     (void)specified_path;
@@ -59,4 +59,4 @@ bool exec_dd(const std::string& input, const std::string& output) {
     return false;
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

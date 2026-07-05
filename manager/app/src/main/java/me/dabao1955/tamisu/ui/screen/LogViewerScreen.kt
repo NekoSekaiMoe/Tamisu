@@ -52,8 +52,8 @@ private const val DEFAULT_LOG_PATH = ""
 /** A log source the viewer can read. `cmd` is the shell command whose stdout
  *  becomes the log content; `clearCmd` (optional) clears/deletes it.
  *
- *  - File sources live under /data/adb/ksu/log (ksud writes there when it
- *    routes events via the `sulog` ksu tool, or via its own logging).
+ *  - File sources live under /data/tamisu/log (tamisu_daemon writes there when it
+ *    routes events via the `sulog` tamisu tool, or via its own logging).
  *  - "dmesg" reads the kernel ring buffer directly. Tamisu's YukiZygisk
  *    dmesg_log feature routes zygisk events there, so this is the live
  *    injection log on devices without a separate sulog file.
@@ -81,7 +81,7 @@ class SulogLogSource(
 
 internal const val DMESG_PATH = "__dmesg__"
 
-private const val SULOG_LOG_DIR = "/data/adb/ksu/log"
+private const val SULOG_LOG_DIR = "/data/tamisu/log"
 
 enum class SulogLogSourceCleanAction { None, Clear, Delete }
 
@@ -103,13 +103,13 @@ fun resolveSelectedSulogSource(
 
 /** Build the list of readable log sources on this device.
  *
- *  Always probes: ksud-written log files under /data/adb/ksu/log, plus a
+ *  Always probes: tamisu_daemon-written log files under /data/tamisu/log, plus a
  *  synthetic "dmesg" source that reads the kernel ring buffer (where
  *  YukiZygisk events land when dmesg_log is on). Sources whose backing
  *  file is absent are skipped so the picker only offers real data. */
 fun listSulogSources(shell: com.topjohnwu.superuser.Shell): List<SulogLogSource> {
     val out = mutableListOf<SulogLogSource>()
-    val candidates = listOf("ksu.log", "ksud.log")
+    val candidates = listOf("tamisu.log", "tamisu_daemon.log")
     for (name in candidates) {
         val p = "$SULOG_LOG_DIR/$name"
         val exists = runCmd(shell, "test -f ${shellQuote(p)} && echo yes || echo no").trim() == "yes"
@@ -162,7 +162,7 @@ fun shellQuote(s: String): String = "'${s.replace("'", "'\\''")}'"
 
 /** Parse raw log content into LogEntry rows. Handles two formats:
  *   - structured sulog lines: "<ts> <uid> <comm> <type> <pid> <details>"
- *   - free-form kernel/ksud lines (including dmesg): timestamped but unstructured.
+ *   - free-form kernel/tamisu_daemon lines (including dmesg): timestamped but unstructured.
  *
  * The free-form path tries to peel a leading dmesg-style timestamp
  * ("<6>[12345.67890]") or syslog-style prefix, then stuffs the rest into

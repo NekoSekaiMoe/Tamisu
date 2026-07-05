@@ -30,7 +30,6 @@
     <string name="safe_mode">セーフモード</string>
     <string name="jailbreak_timeout">脱獄に失敗した可能性があります。ログを確認してください</string>
     <string name="reboot_to_apply">再起動すると有効化されます</string>
-    <string name="home_support_title">サポート開発</string>
     <string name="about_source_code">ソースコードは %1$s で確認できます&lt;br/&gt;%2$s チャンネルにご参加ください</string>
     <string name="profile_default">デフォルト</string>
     <string name="profile_template">テンプレート</string>
@@ -357,16 +356,16 @@
     
 
     
-    <string name="home_ksud_daemon_title">ksud デーモン</string>
-    <string name="home_ksud_daemon_apk_version">マネージャー同梱の ksud: %1$s</string>
-    <string name="home_ksud_daemon_installed_version">インストール済み ksud (/data/adb/ksud): %1$s</string>
-    <string name="home_ksud_daemon_unknown">不明</string>
-    <string name="home_ksud_daemon_sync">ksud デーモンを同期</string>
-    <string name="home_ksud_daemon_syncing">同期中…</string>
+    <string name="home_tamisu_daemon_daemon_title">tamisu_daemon デーモン</string>
+    <string name="home_tamisu_daemon_daemon_apk_version">マネージャー同梱の tamisu_daemon: %1$s</string>
+    <string name="home_tamisu_daemon_daemon_installed_version">インストール済み tamisu_daemon (/data/tamisu_daemon): %1$s</string>
+    <string name="home_tamisu_daemon_daemon_unknown">不明</string>
+    <string name="home_tamisu_daemon_daemon_sync">tamisu_daemon デーモンを同期</string>
+    <string name="home_tamisu_daemon_daemon_syncing">同期中…</string>
     <string name="setting_change_saved_reboot">設定を保存しました。再起動して適用してください</string>
     <string name="setting_change_failed">設定に失敗しました</string>
-    <string name="settings_auto_update_ksud">ksud デーモンを自動更新</string>
-    <string name="settings_auto_update_ksud_summary">アプリのコールドスタート時に同梱の ksud バイナリを /data/adb/ksud に同期します。デフォルトはオフです。それ以外はホーム画面の手動ボタンを使用してください。</string>
+    <string name="settings_auto_update_tamisu_daemon">tamisu_daemon デーモンを自動更新</string>
+    <string name="settings_auto_update_tamisu_daemon_summary">アプリのコールドスタート時に同梱の tamisu_daemon バイナリを /data/tamisu_daemon に同期します。デフォルトはオフです。それ以外はホーム画面の手動ボタンを使用してください。</string>
 
     <string name="su_request_desc">アプリがスーパーユーザー (su) アクセスを要求しています。</string>
     <string name="su_request_allow_forever">常に許可</string>

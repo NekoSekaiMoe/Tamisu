@@ -104,7 +104,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 }
             }
 
-            KsuIsValid {
+            TamisuIsValid {
                 SettingsGroupCard(
                     title = stringResource(R.string.configuration),
                     content = {
@@ -166,15 +166,15 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     )
 
                     var autoUpdateKsud by rememberSaveable {
-                        mutableStateOf(prefs.getBoolean("auto_update_ksud", false))
+                        mutableStateOf(prefs.getBoolean("auto_update_tamisu_daemon", false))
                     }
                     SwitchItem(
                         icon = Icons.Filled.Sync,
-                        title = stringResource(R.string.settings_auto_update_ksud),
-                        summary = stringResource(R.string.settings_auto_update_ksud_summary),
+                        title = stringResource(R.string.settings_auto_update_tamisu_daemon),
+                        summary = stringResource(R.string.settings_auto_update_tamisu_daemon_summary),
                         checked = autoUpdateKsud,
                         onCheckedChange = { enabled ->
-                            prefs.edit { putBoolean("auto_update_ksud", enabled) }
+                            prefs.edit { putBoolean("auto_update_tamisu_daemon", enabled) }
                             autoUpdateKsud = enabled
                         }
                     )
@@ -206,7 +206,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     )
 
                     // 查看使用日志
-                    KsuIsValid {
+                    TamisuIsValid {
                         SettingItem(
                             icon = Icons.Filled.Visibility,
                             title = stringResource(R.string.log_viewer_view_logs),
@@ -258,7 +258,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             }
                         )
                     }
-                    KsuIsValid {
+                    TamisuIsValid {
                         UninstallItem(navigator) {
                             loadingDialog.withLoading(it)
                         }

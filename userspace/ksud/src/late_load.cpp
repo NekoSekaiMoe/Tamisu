@@ -6,7 +6,7 @@
 #include "core/restorecon.hpp"
 #include "defs.hpp"
 #include "init_event.hpp"
-#include "kernelsu_loader.hpp"
+#include "tamisu_loader.hpp"
 #include "log.hpp"
 #include "module/module.hpp"
 #include "module/module_config.hpp"
@@ -19,30 +19,30 @@
 #include <string>
 #include <vector>
 
-namespace ksud::late_load {
+namespace tamisu_daemon::late_load {
 
 namespace {
 
 constexpr const char* kManagerPackage = "me.dabao1955.tamisu";
 constexpr const char* kLateLoadTmpCandidates[] = {
-    "/dev/kernelsu_XXXXXX",
-    "/data/local/tmp/kernelsu_XXXXXX",
-    "/data/adb/kernelsu_XXXXXX",
+    "/dev/tamisu_XXXXXX",
+    "/data/local/tmp/tamisu_XXXXXX",
+    "/data/adb/tamisu_XXXXXX",
 };
 
-bool is_kernelsu_loaded() {
+bool is_tamisu_loaded() {
     // The kernel module is named "tamisu" (see kernel/Kbuild:
     // obj-$(CONFIG_TAMISU) += tamisu.o), so once loaded it appears as
-    // /sys/module/tamisu. We check this name rather than "kernelsu" so
-    // detection works regardless of whether upstream KernelSU is also
+    // /sys/module/tamisu. We check this name rather than "tamisu" so
+    // detection works regardless of whether upstream Tamisu is also
     // loaded on the same kernel.
     return access("/sys/module/tamisu", F_OK) == 0;
 }
 
-std::string get_kernelsu_load_params(bool allow_shell) {
+std::string get_tamisu_load_params(bool allow_shell) {
     // allow_shell is the module_param consumed directly by tamisu.ko via the
     // insmod/modprobe cmdline (e.g. "allow_shell=1"). The legacy
-    // /ksu_allow_shell ramdisk marker file is an upstream KernelSU convention
+    // /tamisu_allow_shell ramdisk marker file is an upstream Tamisu convention
     // we do not implement, so we only honour the explicit parameter here.
     if (allow_shell) {
         LOGW("late-load: loading tamisu.ko with allow_shell=1");
@@ -52,14 +52,14 @@ std::string get_kernelsu_load_params(bool allow_shell) {
     return "";
 }
 
-bool extract_and_load_kernelsu(bool allow_shell) {
+bool extract_and_load_tamisu(bool allow_shell) {
     const std::string kmi = get_current_kmi();
     if (kmi.empty()) {
         LOGE("late-load: failed to detect current KMI");
         return false;
     }
 
-    const std::string asset_name = kmi + "_kernelsu.ko";
+    const std::string asset_name = kmi + "_tamisu.ko";
     std::array<char, PATH_MAX> tmp_path{};
     int tmp_fd = -1;
     for (const char* candidate : kLateLoadTmpCandidates) {
@@ -86,7 +86,7 @@ bool extract_and_load_kernelsu(bool allow_shell) {
 
     LOGI("late-load: loading %s via relocated init_module", asset_name.c_str());
     const bool loaded =
-        ksud::kernelsu_loader::load_module(tmp_path.data(), get_kernelsu_load_params(allow_shell));
+        tamisu_daemon::tamisu_loader::load_module(tmp_path.data(), get_tamisu_load_params(allow_shell));
     unlink(tmp_path.data());
     return loaded;
 }
@@ -143,12 +143,12 @@ int run(bool post_magica, bool allow_shell) {
     LOGI("late-load command triggered");
     int result = 0;
 
-    if (!is_kernelsu_loaded() && !extract_and_load_kernelsu(allow_shell)) {
+    if (!is_tamisu_loaded() && !extract_and_load_tamisu(allow_shell)) {
         result = 1;
         goto finalize;
     }
 
-    ksud::umask(0);
+    tamisu_daemon::umask(0);
 
     clear_all_temp_configs();
 
@@ -177,7 +177,7 @@ int run(bool post_magica, bool allow_shell) {
     }
 
     // Tamisu does not own module mounting — metamodule / built-in mount
-    // belongs to the coexisting root solution (KernelSU/Magisk/APatch).
+    // belongs to the coexisting root solution (Tamisu/Magisk/APatch).
 
     run_stage_scripts("post-mount", true);
     on_services();
@@ -191,4 +191,4 @@ finalize:
     return result;
 }
 
-}  // namespace ksud::late_load
+}  // namespace tamisu_daemon::late_load

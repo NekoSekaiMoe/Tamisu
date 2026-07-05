@@ -4,7 +4,7 @@
 #include <map>
 #include <string>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 // Feature management
 int feature_get(const std::string& id);
@@ -22,4 +22,4 @@ void apply_config(const std::map<uint32_t, uint64_t>& features);
 // Initialize features at boot, respecting module-managed features
 int init_features();
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

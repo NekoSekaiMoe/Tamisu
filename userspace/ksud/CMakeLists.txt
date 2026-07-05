@@ -17,7 +17,7 @@ if(NOT ANDROID AND NOT CMAKE_C_COMPILER)
   endif()
 endif()
 
-project(ksud VERSION 1.0.0 LANGUAGES C CXX)
+project(tamisu_daemon VERSION 1.0.0 LANGUAGES C CXX)
 
 # Allow FetchContent deps (e.g. miniz) that use cmake_minimum_required < 3.5
 if(NOT DEFINED CMAKE_POLICY_VERSION_MINIMUM)
@@ -34,15 +34,15 @@ if(CCACHE_PROGRAM)
     message(STATUS "Using ccache: ${CCACHE_PROGRAM}")
 endif()
 
-# clang-tidy: optional for our sources only (third_party/FetchContent excluded). Set KSUD_ENABLE_CLANG_TIDY=OFF to skip.
-option(KSUD_ENABLE_CLANG_TIDY "Run clang-tidy on ksud own sources" ON)
+# clang-tidy: optional for our sources only (third_party/FetchContent excluded). Set TAMISU_DAEMON_ENABLE_CLANG_TIDY=OFF to skip.
+option(TAMISU_DAEMON_ENABLE_CLANG_TIDY "Run clang-tidy on tamisu_daemon own sources" ON)
 set(CLANG_TIDY_ARGS "")
-if(KSUD_ENABLE_CLANG_TIDY)
+if(TAMISU_DAEMON_ENABLE_CLANG_TIDY)
     find_program(CLANG_TIDY_PROGRAM NAMES clang-tidy clang-tidy-18 clang-tidy-17 clang-tidy-16 clang-tidy-14)
     get_filename_component(REPO_ROOT "${CMAKE_SOURCE_DIR}/../.." ABSOLUTE)
     set(CLANG_TIDY_CONFIG "${REPO_ROOT}/.clang-tidy")
     if(NOT CLANG_TIDY_PROGRAM)
-        message(FATAL_ERROR "clang-tidy not found. Install it (e.g. apt install clang-tidy / brew install llvm) or configure with -DKSUD_ENABLE_CLANG_TIDY=OFF")
+        message(FATAL_ERROR "clang-tidy not found. Install it (e.g. apt install clang-tidy / brew install llvm) or configure with -DTAMISU_DAEMON_ENABLE_CLANG_TIDY=OFF")
     endif()
     if(NOT EXISTS "${CLANG_TIDY_CONFIG}")
         message(FATAL_ERROR ".clang-tidy not found at ${CLANG_TIDY_CONFIG}")
@@ -51,18 +51,18 @@ if(KSUD_ENABLE_CLANG_TIDY)
     if(ANDROID)
         message(STATUS "clang-tidy: skipped for Android (run tidy on host build in CI instead)")
     else()
-        message(STATUS "clang-tidy: enabled for ksud own sources (config=${CLANG_TIDY_CONFIG})")
+        message(STATUS "clang-tidy: enabled for tamisu_daemon own sources (config=${CLANG_TIDY_CONFIG})")
     endif()
 else()
-    message(STATUS "clang-tidy: disabled (KSUD_ENABLE_CLANG_TIDY=OFF)")
+    message(STATUS "clang-tidy: disabled (TAMISU_DAEMON_ENABLE_CLANG_TIDY=OFF)")
 endif()
 
 # ============================================================================
 # Super Aggressive Size Optimization
 # ============================================================================
-# Disable LTO if linker reports undefined symbols (e.g. ksud::boot_patch) in some
-# environments (OrbStack host build with object libs + LTO). Use: -DKSUD_DISABLE_LTO=ON
-option(KSUD_DISABLE_LTO "Disable LTO (use if link fails with undefined symbols)" OFF)
+# Disable LTO if linker reports undefined symbols (e.g. tamisu_daemon::boot_patch) in some
+# environments (OrbStack host build with object libs + LTO). Use: -DTAMISU_DAEMON_DISABLE_LTO=ON
+option(TAMISU_DAEMON_DISABLE_LTO "Disable LTO (use if link fails with undefined symbols)" OFF)
 
 # --- Common compile flags (shared by C and C++) ---
 set(_COMMON_COMPILE_FLAGS
@@ -84,7 +84,7 @@ set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${_COMMON_FLAGS_STR}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${_COMMON_FLAGS_STR}")
 
 # --- Release build optimization ---
-if(KSUD_DISABLE_LTO)
+if(TAMISU_DAEMON_DISABLE_LTO)
     set(CMAKE_C_FLAGS_RELEASE   "-Os -DNDEBUG")
     set(CMAKE_CXX_FLAGS_RELEASE "-Os -DNDEBUG")
 else()
@@ -93,7 +93,7 @@ else()
 endif()
 
 # --- Aggressive linker optimization ---
-if(KSUD_DISABLE_LTO)
+if(TAMISU_DAEMON_DISABLE_LTO)
     string(CONCAT _LINKER_FLAGS
         " -fuse-ld=lld"
         " -Wl,--gc-sections"
@@ -201,7 +201,7 @@ add_custom_command(
     COMMENT "Generating embedded assets..."
 )
 
-# third_party (MagiskbootAlone, bootctlAlone, resetpropAlone, ndk-busybox): compile into ksud for multi-call
+# third_party (MagiskbootAlone, bootctlAlone, resetpropAlone, ndk-busybox): compile into tamisu_daemon for multi-call
 set(MAGISKTOOLS_ALONE_DIR ${CMAKE_SOURCE_DIR}/third_party)
 set(MAGISKBOOT_ALONE_DIR ${MAGISKTOOLS_ALONE_DIR}/MagiskbootAlone)
 set(MAGISKBOOT_SOURCES
@@ -219,7 +219,7 @@ if(EXISTS ${MAGISKBOOT_ALONE_DIR}/src/magiskboot_main.cpp)
     set_source_files_properties(${MAGISKBOOT_SOURCES} PROPERTIES CXX_STANDARD 20)
     include_directories(${MAGISKBOOT_ALONE_DIR}/src ${LZ4_LIB_DIR})
     set(MAGISKBOOT_ALONE_AVAILABLE 1)
-    message(STATUS "MagiskbootAlone: building magiskboot into ksud (multi-call)")
+    message(STATUS "MagiskbootAlone: building magiskboot into tamisu_daemon (multi-call)")
 else()
     message(WARNING "MagiskbootAlone submodule not found at ${MAGISKBOOT_ALONE_DIR}; run: git submodule update --init")
 endif()
@@ -229,34 +229,34 @@ set(RESETPROP_ALONE_DIR ${MAGISKTOOLS_ALONE_DIR}/resetpropAlone)
 set(RESETPROP_ALONE_SOURCES)
 if(EXISTS ${BOOTCTL_ALONE_DIR}/src/main.cpp)
     set(BOOTCTL_ALONE_AVAILABLE 1)
-    message(STATUS "bootctlAlone: building bootctl into ksud (multi-call)")
+    message(STATUS "bootctlAlone: building bootctl into tamisu_daemon (multi-call)")
 endif()
 if(EXISTS ${RESETPROP_ALONE_DIR}/src/main.cpp)
     file(GLOB RESETPROP_ALONE_SOURCES CONFIGURE_DEPENDS
         ${RESETPROP_ALONE_DIR}/src/*.cpp
     )
     set(RESETPROP_ALONE_AVAILABLE 1)
-    message(STATUS "resetpropAlone: building resetprop into ksud (multi-call)")
+    message(STATUS "resetpropAlone: building resetprop into tamisu_daemon (multi-call)")
 endif()
 
-# ndk-busybox: build as static lib and link into ksud for multi-call (argv0 "busybox")
+# ndk-busybox: build as static lib and link into tamisu_daemon for multi-call (argv0 "busybox")
 set(NDK_BUSYBOX_DIR ${MAGISKTOOLS_ALONE_DIR}/ndk-busybox)
 if(EXISTS ${NDK_BUSYBOX_DIR}/CMakeLists.txt)
   set(BUSYBOX_EMBEDDED 1 CACHE BOOL "Build busybox as static lib for embedding")
   add_subdirectory(${NDK_BUSYBOX_DIR} ${CMAKE_BINARY_DIR}/ndk-busybox)
   set(NDK_BUSYBOX_AVAILABLE 1)
-  message(STATUS "ndk-busybox: building busybox into ksud (multi-call)")
+  message(STATUS "ndk-busybox: building busybox into tamisu_daemon (multi-call)")
 endif()
 
 # Our own sources (clang-tidy will run on these only)
-set(KSUD_OUR_SOURCES
+set(TAMISU_DAEMON_OUR_SOURCES
     src/main.cpp
     src/cli.cpp
     src/defs.cpp
     src/log.cpp
     src/utils.cpp
-    src/kernelsu_loader.cpp
-    src/core/ksucalls.cpp
+    src/tamisu_loader.cpp
+    src/core/tamisuctl.cpp
     src/core/feature.cpp
     src/core/restorecon.cpp
     src/core/assets.cpp
@@ -275,30 +275,30 @@ set(KSUD_OUR_SOURCES
 )
 
 # Third-party sources (no clang-tidy: MagiskbootAlone, bootctl, resetprop)
-set(KSUD_THIRDPARTY_SOURCES)
+set(TAMISU_DAEMON_THIRDPARTY_SOURCES)
 if(MAGISKBOOT_ALONE_AVAILABLE)
-    list(APPEND KSUD_THIRDPARTY_SOURCES ${MAGISKBOOT_SOURCES})
+    list(APPEND TAMISU_DAEMON_THIRDPARTY_SOURCES ${MAGISKBOOT_SOURCES})
 endif()
 if(BOOTCTL_ALONE_AVAILABLE)
-    list(APPEND KSUD_THIRDPARTY_SOURCES ${BOOTCTL_ALONE_DIR}/src/main.cpp)
+    list(APPEND TAMISU_DAEMON_THIRDPARTY_SOURCES ${BOOTCTL_ALONE_DIR}/src/main.cpp)
 endif()
 if(RESETPROP_ALONE_AVAILABLE)
-    list(APPEND KSUD_THIRDPARTY_SOURCES ${RESETPROP_ALONE_SOURCES})
+    list(APPEND TAMISU_DAEMON_THIRDPARTY_SOURCES ${RESETPROP_ALONE_SOURCES})
 endif()
 
 get_filename_component(REPO_ROOT "${CMAKE_SOURCE_DIR}/../.." ABSOLUTE)
 
-# Zygisk daemon (zygiskd), welded into ksud as a multi-call face. Invoked as
-# `ksud zygiskd` or via a `zygiskd` -> ksud symlink. Source lives with the rest
+# Zygisk daemon (zygiskd), welded into tamisu_daemon as a multi-call face. Invoked as
+# `tamisu_daemon zygiskd` or via a `zygiskd` -> tamisu_daemon symlink. Source lives with the rest
 # of the zygisk project; bundled here (no clang-tidy) like the other tools.
 set(ZYGISKD_DIR ${REPO_ROOT}/userspace/zygisk/daemon)
 if(EXISTS ${ZYGISKD_DIR}/zygiskd.cpp)
     set(ZYGISKD_AVAILABLE 1)
-    list(APPEND KSUD_THIRDPARTY_SOURCES ${ZYGISKD_DIR}/zygiskd.cpp)
+    list(APPEND TAMISU_DAEMON_THIRDPARTY_SOURCES ${ZYGISKD_DIR}/zygiskd.cpp)
 endif()
 
-# Include directories (for both object libs and ksud)
-set(KSUD_INCLUDE_DIRS
+# Include directories (for both object libs and tamisu_daemon)
+set(TAMISU_DAEMON_INCLUDE_DIRS
     ${CMAKE_SOURCE_DIR}/src
     ${CMAKE_SOURCE_DIR}/src/hymo
     ${mbedtls_SOURCE_DIR}/include
@@ -308,76 +308,76 @@ set(KSUD_INCLUDE_DIRS
     ${GENERATED_DIR}
     ${REPO_ROOT}  # uapi/ kernel headers for userspace
 )
-include_directories(${KSUD_INCLUDE_DIRS})
+include_directories(${TAMISU_DAEMON_INCLUDE_DIRS})
 
 # Compile definitions shared by our and third-party object libs
-set(KSUD_DEFINES)
+set(TAMISU_DAEMON_DEFINES)
 if(MAGISKBOOT_ALONE_AVAILABLE)
-    list(APPEND KSUD_DEFINES MAGISKBOOT_ALONE_AVAILABLE=1 USE_MBEDTLS=1)
+    list(APPEND TAMISU_DAEMON_DEFINES MAGISKBOOT_ALONE_AVAILABLE=1 USE_MBEDTLS=1)
 endif()
 if(BOOTCTL_ALONE_AVAILABLE)
-    list(APPEND KSUD_DEFINES BOOTCTL_ALONE_AVAILABLE=1)
+    list(APPEND TAMISU_DAEMON_DEFINES BOOTCTL_ALONE_AVAILABLE=1)
 endif()
 if(RESETPROP_ALONE_AVAILABLE)
-    list(APPEND KSUD_DEFINES RESETPROP_ALONE_AVAILABLE=1)
+    list(APPEND TAMISU_DAEMON_DEFINES RESETPROP_ALONE_AVAILABLE=1)
 endif()
 if(NDK_BUSYBOX_AVAILABLE)
-    list(APPEND KSUD_DEFINES NDK_BUSYBOX_AVAILABLE=1)
+    list(APPEND TAMISU_DAEMON_DEFINES NDK_BUSYBOX_AVAILABLE=1)
 endif()
 if(ZYGISKD_AVAILABLE)
-    list(APPEND KSUD_DEFINES ZYGISKD_AVAILABLE=1)
+    list(APPEND TAMISU_DAEMON_DEFINES ZYGISKD_AVAILABLE=1)
 endif()
 
 # Object library: our sources (with clang-tidy on host only)
 # Android: host clang-tidy + NDK headers mixes host /usr/include (bits/wordsize.h) with NDK and can
 # crash (e.g. bugprone-implicit-widening-of-multiplication-result in NDK errno.h). Run tidy on host build instead.
-add_library(ksud_our_objs OBJECT ${KSUD_OUR_SOURCES})
-target_include_directories(ksud_our_objs PRIVATE ${KSUD_INCLUDE_DIRS})
-target_compile_definitions(ksud_our_objs PRIVATE ${KSUD_DEFINES})
-target_compile_features(ksud_our_objs PUBLIC cxx_std_17)
-if(KSUD_ENABLE_CLANG_TIDY AND NOT ANDROID)
-    set_target_properties(ksud_our_objs PROPERTIES
+add_library(tamisu_daemon_our_objs OBJECT ${TAMISU_DAEMON_OUR_SOURCES})
+target_include_directories(tamisu_daemon_our_objs PRIVATE ${TAMISU_DAEMON_INCLUDE_DIRS})
+target_compile_definitions(tamisu_daemon_our_objs PRIVATE ${TAMISU_DAEMON_DEFINES})
+target_compile_features(tamisu_daemon_our_objs PUBLIC cxx_std_17)
+if(TAMISU_DAEMON_ENABLE_CLANG_TIDY AND NOT ANDROID)
+    set_target_properties(tamisu_daemon_our_objs PROPERTIES
         CXX_CLANG_TIDY "${CLANG_TIDY_ARGS}"
         C_CLANG_TIDY "${CLANG_TIDY_ARGS}"
     )
 endif()
 
 # Object library: third-party sources (no clang-tidy)
-add_library(ksud_thirdparty_objs OBJECT ${KSUD_THIRDPARTY_SOURCES})
-target_include_directories(ksud_thirdparty_objs PRIVATE ${KSUD_INCLUDE_DIRS})
-target_compile_definitions(ksud_thirdparty_objs PRIVATE ${KSUD_DEFINES})
+add_library(tamisu_daemon_thirdparty_objs OBJECT ${TAMISU_DAEMON_THIRDPARTY_SOURCES})
+target_include_directories(tamisu_daemon_thirdparty_objs PRIVATE ${TAMISU_DAEMON_INCLUDE_DIRS})
+target_compile_definitions(tamisu_daemon_thirdparty_objs PRIVATE ${TAMISU_DAEMON_DEFINES})
 if(MAGISKBOOT_ALONE_AVAILABLE)
-    target_compile_features(ksud_thirdparty_objs PUBLIC cxx_std_20)
+    target_compile_features(tamisu_daemon_thirdparty_objs PUBLIC cxx_std_20)
 endif()
 
 # Executable: link object libs
-add_executable(ksud
-    $<TARGET_OBJECTS:ksud_our_objs>
-    $<TARGET_OBJECTS:ksud_thirdparty_objs>
+add_executable(tamisu_daemon
+    $<TARGET_OBJECTS:tamisu_daemon_our_objs>
+    $<TARGET_OBJECTS:tamisu_daemon_thirdparty_objs>
 )
-target_compile_definitions(ksud PRIVATE ${KSUD_DEFINES})
+target_compile_definitions(tamisu_daemon PRIVATE ${TAMISU_DAEMON_DEFINES})
 if(ZYGISKD_AVAILABLE)
     # zygiskd (welded in) logs via liblog's __android_log_print
-    target_link_libraries(ksud PRIVATE log)
+    target_link_libraries(tamisu_daemon PRIVATE log)
 endif()
 if(NDK_BUSYBOX_AVAILABLE)
-    target_compile_definitions(ksud PRIVATE NDK_BUSYBOX_AVAILABLE=1)
-    target_link_libraries(ksud PRIVATE busybox)
+    target_compile_definitions(tamisu_daemon PRIVATE NDK_BUSYBOX_AVAILABLE=1)
+    target_link_libraries(tamisu_daemon PRIVATE busybox)
     # libselinux not in NDK; link only when found (e.g. host or custom Android sysroot)
     find_library(SELINUX_LIB selinux)
     if(SELINUX_LIB)
-      target_link_libraries(ksud PRIVATE selinux)
+      target_link_libraries(tamisu_daemon PRIVATE selinux)
     endif()
     # busybox expects these wraps (from Android.mk)
-    target_link_options(ksud PRIVATE -Wl,--wrap=realpath -Wl,--wrap=rename -Wl,--wrap=renameat)
+    target_link_options(tamisu_daemon PRIVATE -Wl,--wrap=realpath -Wl,--wrap=rename -Wl,--wrap=renameat)
 endif()
 
 # Link libraries - Android bionic libc has built-in pthread, no separate linking needed
 if(NOT ANDROID)
-    target_link_libraries(ksud PRIVATE pthread)
+    target_link_libraries(tamisu_daemon PRIVATE pthread)
 endif()
 
-target_link_libraries(ksud PRIVATE z miniz mbedx509 mbedcrypto dl)
+target_link_libraries(tamisu_daemon PRIVATE z miniz mbedx509 mbedcrypto dl)
 
 # ============================================================================
 # Post-build Size Compression
@@ -386,44 +386,44 @@ target_link_libraries(ksud PRIVATE z miniz mbedx509 mbedcrypto dl)
 # llvm-strip: more precise than --strip-all, removes .comment / .note misc sections
 find_program(LLVM_STRIP llvm-strip)
 if(LLVM_STRIP)
-    add_custom_command(TARGET ksud POST_BUILD
+    add_custom_command(TARGET tamisu_daemon POST_BUILD
         COMMAND ${LLVM_STRIP}
             --strip-all                  # Remove all symbols
             --remove-section=.comment    # Remove compiler version info
             --remove-section=.note       # Remove note section
             --remove-section=.note.android.ident
             --remove-section=.note.gnu.build-id
-            $<TARGET_FILE:ksud>
+            $<TARGET_FILE:tamisu_daemon>
         COMMENT "llvm-strip: removing all debug info & note sections..."
     )
 endif()
 
 # Optional: UPX binary compression (runtime self-extracting, typically 50-70% further reduction)
-# Pass -DKSUD_UPX=ON to enable; off by default as some environments don't support UPX
-option(KSUD_UPX "Use UPX to compress ksud binary" OFF)
-if(KSUD_UPX)
+# Pass -DTAMISU_DAEMON_UPX=ON to enable; off by default as some environments don't support UPX
+option(TAMISU_DAEMON_UPX "Use UPX to compress tamisu_daemon binary" OFF)
+if(TAMISU_DAEMON_UPX)
     find_program(UPX_PROGRAM upx)
     if(UPX_PROGRAM)
-        add_custom_command(TARGET ksud POST_BUILD
-            COMMAND ${UPX_PROGRAM} --best --lzma $<TARGET_FILE:ksud>
-            COMMENT "UPX: compressing ksud with LZMA (--best)..."
+        add_custom_command(TARGET tamisu_daemon POST_BUILD
+            COMMAND ${UPX_PROGRAM} --best --lzma $<TARGET_FILE:tamisu_daemon>
+            COMMENT "UPX: compressing tamisu_daemon with LZMA (--best)..."
         )
         message(STATUS "UPX compression ENABLED (--best --lzma)")
     else()
-        message(WARNING "KSUD_UPX=ON but upx not found in PATH; skipping UPX compression")
+        message(WARNING "TAMISU_DAEMON_UPX=ON but upx not found in PATH; skipping UPX compression")
     endif()
 endif()
 
 # Report final binary size
-add_custom_command(TARGET ksud POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "-- ksud final size:"
-    COMMAND ls -lh $<TARGET_FILE:ksud>
+add_custom_command(TARGET tamisu_daemon POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo "-- tamisu_daemon final size:"
+    COMMAND ls -lh $<TARGET_FILE:tamisu_daemon>
     COMMENT "Reporting final binary size..."
 )
 
 # Install
-install(TARGETS ksud DESTINATION bin)
+install(TARGETS tamisu_daemon DESTINATION bin)
 
 # NOTE: standalone binaries (zygisk loader/core) are built separately and
 # staged into assets/ by build.sh BEFORE this CMake configures, so they are
-# embedded as ordinary prebuilt assets -- ksud does NOT compile them.
+# embedded as ordinary prebuilt assets -- tamisu_daemon does NOT compile them.

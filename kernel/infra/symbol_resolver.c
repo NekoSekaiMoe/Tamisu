@@ -36,7 +36,7 @@ typedef int (*kallsyms_on_each_match_symbol_fn_t)(int (*fn)(void *,
 static kallsyms_on_each_symbol_fn_t kallsyms_on_each_symbol_fn;
 static kallsyms_on_each_match_symbol_fn_t kallsyms_on_each_match_symbol_fn;
 
-struct ksu_lookup_symbol_ctx {
+struct tamisu_lookup_symbol_ctx {
 	const char *symbol_name;
 	size_t symbol_len;
 	void *match;
@@ -65,7 +65,7 @@ unsigned long __nocfi find_kernel_symbol_exact(const char *symbol_name)
 	return kallsyms_lookup_name(symbol_name);
 }
 
-static inline bool ksu_symbol_has_suffix(const char *name, size_t name_len,
+static inline bool tamisu_symbol_has_suffix(const char *name, size_t name_len,
 					 const char *suffix, size_t suffix_len)
 {
 	return name_len >= suffix_len &&
@@ -80,7 +80,7 @@ static int lookup_symbol_variant_cb(void *data, const char *name,
 				    struct module *mod, unsigned long addr)
 #endif // #if LINUX_VERSION_CODE >= KERNEL_VERSIO...
 {
-	struct ksu_lookup_symbol_ctx *ctx = data;
+	struct tamisu_lookup_symbol_ctx *ctx = data;
 	size_t name_len;
 
 	if (!name || !addr)
@@ -96,7 +96,7 @@ static int lookup_symbol_variant_cb(void *data, const char *name,
 	}
 
 #if !USE_KCFI
-	if (ksu_symbol_has_suffix(name, name_len, cfi_suffix, cfi_suffix_len)) {
+	if (tamisu_symbol_has_suffix(name, name_len, cfi_suffix, cfi_suffix_len)) {
 		ctx->match = (void *)addr;
 		pr_info("use .cfi_jt variant: %s\n", name);
 		return 1;
@@ -117,7 +117,7 @@ static int lookup_symbol_variant_cb(void *data, const char *name,
 static __nocfi void *resolve_symbol_variant(const char *symbol_name,
 					    size_t symbol_len)
 {
-	struct ksu_lookup_symbol_ctx ctx = {
+	struct tamisu_lookup_symbol_ctx ctx = {
 	    .symbol_name = symbol_name,
 	    .symbol_len = symbol_len,
 	};
@@ -128,7 +128,7 @@ static __nocfi void *resolve_symbol_variant(const char *symbol_name,
 	return ctx.match;
 }
 
-void *ksu_resolve_symbol_for_functable_hook(const char *symbol_name)
+void *tamisu_resolve_symbol_for_functable_hook(const char *symbol_name)
 {
 	void *addr;
 	size_t symbol_len;
@@ -166,12 +166,12 @@ void *ksu_resolve_symbol_for_functable_hook(const char *symbol_name)
 #endif // #if !USE_KCFI
 }
 
-void *ksu_lookup_symbol(const char *symbol_name)
+void *tamisu_lookup_symbol(const char *symbol_name)
 {
-	return ksu_resolve_symbol_for_functable_hook(symbol_name);
+	return tamisu_resolve_symbol_for_functable_hook(symbol_name);
 }
 
-void __init ksu_init_symbol_resolver(void)
+void __init tamisu_init_symbol_resolver(void)
 {
 	kallsyms_on_each_symbol_fn =
 	    (kallsyms_on_each_symbol_fn_t)kallsyms_lookup_name(

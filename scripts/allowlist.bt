@@ -1,7 +1,7 @@
 // Define constants as per the provided structure.
-#define KSU_MAX_PACKAGE_NAME 256
-#define KSU_MAX_GROUPS 32
-#define KSU_SELINUX_DOMAIN 64
+#define TAMISU_MAX_PACKAGE_NAME 256
+#define TAMISU_MAX_GROUPS 32
+#define TAMISU_SELINUX_DOMAIN 64
 
 // Define the root_profile structure with padding for 64-bit alignment.
 struct root_profile {
@@ -9,7 +9,7 @@ struct root_profile {
     uint32 gid;
 
     uint32 groups_count;
-    uint32 groups[KSU_MAX_GROUPS];
+    uint32 groups[TAMISU_MAX_GROUPS];
     char padding1[4]; // Padding for 64-bit alignment.
 
     struct {
@@ -18,7 +18,7 @@ struct root_profile {
         uint64 inheritable;
     } capabilities;
 
-    char selinux_domain[KSU_SELINUX_DOMAIN];
+    char selinux_domain[TAMISU_SELINUX_DOMAIN];
     
     uint32 namespaces;
     char padding2[4]; // Padding for 64-bit alignment.
@@ -34,7 +34,7 @@ struct non_root_profile {
 struct rp_config_t {
     byte use_default;
     
-    char template_name[KSU_MAX_PACKAGE_NAME];
+    char template_name[TAMISU_MAX_PACKAGE_NAME];
     char padding[7]; // Padding to make the total size a multiple of 8.
 
     struct root_profile profile;
@@ -52,7 +52,7 @@ struct nrp_config_t {
 // Define the main app_profile structure
 typedef struct {
     uint32 version;
-    char key[KSU_MAX_PACKAGE_NAME];
+    char key[TAMISU_MAX_PACKAGE_NAME];
     int32 current_uid;
     int64 allow_su;
 

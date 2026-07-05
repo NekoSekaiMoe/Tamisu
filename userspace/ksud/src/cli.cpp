@@ -3,7 +3,7 @@
 #include "boot/boot_patch.hpp"
 #include "core/feature.hpp"
 #include "core/hide_bootloader.hpp"
-#include "core/ksucalls.hpp"
+#include "core/tamisuctl.hpp"
 #include "core/restorecon.hpp"
 #include "debug.hpp"
 #include "defs.hpp"
@@ -27,7 +27,7 @@ extern "C" {
 #include <iostream>
 #include <vector>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 void CliParser::add_option(const CliOption& opt) {
     options_.push_back(opt);
@@ -132,7 +132,7 @@ namespace {
 
 void print_usage() {
     printf("Tamisu userspace daemon (zygisk-only)\n\n");
-    printf("USAGE: ksud <COMMAND>\n\n");
+    printf("USAGE: tamisu_daemon <COMMAND>\n\n");
     printf("COMMANDS:\n");
     printf("  insmod         Load a kernel module with kallsyms access\n");
     printf("  late-load      Load tamisu.ko and execute late-load stage scripts\n");
@@ -155,12 +155,12 @@ void print_usage() {
 }
 
 void print_version() {
-    printf("ksud version %s (code: %s)\n", VERSION_NAME, VERSION_CODE);
+    printf("tamisu_daemon version %s (code: %s)\n", VERSION_NAME, VERSION_CODE);
 }
 
 int cmd_initrc(const std::vector<std::string>& args) {
     if (args.empty()) {
-        printf("USAGE: ksud initrc <SUBCOMMAND>\n\n");
+        printf("USAGE: tamisu_daemon initrc <SUBCOMMAND>\n\n");
         printf("SUBCOMMANDS:\n");
         printf("  refresh        Regenerate preinit modules.rc\n");
         return 1;
@@ -177,19 +177,19 @@ int cmd_initrc(const std::vector<std::string>& args) {
 
 int cmd_yukizygisk(const std::vector<std::string>& args) {
     if (args.empty() || args[0] != "reload") {
-        printf("Usage: ksud yukizygisk reload\n");
+        printf("Usage: tamisu_daemon yukizygisk reload\n");
         return 1;
     }
-    // Fires KSU_IOCTL_YZ_RELOAD -> kernel multicasts YZ_EV_RELOAD -> zygiskd
+    // Fires TAMISU_IOCTL_YZ_RELOAD -> kernel multicasts YZ_EV_RELOAD -> zygiskd
     // re-reads yzconfig.json. Applies on the next specialize, no reboot.
-    const int rc = ksud::ksuctl(KSU_IOCTL_YZ_RELOAD, nullptr);
+    const int rc = tamisu_daemon::tamisuctl(TAMISU_IOCTL_YZ_RELOAD, nullptr);
     printf(rc == 0 ? "yzconfig reload signalled\n" : "yzconfig reload failed\n");
     return rc == 0 ? 0 : 1;
 }
 
 int cmd_feature(const std::vector<std::string>& args) {
     if (args.empty()) {
-        printf("USAGE: ksud feature <SUBCOMMAND>\n\n");
+        printf("USAGE: tamisu_daemon feature <SUBCOMMAND>\n\n");
         printf("SUBCOMMANDS:\n");
         printf("  get <ID>        Get feature value\n");
         printf("  set <ID> <VAL>  Set feature value\n");
@@ -249,7 +249,7 @@ int cmd_feature(const std::vector<std::string>& args) {
 
 int cmd_debug(const std::vector<std::string>& args) {
     if (args.empty()) {
-        printf("USAGE: ksud debug <SUBCOMMAND>\n\n");
+        printf("USAGE: tamisu_daemon debug <SUBCOMMAND>\n\n");
         printf("SUBCOMMANDS:\n");
         printf("  insmod <KO> [PARAMS...]  Load a kernel module (legacy alias)\n");
         printf("  version            Get kernel version\n");
@@ -274,7 +274,7 @@ int cmd_debug(const std::vector<std::string>& args) {
 
 int cmd_insmod(const std::vector<std::string>& args) {
     if (args.empty()) {
-        printf("USAGE: ksud insmod <KO> [PARAMS...]\n");
+        printf("USAGE: tamisu_daemon insmod <KO> [PARAMS...]\n");
         return 1;
     }
 
@@ -283,7 +283,7 @@ int cmd_insmod(const std::vector<std::string>& args) {
 
 int cmd_kernel(const std::vector<std::string>& args) {
     if (args.empty()) {
-        printf("USAGE: ksud kernel <SUBCOMMAND>\n\n");
+        printf("USAGE: tamisu_daemon kernel <SUBCOMMAND>\n\n");
         printf("SUBCOMMANDS:\n");
         printf("  notify-module-mounted  Notify module mounted\n");
         return 1;
@@ -302,7 +302,7 @@ int cmd_kernel(const std::vector<std::string>& args) {
 
 int cmd_sepolicy(const std::vector<std::string>& args) {
     if (args.empty()) {
-        printf("USAGE: ksud sepolicy <SUBCOMMAND>\n\n");
+        printf("USAGE: tamisu_daemon sepolicy <SUBCOMMAND>\n\n");
         printf("SUBCOMMANDS:\n");
         printf("  patch <POLICY>   Patch sepolicy\n");
         printf("  apply <FILE>     Apply sepolicy from file\n");
@@ -326,7 +326,7 @@ int cmd_sepolicy(const std::vector<std::string>& args) {
 
 int cmd_boot_info(const std::vector<std::string>& args) {
     if (args.empty()) {
-        printf("USAGE: ksud boot-info <SUBCOMMAND>\n\n");
+        printf("USAGE: tamisu_daemon boot-info <SUBCOMMAND>\n\n");
         printf("SUBCOMMANDS:\n");
         printf("  current-kmi         Show current KMI\n");
         printf("  supported-kmis      Show supported KMIs\n");
@@ -362,7 +362,7 @@ int cmd_flash_new(const std::vector<std::string>& args) {
     using namespace flash;
 
     if (args.empty()) {
-        printf("USAGE: ksud flash <SUBCOMMAND> [OPTIONS]\n\n");
+        printf("USAGE: tamisu_daemon flash <SUBCOMMAND> [OPTIONS]\n\n");
         printf("SUBCOMMANDS:\n");
         printf("  image <IMAGE> <PARTITION>  Flash image to partition\n");
         printf("  backup <PARTITION> <OUT>   Backup partition to file\n");
@@ -379,12 +379,12 @@ int cmd_flash_new(const std::vector<std::string>& args) {
         printf("                             Default: current active slot\n");
         printf("  --all                      List all partitions (not just common ones)\n");
         printf("\nEXAMPLES:\n");
-        printf("  ksud flash image boot.img boot\n");
-        printf("  ksud flash image boot.img boot --slot _b\n");
-        printf("  ksud flash backup boot /sdcard/boot-backup.img --slot _a\n");
-        printf("  ksud flash list\n");
-        printf("  ksud flash list --all\n");
-        printf("  ksud flash slots\n");
+        printf("  tamisu_daemon flash image boot.img boot\n");
+        printf("  tamisu_daemon flash image boot.img boot --slot _b\n");
+        printf("  tamisu_daemon flash backup boot /sdcard/boot-backup.img --slot _a\n");
+        printf("  tamisu_daemon flash list\n");
+        printf("  tamisu_daemon flash list --all\n");
+        printf("  tamisu_daemon flash slots\n");
         return 1;
     }
 
@@ -419,7 +419,7 @@ int cmd_flash_new(const std::vector<std::string>& args) {
         }
         printf("...\n");
 
-        if (ksud::flash::flash_partition(image_path, partition, target_slot)) {
+        if (tamisu_daemon::flash::flash_partition(image_path, partition, target_slot)) {
             printf("Flash successful!\n");
             return 0;
         } else {
@@ -437,7 +437,7 @@ int cmd_flash_new(const std::vector<std::string>& args) {
         }
         printf("...\n");
 
-        if (ksud::flash::backup_partition(partition, output, target_slot)) {
+        if (tamisu_daemon::flash::backup_partition(partition, output, target_slot)) {
             printf("Backup successful!\n");
             return 0;
         } else {
@@ -447,24 +447,24 @@ int cmd_flash_new(const std::vector<std::string>& args) {
 
     } else if (filtered_args[0] == "list") {
         const std::string slot =
-            target_slot.empty() ? ksud::flash::get_current_slot_suffix() : target_slot;
-        auto partitions = ksud::flash::get_available_partitions(scan_all, slot);
+            target_slot.empty() ? tamisu_daemon::flash::get_current_slot_suffix() : target_slot;
+        auto partitions = tamisu_daemon::flash::get_available_partitions(scan_all, slot);
 
         if (scan_all) {
             printf("All partitions");
         } else {
             printf("Common partitions");
         }
-        if (ksud::flash::is_ab_device() && !slot.empty()) {
+        if (tamisu_daemon::flash::is_ab_device() && !slot.empty()) {
             printf(" (slot: %s)", slot.c_str());
         }
         printf(":\n");
 
         for (const auto& p : partitions) {
-            auto info = ksud::flash::get_partition_info(p, slot);
+            auto info = tamisu_daemon::flash::get_partition_info(p, slot);
             const char* type = info.is_logical ? "logical" : "physical";
             const char* marker = "";
-            if (ksud::flash::is_dangerous_partition(p)) {
+            if (tamisu_daemon::flash::is_dangerous_partition(p)) {
                 marker = " [DANGEROUS]";
             }
             printf("  %-20s [%s, %lu bytes]%s\n", p.c_str(), type, (unsigned long)info.size,
@@ -475,8 +475,8 @@ int cmd_flash_new(const std::vector<std::string>& args) {
     } else if (filtered_args[0] == "info" && filtered_args.size() >= 2) {
         const std::string partition = filtered_args[1];
         const std::string slot =
-            target_slot.empty() ? ksud::flash::get_current_slot_suffix() : target_slot;
-        auto info = ksud::flash::get_partition_info(partition, slot);
+            target_slot.empty() ? tamisu_daemon::flash::get_current_slot_suffix() : target_slot;
+        auto info = tamisu_daemon::flash::get_partition_info(partition, slot);
 
         if (!info.exists) {
             printf("Partition %s not found\n", partition.c_str());
@@ -489,19 +489,19 @@ int cmd_flash_new(const std::vector<std::string>& args) {
         printf("Size: %lu bytes (%.2f MB)\n", (unsigned long)info.size,
                info.size / 1024.0 / 1024.0);
 
-        if (ksud::flash::is_ab_device()) {
+        if (tamisu_daemon::flash::is_ab_device()) {
             printf("Slot: %s\n", slot.c_str());
         }
         return 0;
 
     } else if (filtered_args[0] == "slots") {
         // Show slot information for A/B devices
-        if (!ksud::flash::is_ab_device()) {
+        if (!tamisu_daemon::flash::is_ab_device()) {
             printf("This device is not A/B partitioned\n");
             return 0;
         }
 
-        const std::string current_slot = ksud::flash::get_current_slot_suffix();
+        const std::string current_slot = tamisu_daemon::flash::get_current_slot_suffix();
         const std::string other_slot = (current_slot == "_a") ? "_b" : "_a";
 
         printf("Slot Information:\n");
@@ -524,9 +524,9 @@ int cmd_flash_new(const std::vector<std::string>& args) {
         }
 
         printf("Mapping logical partitions for slot %s...\n", slot.c_str());
-        if (ksud::flash::map_logical_partitions(slot)) {
+        if (tamisu_daemon::flash::map_logical_partitions(slot)) {
             printf("Mapping successful!\n");
-            printf("You can now use 'ksud flash list --slot %s --all' to see mapped partitions\n",
+            printf("You can now use 'tamisu_daemon flash list --slot %s --all' to see mapped partitions\n",
                    slot.c_str());
             return 0;
         } else {
@@ -537,7 +537,7 @@ int cmd_flash_new(const std::vector<std::string>& args) {
     } else if (filtered_args[0] == "avb") {
         if (filtered_args.size() >= 2 && filtered_args[1] == "disable") {
             printf("Disabling AVB/dm-verity...\n");
-            if (ksud::flash::patch_vbmeta_disable_verification()) {
+            if (tamisu_daemon::flash::patch_vbmeta_disable_verification()) {
                 printf("AVB/dm-verity disabled successfully!\n");
                 printf("Reboot required for changes to take effect.\n");
                 return 0;
@@ -546,7 +546,7 @@ int cmd_flash_new(const std::vector<std::string>& args) {
                 return 1;
             }
         } else {
-            const std::string status = ksud::flash::get_avb_status();
+            const std::string status = tamisu_daemon::flash::get_avb_status();
             if (status.empty()) {
                 printf("Failed to get AVB status\n");
                 return 1;
@@ -556,7 +556,7 @@ int cmd_flash_new(const std::vector<std::string>& args) {
         }
 
     } else if (filtered_args[0] == "kernel") {
-        const std::string version = ksud::flash::get_kernel_version(target_slot);
+        const std::string version = tamisu_daemon::flash::get_kernel_version(target_slot);
         if (version.empty()) {
             printf("Failed to get kernel version\n");
             return 1;
@@ -565,13 +565,13 @@ int cmd_flash_new(const std::vector<std::string>& args) {
         return 0;
 
     } else if (filtered_args[0] == "boot-info") {
-        const std::string info = ksud::flash::get_boot_slot_info();
+        const std::string info = tamisu_daemon::flash::get_boot_slot_info();
         printf("%s\n", info.c_str());
         return 0;
     }
 
     printf("Unknown flash subcommand: %s\n", subcmd.c_str());
-    printf("Run 'ksud flash' for usage\n");
+    printf("Run 'tamisu_daemon flash' for usage\n");
     return 1;
 }
 
@@ -585,7 +585,7 @@ int cmd_late_load(const std::vector<std::string>& args) {
         }
 
         printf("Unknown late-load option: %s\n", args[i].c_str());
-        printf("Usage: ksud late-load [--allow-shell]\n");
+        printf("Usage: tamisu_daemon late-load [--allow-shell]\n");
         return 1;
     }
 
@@ -596,7 +596,7 @@ int cmd_late_load(const std::vector<std::string>& args) {
 
 int cli_run(int argc, char** argv) {
     // Initialize logging
-    log_init("KernelSU");
+    log_init("Tamisu");
 
     if (argc < 2) {
         print_usage();
@@ -674,4 +674,4 @@ int cli_run(int argc, char** argv) {
     return 1;
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

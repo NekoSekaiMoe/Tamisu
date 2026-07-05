@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 // List all embedded asset names
 const std::vector<std::string>& list_assets();
@@ -25,4 +25,4 @@ int ensure_binaries(bool ignore_if_exist);
 // Stage embedded YukiZygisk payloads.
 int ensure_yukizygisk(bool ignore_if_exist);
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

@@ -35,7 +35,6 @@
     <string name="send_log">发送日志</string>
     <string name="safe_mode">安全模式</string>
     <string name="reboot_to_apply">重启生效</string>
-    <string name="home_support_title">支持开发</string>
     <string name="about_source_code">在 %1$s 查看源码&lt;br/&gt;加入我们的 %2$s 频道</string>
     <string name="profile_default">默认</string>
     <string name="profile_template">模版</string>
@@ -361,16 +360,16 @@
     
 
     
-    <string name="home_ksud_daemon_title">ksud 守护进程</string>
-    <string name="home_ksud_daemon_apk_version">管理器内置 ksud：%1$s</string>
-    <string name="home_ksud_daemon_installed_version">已安装 ksud（/data/adb/ksud）：%1$s</string>
-    <string name="home_ksud_daemon_unknown">未知</string>
-    <string name="home_ksud_daemon_sync">同步 ksud 守护进程</string>
-    <string name="home_ksud_daemon_syncing">正在同步…</string>
+    <string name="home_tamisu_daemon_daemon_title">tamisu_daemon 守护进程</string>
+    <string name="home_tamisu_daemon_daemon_apk_version">管理器内置 tamisu_daemon：%1$s</string>
+    <string name="home_tamisu_daemon_daemon_installed_version">已安装 tamisu_daemon（/data/tamisu_daemon）：%1$s</string>
+    <string name="home_tamisu_daemon_daemon_unknown">未知</string>
+    <string name="home_tamisu_daemon_daemon_sync">同步 tamisu_daemon 守护进程</string>
+    <string name="home_tamisu_daemon_daemon_syncing">正在同步…</string>
     <string name="setting_change_saved_reboot">设置成功，重启生效</string>
     <string name="setting_change_failed">设置失败</string>
-    <string name="settings_auto_update_ksud">自动更新 ksud</string>
-    <string name="settings_auto_update_ksud_summary">应用冷启动时自动将内置的 ksud 同步到 /data/adb/ksud。默认关闭，需要时去主页手动同步。</string>
+    <string name="settings_auto_update_tamisu_daemon">自动更新 tamisu_daemon</string>
+    <string name="settings_auto_update_tamisu_daemon_summary">应用冷启动时自动将内置的 tamisu_daemon 同步到 /data/tamisu_daemon。默认关闭，需要时去主页手动同步。</string>
     <string name="su_request_desc">一个应用正在请求超级用户（su）权限。</string>
     <string name="su_request_allow_forever">允许并记住</string>
     <string name="su_request_allow_once">仅允许一次</string>

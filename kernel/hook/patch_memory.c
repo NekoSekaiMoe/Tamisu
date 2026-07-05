@@ -81,16 +81,16 @@ fail:
 	return 0;
 }
 
-#ifdef KSU_HAS_NEW_DCACHE_FLUSH
-#define ksu_flush_dcache(start, sz)                                            \
+#ifdef TAMISU_HAS_NEW_DCACHE_FLUSH
+#define tamisu_flush_dcache(start, sz)                                            \
 	({                                                                     \
 		unsigned long __start = (start);                               \
 		unsigned long __end = __start + (sz);                          \
 		dcache_clean_inval_poc(__start, __end);                        \
 	})
 #else
-#define ksu_flush_dcache(start, sz) __flush_dcache_area((void *)start, sz)
-#endif // #ifdef KSU_HAS_NEW_DCACHE_FLUSH
+#define tamisu_flush_dcache(start, sz) __flush_dcache_area((void *)start, sz)
+#endif // #ifdef TAMISU_HAS_NEW_DCACHE_FLUSH
 
 struct patch_text_info {
 	void *dst;
@@ -100,7 +100,7 @@ struct patch_text_info {
 	int flags;
 };
 
-static int ksu_patch_text_nosync(void *dst, void *src, size_t len, int flags)
+static int tamisu_patch_text_nosync(void *dst, void *src, size_t len, int flags)
 {
 	unsigned long p = (unsigned long)dst;
 	unsigned long phy;
@@ -127,8 +127,8 @@ static int ksu_patch_text_nosync(void *dst, void *src, size_t len, int flags)
 	clear_fixmap(FIX_TEXT_POKE0);
 
 	if (!ret) {
-		if (flags & KSU_PATCH_TEXT_FLUSH_DCACHE)
-			ksu_flush_dcache((unsigned long)dst, len);
+		if (flags & TAMISU_PATCH_TEXT_FLUSH_DCACHE)
+			tamisu_flush_dcache((unsigned long)dst, len);
 	}
 
 err:
@@ -136,14 +136,14 @@ err:
 	return ret;
 }
 
-static int ksu_patch_text_cb(void *arg)
+static int tamisu_patch_text_cb(void *arg)
 {
 	struct patch_text_info *pp = arg;
 	int ret = 0;
 
 	if (atomic_inc_return(&pp->cpu_count) == num_online_cpus()) {
 		ret =
-		    ksu_patch_text_nosync(pp->dst, pp->src, pp->len, pp->flags);
+		    tamisu_patch_text_nosync(pp->dst, pp->src, pp->len, pp->flags);
 		atomic_inc(&pp->cpu_count);
 	} else {
 		while (atomic_read(&pp->cpu_count) <= num_online_cpus())
@@ -154,7 +154,7 @@ static int ksu_patch_text_cb(void *arg)
 	return ret;
 }
 
-int ksu_patch_text(void *dst, void *src, size_t len, int flags)
+int tamisu_patch_text(void *dst, void *src, size_t len, int flags)
 {
 	struct patch_text_info info = {
 	    .dst = dst,
@@ -164,7 +164,7 @@ int ksu_patch_text(void *dst, void *src, size_t len, int flags)
 	    .flags = flags,
 	};
 
-	return stop_machine(ksu_patch_text_cb, &info, cpu_online_mask);
+	return stop_machine(tamisu_patch_text_cb, &info, cpu_online_mask);
 }
 
 #endif /* __aarch64__ */

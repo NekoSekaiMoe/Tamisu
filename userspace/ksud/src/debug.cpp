@@ -1,6 +1,6 @@
 #include "debug.hpp"
-#include "core/ksucalls.hpp"
-#include "kernelsu_loader.hpp"
+#include "core/tamisuctl.hpp"
+#include "tamisu_loader.hpp"
 #include "log.hpp"
 #include "utils.hpp"
 
@@ -12,7 +12,7 @@
 #include <filesystem>
 #include <fstream>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 namespace {
 
@@ -50,7 +50,7 @@ int debug_insmod(const std::string& module, const std::vector<std::string>& para
         param_values += params[i];
     }
 
-    if (!kernelsu_loader::load_module(resolved_path.c_str(), param_values)) {
+    if (!tamisu_loader::load_module(resolved_path.c_str(), param_values)) {
         printf("Failed to load kernel module: %s\n", resolved_path.c_str());
         return 1;
     }
@@ -61,7 +61,7 @@ int debug_insmod(const std::string& module, const std::vector<std::string>& para
 
 int debug_mark(const std::vector<std::string>& args) {
     if (args.empty()) {
-        printf("Usage: ksud debug mark <get|mark|unmark|refresh> [PID]\n");
+        printf("Usage: tamisu_daemon debug mark <get|mark|unmark|refresh> [PID]\n");
         return 1;
     }
 
@@ -103,4 +103,4 @@ int debug_mark(const std::vector<std::string>& args) {
     return 1;
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

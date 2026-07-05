@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 // Boot patch functions
 int boot_patch(const std::vector<std::string>& args);
@@ -24,4 +24,4 @@ std::string choose_boot_partition(const std::string& kmi, bool ota,
                                   bool is_replace_kernel = false);
 std::string get_slot_suffix(bool ota);
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

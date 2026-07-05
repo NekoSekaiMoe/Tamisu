@@ -11,10 +11,10 @@
 #include "klog.h" // IWYU pragma: keep
 #include "hook/patch_memory.h"
 
-syscall_fn_t *ksu_syscall_table = NULL;
-int ksu_dispatcher_nr = -1;
+syscall_fn_t *tamisu_syscall_table = NULL;
+int tamisu_dispatcher_nr = -1;
 
-static ksu_syscall_hook_fn syscall_hooks[KSU_NR_SYSCALLS];
+static tamisu_syscall_hook_fn syscall_hooks[TAMISU_NR_SYSCALLS];
 
 struct syscall_hook_entry {
 	int nr;
@@ -27,17 +27,17 @@ static int hooked_count = 0;
 
 static int patch_syscall_table(int nr, syscall_fn_t fn)
 {
-	if (ksu_syscall_table == NULL)
+	if (tamisu_syscall_table == NULL)
 		return -ENOENT;
-	if (nr < 0 || nr >= KSU_NR_SYSCALLS)
+	if (nr < 0 || nr >= TAMISU_NR_SYSCALLS)
 		return -EINVAL;
 
 	pr_info("patch syscall %d, 0x%lx -> 0x%lx\n", nr,
-		(unsigned long)READ_ONCE(ksu_syscall_table[nr]),
+		(unsigned long)READ_ONCE(tamisu_syscall_table[nr]),
 		(unsigned long)fn);
 
-	if (ksu_patch_text(&ksu_syscall_table[nr], &fn, sizeof(fn),
-			   KSU_PATCH_TEXT_FLUSH_DCACHE)) {
+	if (tamisu_patch_text(&tamisu_syscall_table[nr], &fn, sizeof(fn),
+			   TAMISU_PATCH_TEXT_FLUSH_DCACHE)) {
 		pr_err("patch syscall %d failed\n", nr);
 		return -EIO;
 	}
@@ -45,21 +45,21 @@ static int patch_syscall_table(int nr, syscall_fn_t fn)
 	return 0;
 }
 
-int ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
+int tamisu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
 {
 	int i;
 	int ret;
 	bool found = false;
 	syscall_fn_t orig;
 
-	if (ksu_syscall_table == NULL)
+	if (tamisu_syscall_table == NULL)
 		return -ENOENT;
-	if (nr < 0 || nr >= KSU_NR_SYSCALLS)
+	if (nr < 0 || nr >= TAMISU_NR_SYSCALLS)
 		return -EINVAL;
 
 	mutex_lock(&hooked_entries_lock);
 
-	orig = READ_ONCE(ksu_syscall_table[nr]);
+	orig = READ_ONCE(tamisu_syscall_table[nr]);
 	if (old)
 		*old = orig;
 
@@ -87,14 +87,14 @@ int ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
 	return ret;
 }
 
-int ksu_syscall_table_unhook(int nr)
+int tamisu_syscall_table_unhook(int nr)
 {
 	int i;
 	int ret = -ENOENT;
 
-	if (ksu_syscall_table == NULL)
+	if (tamisu_syscall_table == NULL)
 		return -ENOENT;
-	if (nr < 0 || nr >= KSU_NR_SYSCALLS)
+	if (nr < 0 || nr >= TAMISU_NR_SYSCALLS)
 		return -EINVAL;
 
 	mutex_lock(&hooked_entries_lock);
@@ -118,24 +118,24 @@ out:
 	return ret;
 }
 
-static int ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
+static int tamisu_find_ni_syscall_slots(int *out_slots, int max_slots)
 {
 	unsigned long ni_syscall;
 	int i;
 	int count = 0;
 
-	if (!ksu_syscall_table || max_slots <= 0)
+	if (!tamisu_syscall_table || max_slots <= 0)
 		return 0;
 
-	ni_syscall = (unsigned long)ksu_lookup_symbol("__arm64_sys_ni_syscall");
+	ni_syscall = (unsigned long)tamisu_lookup_symbol("__arm64_sys_ni_syscall");
 
 	pr_info("sys_ni_syscall: 0x%lx\n", ni_syscall);
 
 	if (!ni_syscall)
 		return 0;
 
-	for (i = 0; i < KSU_NR_SYSCALLS && count < max_slots; i++) {
-		if ((unsigned long)ksu_syscall_table[i] == ni_syscall) {
+	for (i = 0; i < TAMISU_NR_SYSCALLS && count < max_slots; i++) {
+		if ((unsigned long)tamisu_syscall_table[i] == ni_syscall) {
 			out_slots[count++] = i;
 			pr_info("ni_syscall %d: %d\n", count, i);
 		}
@@ -144,12 +144,12 @@ static int ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
 	return count;
 }
 
-static long __nocfi ksu_syscall_dispatcher(const struct pt_regs *regs)
+static long __nocfi tamisu_syscall_dispatcher(const struct pt_regs *regs)
 {
 	int orig_nr;
-	ksu_syscall_hook_fn fn;
+	tamisu_syscall_hook_fn fn;
 
-	if (regs->syscallno != ksu_dispatcher_nr)
+	if (regs->syscallno != tamisu_dispatcher_nr)
 		return -ENOSYS;
 
 	orig_nr = (int)PT_REGS_ORIG_SYSCALL(regs);
@@ -159,7 +159,7 @@ static long __nocfi ksu_syscall_dispatcher(const struct pt_regs *regs)
 	((struct pt_regs *)regs)->syscallno = orig_nr;
 	PT_REGS_ORIG_SYSCALL((struct pt_regs *)regs) = orig_nr;
 
-	if (likely(orig_nr >= 0 && orig_nr < KSU_NR_SYSCALLS)) {
+	if (likely(orig_nr >= 0 && orig_nr < TAMISU_NR_SYSCALLS)) {
 		fn = READ_ONCE(syscall_hooks[orig_nr]);
 		if (likely(fn))
 			return fn(orig_nr, regs);
@@ -168,9 +168,9 @@ static long __nocfi ksu_syscall_dispatcher(const struct pt_regs *regs)
 	return -ENOSYS;
 }
 
-int ksu_register_syscall_hook(int nr, ksu_syscall_hook_fn fn)
+int tamisu_register_syscall_hook(int nr, tamisu_syscall_hook_fn fn)
 {
-	if (nr < 0 || nr >= KSU_NR_SYSCALLS)
+	if (nr < 0 || nr >= TAMISU_NR_SYSCALLS)
 		return -EINVAL;
 	if (READ_ONCE(syscall_hooks[nr])) {
 		pr_warn("syscall hook for nr=%d already registered, skip\n",
@@ -183,58 +183,58 @@ int ksu_register_syscall_hook(int nr, ksu_syscall_hook_fn fn)
 	return 0;
 }
 
-void ksu_unregister_syscall_hook(int nr)
+void tamisu_unregister_syscall_hook(int nr)
 {
-	if (nr < 0 || nr >= KSU_NR_SYSCALLS)
+	if (nr < 0 || nr >= TAMISU_NR_SYSCALLS)
 		return;
 
 	WRITE_ONCE(syscall_hooks[nr], NULL);
 	pr_info("unregistered syscall hook for nr=%d\n", nr);
 }
 
-bool ksu_has_syscall_hook(int nr)
+bool tamisu_has_syscall_hook(int nr)
 {
-	if (nr < 0 || nr >= KSU_NR_SYSCALLS)
+	if (nr < 0 || nr >= TAMISU_NR_SYSCALLS)
 		return false;
 
 	return READ_ONCE(syscall_hooks[nr]) != NULL;
 }
 
-int ksu_syscall_hook_init(void)
+int tamisu_syscall_hook_init(void)
 {
 	int ni_slot;
 	int ret;
 
 	memset(syscall_hooks, 0, sizeof(syscall_hooks));
 
-	ksu_syscall_table = (syscall_fn_t *)ksu_lookup_symbol("sys_call_table");
-	pr_info("sys_call_table=0x%lx", (unsigned long)ksu_syscall_table);
+	tamisu_syscall_table = (syscall_fn_t *)tamisu_lookup_symbol("sys_call_table");
+	pr_info("sys_call_table=0x%lx", (unsigned long)tamisu_syscall_table);
 
-	if (!ksu_syscall_table)
+	if (!tamisu_syscall_table)
 		return -ENOENT;
 
-	if (ksu_find_ni_syscall_slots(&ni_slot, 1) < 1) {
+	if (tamisu_find_ni_syscall_slots(&ni_slot, 1) < 1) {
 		pr_err("failed to find ni_syscall slot for dispatcher\n");
 		return -ENOSPC;
 	}
 
-	ksu_dispatcher_nr = ni_slot;
-	ret = ksu_syscall_table_hook(
-	    ksu_dispatcher_nr, (syscall_fn_t)ksu_syscall_dispatcher, NULL);
+	tamisu_dispatcher_nr = ni_slot;
+	ret = tamisu_syscall_table_hook(
+	    tamisu_dispatcher_nr, (syscall_fn_t)tamisu_syscall_dispatcher, NULL);
 	if (ret) {
-		ksu_dispatcher_nr = -1;
+		tamisu_dispatcher_nr = -1;
 		return ret;
 	}
 
-	pr_info("dispatcher installed at slot %d\n", ksu_dispatcher_nr);
+	pr_info("dispatcher installed at slot %d\n", tamisu_dispatcher_nr);
 	return 0;
 }
 
-void ksu_syscall_hook_exit(void)
+void tamisu_syscall_hook_exit(void)
 {
 	int i;
 
-	if (!ksu_syscall_table)
+	if (!tamisu_syscall_table)
 		goto clear_state;
 
 	mutex_lock(&hooked_entries_lock);
@@ -244,8 +244,8 @@ void ksu_syscall_hook_exit(void)
 
 		pr_info("restore syscall %d to 0x%lx\n", nr,
 			(unsigned long)orig);
-		if (ksu_patch_text(&ksu_syscall_table[nr], &orig, sizeof(orig),
-				   KSU_PATCH_TEXT_FLUSH_DCACHE)) {
+		if (tamisu_patch_text(&tamisu_syscall_table[nr], &orig, sizeof(orig),
+				   TAMISU_PATCH_TEXT_FLUSH_DCACHE)) {
 			pr_err("restore syscall %d failed\n", nr);
 		}
 	}
@@ -254,7 +254,7 @@ void ksu_syscall_hook_exit(void)
 
 clear_state:
 	memset(syscall_hooks, 0, sizeof(syscall_hooks));
-	ksu_dispatcher_nr = -1;
+	tamisu_dispatcher_nr = -1;
 
 	pr_info("all syscall hooks restored\n");
 }

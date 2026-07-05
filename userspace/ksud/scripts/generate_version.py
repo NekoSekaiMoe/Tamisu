@@ -52,13 +52,13 @@ if __name__ == "__main__":
     # Generate C++ source file
     content = f'''#include "defs.hpp"
 
-namespace ksud {{
+namespace tamisu_daemon {{
 
 // Auto-generated at build time
 const char* const VERSION_CODE = "{code}";
 const char* const VERSION_NAME = "{name}";
 
-}}  // namespace ksud
+}}  // namespace tamisu_daemon
 '''
     
     # Only write if changed to avoid unnecessary rebuilds

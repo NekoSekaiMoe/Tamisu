@@ -36,8 +36,6 @@
     <string name="send_log">Send logs</string>
     <string name="safe_mode">Safe mode</string>
     <string name="reboot_to_apply">Reboot to take effect</string>
-    <string name="home_support_title">Support Development</string>
-    <string name="home_support_content">Tamisu will remain free and open source; donate to the project to show your support.</string>
     <string name="about_source_code"><![CDATA[View source code at %1$s<br/>Join our %2$s channel]]></string>
     <string name="profile" translatable="false">App Profile</string>
     <string name="profile_default">Default</string>
@@ -114,7 +112,7 @@
     <string name="settings_uninstall">Uninstall</string>
     <string name="settings_uninstall_permanent">Uninstall permanently</string>
     <string name="settings_restore_stock_image">Restore stock image</string>
-    <string name="settings_uninstall_permanent_message">Uninstalling Tamisu (zygisk provider, boot image modifications, and bundled ksud) completely and permanently. Modules and root are owned by your root solution and are not affected.</string>
+    <string name="settings_uninstall_permanent_message">Uninstalling Tamisu (zygisk provider, boot image modifications, and bundled tamisu_daemon) completely and permanently. Modules and root are owned by your root solution and are not affected.</string>
     <string name="settings_restore_stock_image_message">Restore the stock factory boot image (if a backup exists), usually used before OTA. To remove Tamisu entirely, use "Uninstall permanently".</string>
     <string name="flashing">Flashing</string>
     <string name="flash_success">Flash success</string>
@@ -154,7 +152,7 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="home_contribution_card">Tamisu</string>
-    <string name="home_contribution_card_desc">Tamisu is a kernel-level Zygisk provider (à la ZygiskNext), not a root provider. It coexists with KernelSU, Magisk, or APatch, owning only zygote injection while the root solution owns su, app profile, and modules.</string>
+    <string name="home_contribution_card_desc">Tamisu is a kernel-level Zygisk provider (à la ZygiskNext), not a root provider. It coexists with Tamisu, Magisk, or APatch, owning only zygote injection while the root solution owns su, app profile, and modules.</string>
     <string name="custom_settings">Custom settings</string>
     <!-- Error Messages -->
     <!-- lkm/gki install -->
@@ -249,7 +247,7 @@
     <string name="log_viewer_search_placeholder">Search by UID, command, or details…</string>
     <string name="log_viewer_clear_search">Clear search</string>
     <string name="log_viewer_view_logs">View Usage Logs</string>
-    <string name="log_viewer_view_logs_summary">View Tamisu / ksud / dmesg logs</string>
+    <string name="log_viewer_view_logs_summary">View Tamisu / tamisu_daemon / dmesg logs</string>
     <string name="log_viewer_exclude_subtypes">Exclude sub-types</string>
     <string name="log_viewer_exclude_current_app">Current App</string>
     <string name="log_viewer_exclude_viewer_refresh">Log Viewer Self-Refresh</string>
@@ -366,17 +364,17 @@
     
     <!-- Advanced Tools -->
 
-    <!-- ksud daemon version / update -->
-    <string name="home_ksud_daemon_title">ksud daemon</string>
-    <string name="home_ksud_daemon_apk_version">Manager-bundled ksud: %1$s</string>
-    <string name="home_ksud_daemon_installed_version">Installed ksud (/data/adb/ksud): %1$s</string>
-    <string name="home_ksud_daemon_unknown">Unknown</string>
-    <string name="home_ksud_daemon_sync">Sync ksud daemon</string>
-    <string name="home_ksud_daemon_syncing">Syncing…</string>
+    <!-- tamisu_daemon daemon version / update -->
+    <string name="home_tamisu_daemon_daemon_title">tamisu_daemon daemon</string>
+    <string name="home_tamisu_daemon_daemon_apk_version">Manager-bundled tamisu_daemon: %1$s</string>
+    <string name="home_tamisu_daemon_daemon_installed_version">Installed tamisu_daemon (/data/tamisu_daemon): %1$s</string>
+    <string name="home_tamisu_daemon_daemon_unknown">Unknown</string>
+    <string name="home_tamisu_daemon_daemon_sync">Sync tamisu_daemon daemon</string>
+    <string name="home_tamisu_daemon_daemon_syncing">Syncing…</string>
     <string name="setting_change_saved_reboot">Setting saved, reboot to take effect</string>
     <string name="setting_change_failed">Setting failed</string>
-    <string name="settings_auto_update_ksud">Auto-update ksud daemon</string>
-    <string name="settings_auto_update_ksud_summary">Sync the bundled ksud binary to /data/adb/ksud on app cold-start. Off by default; otherwise use the manual button on the home page.</string>
+    <string name="settings_auto_update_tamisu_daemon">Auto-update tamisu_daemon daemon</string>
+    <string name="settings_auto_update_tamisu_daemon_summary">Sync the bundled tamisu_daemon binary to /data/tamisu_daemon on app cold-start. Off by default; otherwise use the manual button on the home page.</string>
 
     <string name="su_request_desc">An app is requesting superuser (su) access.</string>
     <string name="su_request_allow_forever">Allow always</string>

@@ -28,7 +28,7 @@ struct yz_event {
 
 #define YZ_MAX_MODULE_FDS 8
 
-#define KSU_IOCTL_YZ_HANDOFF _IOC(_IOC_WRITE, 'T', 50, 0)
+#define TAMISU_IOCTL_YZ_HANDOFF _IOC(_IOC_WRITE, 'T', 50, 0)
 
 struct yz_handoff_cmd {
   __u32 pid;
@@ -38,22 +38,22 @@ struct yz_handoff_cmd {
   __s32 fds[YZ_MAX_MODULE_FDS];
 };
 
-#define KSU_IOCTL_YZ_SET_DLOPEN _IOC(_IOC_WRITE, 'T', 51, 0)
+#define TAMISU_IOCTL_YZ_SET_DLOPEN _IOC(_IOC_WRITE, 'T', 51, 0)
 
 struct yz_dlopen_cmd {
   __u64 dlopen_offset;
   __u64 dlsym_offset;
 };
 
-#define KSU_IOCTL_YZ_RELOAD _IOC(_IOC_WRITE, 'T', 52, 0)
+#define TAMISU_IOCTL_YZ_RELOAD _IOC(_IOC_WRITE, 'T', 52, 0)
 
-#define KSU_IOCTL_YZ_SET_YUKILINKER _IOC(_IOC_WRITE, 'T', 53, 0)
+#define TAMISU_IOCTL_YZ_SET_YUKILINKER _IOC(_IOC_WRITE, 'T', 53, 0)
 
 struct yz_yukilinker_cmd {
   __u32 enabled;
 };
 
-#define KSU_IOCTL_YZ_UNMAP_PID _IOC(_IOC_WRITE, 'T', 55, 0)
+#define TAMISU_IOCTL_YZ_UNMAP_PID _IOC(_IOC_WRITE, 'T', 55, 0)
 
 #define YZ_MAX_UNMAP_SEGS 8
 
@@ -64,7 +64,7 @@ struct yz_unmap_pid_cmd {
   __u64 size[YZ_MAX_UNMAP_SEGS];
 };
 
-#define KSU_IOCTL_YZ_UNMAP_SELF _IOC(_IOC_WRITE, 'T', 56, 0)
+#define TAMISU_IOCTL_YZ_UNMAP_SELF _IOC(_IOC_WRITE, 'T', 56, 0)
 
 struct yz_unmap_self_cmd {
   __u32 n_segs;
@@ -73,7 +73,7 @@ struct yz_unmap_self_cmd {
   __u64 size[YZ_MAX_UNMAP_SEGS];
 };
 
-#define KSU_IOCTL_YZ_PATCH_TEXT _IOC(_IOC_WRITE, 'T', 57, 0)
+#define TAMISU_IOCTL_YZ_PATCH_TEXT _IOC(_IOC_WRITE, 'T', 57, 0)
 
 #define YZ_PATCH_TEXT_MAX 64
 
@@ -84,7 +84,7 @@ struct yz_patch_text_cmd {
   __u8 bytes[YZ_PATCH_TEXT_MAX];
 };
 
-#define KSU_IOCTL_YZ_SET_NATIVE_TARGETS _IOC(_IOC_WRITE, 'T', 58, 0)
+#define TAMISU_IOCTL_YZ_SET_NATIVE_TARGETS _IOC(_IOC_WRITE, 'T', 58, 0)
 
 #define YZ_NATIVE_TARGET_MAX 64
 #define YZ_NATIVE_TARGET_VALUE_MAX 256
@@ -105,7 +105,7 @@ struct yz_native_targets_cmd {
   struct yz_native_target targets[YZ_NATIVE_TARGET_MAX];
 };
 
-#define KSU_IOCTL_YZ_RESTORE_NATIVE_LOAD_POLICY _IOC(_IOC_WRITE, 'T', 59, 0)
+#define TAMISU_IOCTL_YZ_RESTORE_NATIVE_LOAD_POLICY _IOC(_IOC_WRITE, 'T', 59, 0)
 
 struct yz_native_load_policy_cmd {
   __u32 pid;

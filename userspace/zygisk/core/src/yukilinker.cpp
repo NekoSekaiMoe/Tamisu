@@ -1052,7 +1052,7 @@ static inline void yuki_raw_close(int fd) {
 #endif // #if defined(__aarch64__)
 }
 
-static constexpr char kCorePath[] = "/data/adb/ksu/lib/yukizygisk/libzygisk.so";
+static constexpr char kCorePath[] = "/data/tamisu/lib/yukizygisk/libzygisk.so";
 
 extern "C" {
 

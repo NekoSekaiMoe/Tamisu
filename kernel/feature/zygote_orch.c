@@ -112,11 +112,11 @@ static void zo_on_free(void *data, struct task_struct *p)
 
 	if (tracked) {
 		pr_info("zygote_orch: [gone] app pid=%d uid=%u\n", p->pid, uid);
-		ksu_zygote_ctl_release(p->pid);
+		tamisu_zygote_ctl_release(p->pid);
 	}
 }
 
-void ksu_zygote_orch_init(void)
+void tamisu_zygote_orch_init(void)
 {
 	int ret = register_trace_sched_process_fork(zo_on_fork, NULL);
 
@@ -136,7 +136,7 @@ void ksu_zygote_orch_init(void)
 	pr_info("zygote_orch: lifecycle state machine armed\n");
 }
 
-void ksu_zygote_orch_exit(void)
+void tamisu_zygote_orch_exit(void)
 {
 	unregister_trace_sched_process_fork(zo_on_fork, NULL);
 	unregister_trace_sched_process_free(zo_on_free, NULL);
@@ -145,12 +145,12 @@ void ksu_zygote_orch_exit(void)
 
 #else /* !CONFIG_TRACEPOINTS */
 
-void ksu_zygote_orch_init(void)
+void tamisu_zygote_orch_init(void)
 {
 	pr_warn("zygote_orch: CONFIG_TRACEPOINTS off; orchestrator disabled\n");
 }
 
-void ksu_zygote_orch_exit(void)
+void tamisu_zygote_orch_exit(void)
 {
 }
 
@@ -158,7 +158,7 @@ void ksu_zygote_orch_exit(void)
 
 /* current == the specializing child; dropping to an app uid reveals its
  * identity -- the injection decision point. */
-void ksu_zygote_orch_on_uid_change(uid_t old_uid, uid_t new_uid)
+void tamisu_zygote_orch_on_uid_change(uid_t old_uid, uid_t new_uid)
 {
 	unsigned long flags;
 	pid_t pid = current->pid;
@@ -191,11 +191,11 @@ void ksu_zygote_orch_on_uid_change(uid_t old_uid, uid_t new_uid)
 		pr_info(
 		    "zygote_orch: [specialize-kernel] pid=%d uid=%u appid=%u\n",
 		    pid, new_uid, new_uid % 100000);
-		ksu_zygote_nl_emit_specialize(pid, new_uid % 100000);
+		tamisu_zygote_nl_emit_specialize(pid, new_uid % 100000);
 	}
 }
 
-void ksu_zygote_orch_on_userspace_report(pid_t pid, uid_t uid)
+void tamisu_zygote_orch_on_userspace_report(pid_t pid, uid_t uid)
 {
 	unsigned long flags;
 	bool specialized = false;
@@ -220,6 +220,6 @@ void ksu_zygote_orch_on_userspace_report(pid_t pid, uid_t uid)
 		pr_info("zygote_orch: [specialize-userspace] pid=%d uid=%u "
 			"appid=%u\n",
 			pid, uid, uid % 100000);
-		ksu_zygote_nl_emit_specialize(pid, uid % 100000);
+		tamisu_zygote_nl_emit_specialize(pid, uid % 100000);
 	}
 }

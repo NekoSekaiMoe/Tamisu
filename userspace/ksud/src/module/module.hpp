@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 struct CommonScriptEnv {
     std::string kernel_ver_code;
@@ -32,4 +32,4 @@ CommonScriptEnv build_common_script_env();
 void apply_common_script_env(const CommonScriptEnv& env, const char* module_id = nullptr,
                              bool set_magisk_compat = false);
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

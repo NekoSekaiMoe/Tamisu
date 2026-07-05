@@ -1,7 +1,7 @@
 #include "utils.hpp"
 #include "boot/boot_patch.hpp"
 #include "core/assets.hpp"
-#include "core/ksucalls.hpp"
+#include "core/tamisuctl.hpp"
 #include "core/restorecon.hpp"
 #include "defs.hpp"
 #include "log.hpp"
@@ -29,7 +29,7 @@
 #include <zip.h>
 #endif  // #ifdef USE_LIBZIP
 
-namespace ksud {
+namespace tamisu_daemon {
 
 bool ensure_dir_exists(const std::string& path) {
     struct stat st{};
@@ -151,7 +151,7 @@ bool is_safe_mode() {
         return true;
     }
 
-    // Check kernel safemode via ksucalls (volume down key detection)
+    // Check kernel safemode via tamisuctl (volume down key detection)
     const bool kernel_safemode = check_kernel_safemode();
     if (kernel_safemode) {
         LOGI("safemode: true (kernel volume down)");
@@ -289,7 +289,7 @@ bool is_magisk_zygisk_enabled() {
 
 bool is_zygisk_impl_module(const std::string& module_id) {
     // Module ids that ship an independent zygisk daemon. Kept in sync with
-    // manager/app/.../ui/util/KsuCli.kt:ZYGISK_IMPL_MODULE_IDS.
+    // manager/app/.../ui/util/TamisuCli.kt:ZYGISK_IMPL_MODULE_IDS.
     //
     //   zygisksu  -- ZygiskNext and NeoZygisk (they share this id)
     //   rezygisk  -- ReZygisk (by mywalki)
@@ -661,7 +661,7 @@ int install(const std::optional<std::string>& magiskboot_path) {
     std::ifstream src(self_path.data(), std::ios::binary);
     std::ofstream dst(DAEMON_PATH, std::ios::binary);
     if (!src || !dst) {
-        LOGE("Failed to copy ksud");
+        LOGE("Failed to copy tamisu_daemon");
         return 1;
     }
     dst << src.rdbuf();
@@ -675,7 +675,7 @@ int install(const std::optional<std::string>& magiskboot_path) {
         LOGW("Failed to restore SELinux contexts");
     }
 
-    // Ensure BINARY_DIR and symlinks (ksud, busybox) exist
+    // Ensure BINARY_DIR and symlinks (tamisu_daemon, busybox) exist
     if (ensure_binaries(false) != 0) {
         LOGW("Failed to ensure binaries");
     }
@@ -801,4 +801,4 @@ bool parse_uint64(const std::string& s, uint64_t* out) {
     *out = static_cast<uint64_t>(val);
     return true;
 }
-}  // namespace ksud
+}  // namespace tamisu_daemon

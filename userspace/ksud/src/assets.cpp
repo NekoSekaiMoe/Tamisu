@@ -3,7 +3,7 @@
 #include "log.hpp"
 #include "utils.hpp"
 
-namespace ksud {
+namespace tamisu_daemon {
 
 // Assets are now embedded at compile time by embed_assets.py
 // The generated assets_data.cpp contains:
@@ -15,4 +15,4 @@ namespace ksud {
 
 // This file is kept for any additional asset-related utilities
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

@@ -74,16 +74,16 @@ add_library(yukizncore SHARED
     src/yukilinker.cpp
     src/self_unmap.S
     src/solist.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../ksud/third_party/ndk-busybox/archival/libarchive/unxz/xz_dec_lzma2.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../ksud/third_party/ndk-busybox/archival/libarchive/unxz/xz_dec_stream.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../ksud/third_party/ndk-busybox/archival/libarchive/unxz/xz_dec_bcj.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../tamisu_daemon/third_party/ndk-busybox/archival/libarchive/unxz/xz_dec_lzma2.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../tamisu_daemon/third_party/ndk-busybox/archival/libarchive/unxz/xz_dec_stream.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../tamisu_daemon/third_party/ndk-busybox/archival/libarchive/unxz/xz_dec_bcj.c
 )
 set_target_properties(yukizncore PROPERTIES PREFIX "lib" OUTPUT_NAME yukizncore)
 target_include_directories(yukizncore PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
     ${CMAKE_CURRENT_SOURCE_DIR}/../daemon
     ${CMAKE_CURRENT_SOURCE_DIR}/../third_party/lsplt/lsplt/src/main/jni/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../ksud/third_party/ndk-busybox/archival/libarchive/unxz
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../tamisu_daemon/third_party/ndk-busybox/archival/libarchive/unxz
     ${CMAKE_CURRENT_SOURCE_DIR}/../../..)
 target_compile_options(yukizncore PRIVATE
     -Os

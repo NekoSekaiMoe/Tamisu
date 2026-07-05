@@ -10,7 +10,7 @@
 #include "ss/services.h"
 #include "ss/symtab.h"
 
-#define KSU_SUPPORT_ADD_TYPE
+#define TAMISU_SUPPORT_ADD_TYPE
 
 //////////////////////////////////////////////////////
 // Declaration
@@ -67,7 +67,7 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 // rules
 #define strip_av(effect, invert) ((effect == AVTAB_AUDITDENY) == !invert)
 
-#define ksu_hash_for_each(node_ptr, n_slot, cur)                               \
+#define tamisu_hash_for_each(node_ptr, n_slot, cur)                               \
 	int i;                                                                 \
 	for (i = 0; i < n_slot; ++i)                                           \
 		for (cur = node_ptr[i]; cur; cur = cur->next)
@@ -75,11 +75,11 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 // htable is a struct instead of pointer above 5.8.0:
 // https://elixir.bootlin.com/linux/v5.8-rc1/source/security/selinux/ss/symtab.h
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 8, 0)
-#define ksu_hashtab_for_each(htab, cur)                                        \
-	ksu_hash_for_each(htab.htable, htab.size, cur)
+#define tamisu_hashtab_for_each(htab, cur)                                        \
+	tamisu_hash_for_each(htab.htable, htab.size, cur)
 #else
-#define ksu_hashtab_for_each(htab, cur)                                        \
-	ksu_hash_for_each(htab->htable, htab->size, cur)
+#define tamisu_hashtab_for_each(htab, cur)                                        \
+	tamisu_hash_for_each(htab->htable, htab->size, cur)
 #endif // #if LINUX_VERSION_CODE >= KERNEL_VERSIO...
 
 // symtab_search is introduced on 5.9.0:
@@ -90,7 +90,7 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 #endif // #if LINUX_VERSION_CODE < KERNEL_VERSION...
 
 #define avtab_for_each(avtab, cur)                                             \
-	ksu_hash_for_each(avtab.htable, avtab.nslot, cur);
+	tamisu_hash_for_each(avtab.htable, avtab.nslot, cur);
 
 static struct avtab_node *get_avtab_node(struct policydb *db,
 					 struct avtab_key *key,
@@ -266,14 +266,14 @@ static void add_rule_raw(struct policydb *db, struct type_datum *src,
 	if (src == NULL) {
 		struct hashtab_node *node;
 		if (strip_av(effect, invert)) {
-			ksu_hashtab_for_each(db->p_types.table, node)
+			tamisu_hashtab_for_each(db->p_types.table, node)
 			{
 				add_rule_raw(db,
 					     (struct type_datum *)node->datum,
 					     tgt, cls, perm, effect, invert);
 			};
 		} else {
-			ksu_hashtab_for_each(db->p_types.table, node)
+			tamisu_hashtab_for_each(db->p_types.table, node)
 			{
 				struct type_datum *type =
 				    (struct type_datum *)(node->datum);
@@ -286,14 +286,14 @@ static void add_rule_raw(struct policydb *db, struct type_datum *src,
 	} else if (tgt == NULL) {
 		struct hashtab_node *node;
 		if (strip_av(effect, invert)) {
-			ksu_hashtab_for_each(db->p_types.table, node)
+			tamisu_hashtab_for_each(db->p_types.table, node)
 			{
 				add_rule_raw(db, src,
 					     (struct type_datum *)node->datum,
 					     cls, perm, effect, invert);
 			};
 		} else {
-			ksu_hashtab_for_each(db->p_types.table, node)
+			tamisu_hashtab_for_each(db->p_types.table, node)
 			{
 				struct type_datum *type =
 				    (struct type_datum *)(node->datum);
@@ -305,7 +305,7 @@ static void add_rule_raw(struct policydb *db, struct type_datum *src,
 		}
 	} else if (cls == NULL) {
 		struct hashtab_node *node;
-		ksu_hashtab_for_each(db->p_classes.table, node)
+		tamisu_hashtab_for_each(db->p_classes.table, node)
 		{
 			add_rule_raw(db, src, tgt,
 				     (struct class_datum *)node->datum, perm,
@@ -361,7 +361,7 @@ static void add_xperm_rule_raw(struct policydb *db, struct type_datum *src,
 {
 	if (src == NULL) {
 		struct hashtab_node *node;
-		ksu_hashtab_for_each(db->p_types.table, node)
+		tamisu_hashtab_for_each(db->p_types.table, node)
 		{
 			struct type_datum *type =
 			    (struct type_datum *)(node->datum);
@@ -372,7 +372,7 @@ static void add_xperm_rule_raw(struct policydb *db, struct type_datum *src,
 		};
 	} else if (tgt == NULL) {
 		struct hashtab_node *node;
-		ksu_hashtab_for_each(db->p_types.table, node)
+		tamisu_hashtab_for_each(db->p_types.table, node)
 		{
 			struct type_datum *type =
 			    (struct type_datum *)(node->datum);
@@ -383,7 +383,7 @@ static void add_xperm_rule_raw(struct policydb *db, struct type_datum *src,
 		};
 	} else if (cls == NULL) {
 		struct hashtab_node *node;
-		ksu_hashtab_for_each(db->p_classes.table, node)
+		tamisu_hashtab_for_each(db->p_classes.table, node)
 		{
 			add_xperm_rule_raw(db, src, tgt,
 					   (struct class_datum *)(node->datum),
@@ -651,15 +651,15 @@ static bool add_genfscon(struct policydb *db, const char *fs_name,
 
 // https://github.com/torvalds/linux/commit/590b9d576caec6b4c46bba49ed36223a399c3fc5#diff-cc9aa90e094e6e0f47bd7300db4f33cf4366b98b55d8753744f31eb69c691016R844-R845
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
-#define ksu_kvrealloc(p, new_size, _old_size) kvrealloc(p, new_size, GFP_KERNEL)
+#define tamisu_kvrealloc(p, new_size, _old_size) kvrealloc(p, new_size, GFP_KERNEL)
 // https://github.com/torvalds/linux/commit/de2860f4636256836450c6543be744a50118fc66#diff-fa19cdd9c3369d7f59aa2e8404628109408dbf8e1b568d1157a27328f75b8410R638-R652
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 15, 0)
-#define ksu_kvrealloc(p, new_size, old_size)                                   \
+#define tamisu_kvrealloc(p, new_size, old_size)                                   \
 	kvrealloc(p, old_size, new_size, GFP_KERNEL)
 #else
 // https://cs.android.com/android/_/android/kernel/common/+/f5f3e54f811679761c33526e695bd296190faade
 // Some 5.10 kernel don't have this backport, so copy one.
-void *ksu_kvrealloc_compat(const void *p, size_t oldsize, size_t newsize,
+void *tamisu_kvrealloc_compat(const void *p, size_t oldsize, size_t newsize,
 			   gfp_t flags)
 {
 	void *newp;
@@ -673,8 +673,8 @@ void *ksu_kvrealloc_compat(const void *p, size_t oldsize, size_t newsize,
 	kvfree(p);
 	return newp;
 }
-#define ksu_kvrealloc(p, new_size, old_size)                                   \
-	ksu_kvrealloc_compat(p, old_size, new_size, GFP_KERNEL)
+#define tamisu_kvrealloc(p, new_size, old_size)                                   \
+	tamisu_kvrealloc_compat(p, old_size, new_size, GFP_KERNEL)
 #endif // #if LINUX_VERSION_CODE >= KERNEL_VERSIO...
 
 static bool add_type(struct policydb *db, const char *type_name, bool attr)
@@ -708,7 +708,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 		return false;
 	}
 
-	struct ebitmap *new_type_attr_map_array = ksu_kvrealloc(
+	struct ebitmap *new_type_attr_map_array = tamisu_kvrealloc(
 	    db->type_attr_map_array, value * sizeof(struct ebitmap),
 	    (value - 1) * sizeof(struct ebitmap));
 
@@ -717,7 +717,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 		return false;
 	}
 
-	struct type_datum **new_type_val_to_struct = ksu_kvrealloc(
+	struct type_datum **new_type_val_to_struct = tamisu_kvrealloc(
 	    db->type_val_to_struct, sizeof(*db->type_val_to_struct) * value,
 	    sizeof(*db->type_val_to_struct) * (value - 1));
 
@@ -727,7 +727,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 	}
 
 	char **new_val_to_name_types =
-	    ksu_kvrealloc(db->sym_val_to_name[SYM_TYPES],
+	    tamisu_kvrealloc(db->sym_val_to_name[SYM_TYPES],
 			  sizeof(char *) * value, sizeof(char *) * (value - 1));
 	if (!new_val_to_name_types) {
 		pr_err("add_type: alloc val_to_name failed\n");
@@ -759,7 +759,7 @@ static bool set_type_state(struct policydb *db, const char *type_name,
 	struct type_datum *type;
 	if (type_name == NULL) {
 		struct hashtab_node *node;
-		ksu_hashtab_for_each(db->p_types.table, node)
+		tamisu_hashtab_for_each(db->p_types.table, node)
 		{
 			type = (struct type_datum *)(node->datum);
 			if (ebitmap_set_bit(&db->permissive_map, type->value,
@@ -792,7 +792,7 @@ static void add_typeattribute_raw(struct policydb *db, struct type_datum *type,
 	struct hashtab_node *node;
 	struct constraint_node *n;
 	struct constraint_expr *e;
-	ksu_hashtab_for_each(db->p_classes.table, node)
+	tamisu_hashtab_for_each(db->p_classes.table, node)
 	{
 		struct class_datum *cls = (struct class_datum *)(node->datum);
 		for (n = cls->constraints; n; n = n->next) {
@@ -836,71 +836,71 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 //////////////////////////////////////////////////////////////////////////
 
 // Operation on types
-bool ksu_type(struct policydb *db, const char *name, const char *attr)
+bool tamisu_type(struct policydb *db, const char *name, const char *attr)
 {
 	return add_type(db, name, false) && add_typeattribute(db, name, attr);
 }
 
-bool ksu_attribute(struct policydb *db, const char *name)
+bool tamisu_attribute(struct policydb *db, const char *name)
 {
 	return add_type(db, name, true);
 }
 
-bool ksu_permissive(struct policydb *db, const char *type)
+bool tamisu_permissive(struct policydb *db, const char *type)
 {
 	return set_type_state(db, type, true);
 }
 
-bool ksu_enforce(struct policydb *db, const char *type)
+bool tamisu_enforce(struct policydb *db, const char *type)
 {
 	return set_type_state(db, type, false);
 }
 
-bool ksu_typeattribute(struct policydb *db, const char *type, const char *attr)
+bool tamisu_typeattribute(struct policydb *db, const char *type, const char *attr)
 {
 	return add_typeattribute(db, type, attr);
 }
 
 // Access vector rules
-bool ksu_allow(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_allow(struct policydb *db, const char *src, const char *tgt,
 	       const char *cls, const char *perm)
 {
 	return add_rule(db, src, tgt, cls, perm, AVTAB_ALLOWED, false);
 }
 
-bool ksu_deny(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_deny(struct policydb *db, const char *src, const char *tgt,
 	      const char *cls, const char *perm)
 {
 	return add_rule(db, src, tgt, cls, perm, AVTAB_ALLOWED, true);
 }
 
-bool ksu_auditallow(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_auditallow(struct policydb *db, const char *src, const char *tgt,
 		    const char *cls, const char *perm)
 {
 	return add_rule(db, src, tgt, cls, perm, AVTAB_AUDITALLOW, false);
 }
-bool ksu_dontaudit(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_dontaudit(struct policydb *db, const char *src, const char *tgt,
 		   const char *cls, const char *perm)
 {
 	return add_rule(db, src, tgt, cls, perm, AVTAB_AUDITDENY, true);
 }
 
 // Extended permissions access vector rules
-bool ksu_allowxperm(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_allowxperm(struct policydb *db, const char *src, const char *tgt,
 		    const char *cls, const char *range)
 {
 	return add_xperm_rule(db, src, tgt, cls, range, AVTAB_XPERMS_ALLOWED,
 			      false);
 }
 
-bool ksu_auditallowxperm(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_auditallowxperm(struct policydb *db, const char *src, const char *tgt,
 			 const char *cls, const char *range)
 {
 	return add_xperm_rule(db, src, tgt, cls, range, AVTAB_XPERMS_AUDITALLOW,
 			      false);
 }
 
-bool ksu_dontauditxperm(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_dontauditxperm(struct policydb *db, const char *src, const char *tgt,
 			const char *cls, const char *range)
 {
 	return add_xperm_rule(db, src, tgt, cls, range, AVTAB_XPERMS_DONTAUDIT,
@@ -908,7 +908,7 @@ bool ksu_dontauditxperm(struct policydb *db, const char *src, const char *tgt,
 }
 
 // Type rules
-bool ksu_type_transition(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_type_transition(struct policydb *db, const char *src, const char *tgt,
 			 const char *cls, const char *def, const char *obj)
 {
 	if (obj) {
@@ -918,32 +918,32 @@ bool ksu_type_transition(struct policydb *db, const char *src, const char *tgt,
 	}
 }
 
-bool ksu_type_change(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_type_change(struct policydb *db, const char *src, const char *tgt,
 		     const char *cls, const char *def)
 {
 	return add_type_rule(db, src, tgt, cls, def, AVTAB_CHANGE);
 }
 
-bool ksu_type_member(struct policydb *db, const char *src, const char *tgt,
+bool tamisu_type_member(struct policydb *db, const char *src, const char *tgt,
 		     const char *cls, const char *def)
 {
 	return add_type_rule(db, src, tgt, cls, def, AVTAB_MEMBER);
 }
 
 // File system labeling
-bool ksu_genfscon(struct policydb *db, const char *fs_name, const char *path,
+bool tamisu_genfscon(struct policydb *db, const char *fs_name, const char *path,
 		  const char *ctx)
 {
 	return add_genfscon(db, fs_name, path, ctx);
 }
 
-void ksu_destroy_sepolicy(struct selinux_policy *pol)
+void tamisu_destroy_sepolicy(struct selinux_policy *pol)
 {
 	policydb_destroy(&pol->policydb);
 	kfree(pol);
 }
 
-struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
+struct selinux_policy *tamisu_dup_sepolicy(struct selinux_policy *old_pol)
 {
 	int ret;
 	size_t len;

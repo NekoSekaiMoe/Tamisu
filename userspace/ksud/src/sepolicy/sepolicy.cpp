@@ -1,5 +1,5 @@
 #include "sepolicy.hpp"
-#include "../core/ksucalls.hpp"
+#include "../core/tamisuctl.hpp"
 #include "../log.hpp"
 #include "../utils.hpp"
 
@@ -13,7 +13,7 @@
 #include <sstream>
 #include <vector>
 
-namespace ksud {
+namespace tamisu_daemon {
 
 // Constants matching kernel interface
 static constexpr size_t SEPOLICY_MAX_LEN = 128;
@@ -741,4 +741,4 @@ int sepolicy_check_rule(const std::string& policy_or_file) {
     return 1;
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

@@ -7,50 +7,50 @@
 extern "C" {
 #include "uapi/feature.h"
 }
-#include "uapi/supercall.h"  // EVENT_*, KSU_MARK_* are macros
+#include "uapi/supercall.h"  // EVENT_*, TAMISU_MARK_* are macros
 
-namespace ksud {
+namespace tamisu_daemon {
 
 // Version info
-constexpr const char* KSUD_VERSION = "1.0.0";
-constexpr int KSUD_VERSION_CODE = 10000;
+constexpr const char* TAMISU_DAEMON_VERSION = "1.0.0";
+constexpr int TAMISU_DAEMON_VERSION_CODE = 10000;
 extern const char* const VERSION_CODE;
 extern const char* const VERSION_NAME;
 
 // Paths
 constexpr const char* ADB_DIR = "/data/adb/";
-constexpr const char* WORKING_DIR = "/data/adb/ksu/";
-constexpr const char* BINARY_DIR = "/data/adb/ksu/bin/";
-constexpr const char* LOG_DIR = "/data/adb/ksu/log/";
+constexpr const char* WORKING_DIR = "/data/tamisu/";
+constexpr const char* BINARY_DIR = "/data/tamisu/bin/";
+constexpr const char* LOG_DIR = "/data/tamisu/log/";
 
 // Binary tool paths
-constexpr const char* BUSYBOX_PATH = "/data/adb/ksu/bin/busybox";
-constexpr const char* RESETPROP_PATH = "/data/adb/ksu/bin/resetprop";
-constexpr const char* BOOTCTL_PATH = "/data/adb/ksu/bin/bootctl";
+constexpr const char* BUSYBOX_PATH = "/data/tamisu/bin/busybox";
+constexpr const char* RESETPROP_PATH = "/data/tamisu/bin/resetprop";
+constexpr const char* BOOTCTL_PATH = "/data/tamisu/bin/bootctl";
 
-constexpr const char* KSURC_PATH = "/data/adb/ksu/.ksurc";
-constexpr const char* DAEMON_PATH = "/data/adb/ksud";
-constexpr const char* MAGISKBOOT_PATH = "/data/adb/ksu/bin/magiskboot";
+constexpr const char* TAMISURC_PATH = "/data/tamisu/.tamisurc";
+constexpr const char* DAEMON_PATH = "/data/tamisu_daemon";
+constexpr const char* MAGISKBOOT_PATH = "/data/tamisu/bin/magiskboot";
 
-// YukiZygisk runtime payload: ksud stages these at post-fs-data; the kernel
-// reads the first-stage/core libraries as ksu_cred and hands them to target
+// YukiZygisk runtime payload: tamisu_daemon stages these at post-fs-data; the kernel
+// reads the first-stage/core libraries as tamisu_cred and hands them to target
 // processes via memfd, so target processes never open these paths directly.
-// Private to ksu's lib dir to avoid colliding with other zygisk implementations
+// Private to tamisu's lib dir to avoid colliding with other zygisk implementations
 // under /data/adb/zygisk.
-constexpr const char* YUKIZYGISK_DIR = "/data/adb/ksu/lib/yukizygisk/";
-constexpr const char* ZCORE_PATH = "/data/adb/ksu/lib/yukizygisk/libzygisk.so";
-constexpr const char* ZNCORE_PATH = "/data/adb/ksu/lib/yukizygisk/libyukizncore.so";
+constexpr const char* YUKIZYGISK_DIR = "/data/tamisu/lib/yukizygisk/";
+constexpr const char* ZCORE_PATH = "/data/tamisu/lib/yukizygisk/libzygisk.so";
+constexpr const char* ZNCORE_PATH = "/data/tamisu/lib/yukizygisk/libyukizncore.so";
 // Split-out anonymous module loader; core dlopen's it (fd brokered by zygiskd).
-constexpr const char* ZYUKILINKER_PATH = "/data/adb/ksu/lib/yukizygisk/libyukilinker.so";
+constexpr const char* ZYUKILINKER_PATH = "/data/tamisu/lib/yukizygisk/libyukilinker.so";
 // Runtime config, kept apart from the binary payload dir so the manager can
 // rewrite it freely. zygiskd parses it and brokers it to core.
-constexpr const char* YZCONFIG_DIR = "/data/adb/ksu/yukizygisk/";
-constexpr const char* YZCONFIG_PATH = "/data/adb/ksu/yukizygisk/yzconfig.json";
-constexpr const char* DAEMON_LINK_PATH = "/data/adb/ksu/bin/ksud";
+constexpr const char* YZCONFIG_DIR = "/data/tamisu/yukizygisk/";
+constexpr const char* YZCONFIG_PATH = "/data/tamisu/yukizygisk/yzconfig.json";
+constexpr const char* DAEMON_LINK_PATH = "/data/tamisu/bin/tamisu_daemon";
 
 constexpr const char* MODULE_DIR = "/data/adb/modules/";
-constexpr const char* PREINIT_DIR_WATCHDOG = "/metadata/watchdog/ksu/";
-constexpr const char* PREINIT_DIR_DEFAULT = "/metadata/ksu/";
+constexpr const char* PREINIT_DIR_WATCHDOG = "/metadata/watchdog/tamisu/";
+constexpr const char* PREINIT_DIR_DEFAULT = "/metadata/tamisu/";
 constexpr const char* MODULES_RC_FILE = "modules.rc";
 constexpr const char* MODULES_RC_TMP_FILE = ".modules.rc.tmp";
 
@@ -62,18 +62,18 @@ constexpr const char* REMOVE_FILE_NAME = "remove";
 constexpr const char* MODULE_INIT_RC_DIR = "initrc";
 
 // Module config system
-constexpr const char* MODULE_CONFIG_DIR = "/data/adb/ksu/module_configs/";
+constexpr const char* MODULE_CONFIG_DIR = "/data/tamisu/module_configs/";
 constexpr const char* PERSIST_CONFIG_NAME = "persist.config";
 constexpr const char* TEMP_CONFIG_NAME = "tmp.config";
 
 // Backup
-constexpr const char* KSU_BACKUP_DIR = "/data/adb/ksu/";
-constexpr const char* KSU_BACKUP_FILE_PREFIX = "ksu_backup_";
+constexpr const char* TAMISU_BACKUP_DIR = "/data/tamisu/";
+constexpr const char* TAMISU_BACKUP_FILE_PREFIX = "tamisu_backup_";
 constexpr const char* BACKUP_FILENAME = "stock_image.sha1";
 
-// No need to redefine FeatureId, EVENT_*, KSU_MARK_* —
+// No need to redefine FeatureId, EVENT_*, TAMISU_MARK_* —
 // they are all provided by uapi/feature.h and uapi/supercall.h.
-// C++ callers can use the C enum ksu_feature_id values directly or
-// via the convenience wrappers in core/ksucalls.hpp.
+// C++ callers can use the C enum tamisu_feature_id values directly or
+// via the convenience wrappers in core/tamisuctl.hpp.
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

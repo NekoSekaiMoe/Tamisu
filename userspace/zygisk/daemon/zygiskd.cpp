@@ -49,11 +49,11 @@
 #include <cstdio>
 #include <cstdlib>
 
-namespace ksud {
-int ksuctl(int request, void *arg);
+namespace tamisu_daemon {
+int tamisuctl(int request, void *arg);
 bool uid_granted_root(uint32_t uid);
 bool uid_should_umount(uint32_t uid);
-} // namespace ksud
+} // namespace tamisu_daemon
 
 namespace {
 
@@ -276,7 +276,7 @@ std::vector<NativeModule> scan_native_modules() {
     while (std::getline(f, line)) {
       NativeModule m{};
       if (parse_native_module_line(module_id, base, line, &m)) {
-        if (!ksud::lsetfilecon(m.lib_path, ksud::SYSTEM_LIB_CON))
+        if (!tamisu_daemon::lsetfilecon(m.lib_path, tamisu_daemon::SYSTEM_LIB_CON))
           DLOGE("native module: failed to label lib=%s", m.lib_path.c_str());
         DLOGI("native module: id=%s target=%s%s lib=%s companion=%u",
               m.module_id.c_str(),
@@ -302,7 +302,7 @@ void publish_native_targets() {
     t.type = m.target_type;
     snprintf(t.value, sizeof(t.value), "%s", m.target.c_str());
   }
-  int ret = ksud::ksuctl(KSU_IOCTL_YZ_SET_NATIVE_TARGETS, &cmd);
+  int ret = tamisu_daemon::tamisuctl(TAMISU_IOCTL_YZ_SET_NATIVE_TARGETS, &cmd);
   if (ret == 0) {
     DLOGI("native targets: %u module(s), kernel ret=0", cmd.count);
   } else {
@@ -716,7 +716,7 @@ static void yz_umount_root_in_ns() {
     std::string root, target, source;
     if (!yz_mi_parse(line, root, target, source))
       continue;
-    bool should = source == "KSU" || source == "magisk" || source == "APatch" ||
+    bool should = source == "TAMISU" || source == "magisk" || source == "APatch" ||
                   target.rfind("/data/adb/modules", 0) == 0 ||
                   root.rfind("/adb/modules/", 0) == 0;
     if (should)
@@ -751,9 +751,9 @@ static bool yz_revert_app_mounts(pid_t app_pid) {
 
 uint32_t query_flags(uint32_t uid) {
   uint32_t flags = 0;
-  if (ksud::uid_granted_root(uid))
+  if (tamisu_daemon::uid_granted_root(uid))
     flags |= 1u << 0;
-  if (ksud::uid_should_umount(uid))
+  if (tamisu_daemon::uid_should_umount(uid))
     flags |= 1u << 1;
   return flags;
 }
@@ -786,7 +786,7 @@ void read_yzconfig() {
   std::set<std::string> granted;
   bool grant_filter_active = false;
   std::map<std::string, ModuleScope> scopes;
-  int fd = open(ksud::YZCONFIG_PATH, O_RDONLY | O_CLOEXEC);
+  int fd = open(tamisu_daemon::YZCONFIG_PATH, O_RDONLY | O_CLOEXEC);
   if (fd >= 0) {
     std::string buf;
     char tmp[1024];
@@ -857,7 +857,7 @@ void read_yzconfig() {
   g_module_scopes = std::move(scopes);
   yz_yukilinker_cmd yc{};
   yc.enabled = cfg.yukilinker;
-  ksud::ksuctl(KSU_IOCTL_YZ_SET_YUKILINKER, &yc);
+  tamisu_daemon::tamisuctl(TAMISU_IOCTL_YZ_SET_YUKILINKER, &yc);
   DLOGI("yzconfig: yukilinker=%u denylist_mode=%u dmesg_log=%u grant=%u "
         "(%zu module(s), %zu scoped)",
         cfg.yukilinker, cfg.denylist_mode, cfg.dmesg_log,
@@ -1372,7 +1372,7 @@ void handle_client(int client) {
     // telemetry; anyone else gets an empty reply (len 0). The manager itself
     // connects, so the peer uid is its own app uid.
     // Tamisu has no manager-app concept: the only legitimate caller of
-    // GetStatus is a root-owned process (ksud, manager app holding root).
+    // GetStatus is a root-owned process (tamisu_daemon, manager app holding root).
     // Gate on peer uid == 0 directly, no manager-uid lookup needed.
     std::string js;
     struct ucred cr{};
@@ -1456,7 +1456,7 @@ void handle_client(int client) {
       pcmd.len = len;
       pcmd.addr = addr;
       memcpy(pcmd.bytes, bytes, len);
-      ok = ksud::ksuctl(KSU_IOCTL_YZ_PATCH_TEXT, &pcmd) == 0 ? 1 : 0;
+      ok = tamisu_daemon::tamisuctl(TAMISU_IOCTL_YZ_PATCH_TEXT, &pcmd) == 0 ? 1 : 0;
     }
     write_exact(client, &ok, sizeof(ok));
     break;
@@ -1552,7 +1552,7 @@ void handle_client(int client) {
         cr.pid > 0) {
       yz_native_load_policy_cmd cmd{};
       cmd.pid = static_cast<uint32_t>(cr.pid);
-      int ret = ksud::ksuctl(KSU_IOCTL_YZ_RESTORE_NATIVE_LOAD_POLICY, &cmd);
+      int ret = tamisu_daemon::tamisuctl(TAMISU_IOCTL_YZ_RESTORE_NATIVE_LOAD_POLICY, &cmd);
       DLOGI("native load policy restore: pid=%d ret=%d", cr.pid, ret);
       ok = ret == 0 ? 1 : 0;
     }
@@ -1724,7 +1724,7 @@ bool send_dlopen_offset() {
     return false;
   }
 
-  int ret = ksud::ksuctl(KSU_IOCTL_YZ_SET_DLOPEN, &cmd);
+  int ret = tamisu_daemon::tamisuctl(TAMISU_IOCTL_YZ_SET_DLOPEN, &cmd);
   DLOGI("linker dlopen '%s'=0x%llx dlsym '%s'=0x%llx -> kernel ret=%d",
         dlopen_name, (unsigned long long)cmd.dlopen_offset, dlsym_name,
         (unsigned long long)cmd.dlsym_offset, ret);

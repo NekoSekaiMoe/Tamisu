@@ -90,7 +90,7 @@ import org.json.JSONObject
 import ui.screen.moreSettings.component.SettingsCard
 import ui.screen.moreSettings.component.SwitchSettingItem
 
-private const val YZCONFIG_DIR = "/data/adb/ksu/yukizygisk"
+private const val YZCONFIG_DIR = "/data/tamisu/yukizygisk"
 private const val YZCONFIG_PATH = "$YZCONFIG_DIR/yzconfig.json"
 
 data class YzConfig(
@@ -334,7 +334,7 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
     LaunchedEffect(Unit) {
         config = readYzConfig()
         injectionActive =
-            ShellUtils.fastCmd(getRootShell(), "ksud feature get yukizygisk 2>/dev/null")
+            ShellUtils.fastCmd(getRootShell(), "tamisu_daemon feature get yukizygisk 2>/dev/null")
                 ?.contains("enabled", ignoreCase = true) == true
     }
 

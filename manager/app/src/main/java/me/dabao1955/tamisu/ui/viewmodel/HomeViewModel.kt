@@ -26,8 +26,8 @@ class HomeViewModel : ViewModel() {
 
     data class SystemStatus(
         val isManager: Boolean = false,
-        val ksuVersion: Int? = null,
-        val ksuFullVersion : String? = null,
+        val tamisuVersion: Int? = null,
+        val tamisuFullVersion : String? = null,
         val kernelVersion: KernelVersion = getKernelVersion(),
         val isRootAvailable: Boolean = false,
         val requireNewKernel: Boolean = false,
@@ -96,7 +96,7 @@ class HomeViewModel : ViewModel() {
                     false
                 }
 
-                val ksuVersion = if (isManager) Natives.version else null
+                val tamisuVersion = if (isManager) Natives.version else null
 
                 val fullVersion = try {
                     Natives.getFullVersion()
@@ -104,7 +104,7 @@ class HomeViewModel : ViewModel() {
                     "Unknown"
                 }
 
-                val ksuFullVersion = if (isKernelSimpleMode) {
+                val tamisuFullVersion = if (isKernelSimpleMode) {
                     try {
                         val startIndex = fullVersion.indexOf('v')
                         if (startIndex >= 0) {
@@ -148,8 +148,8 @@ class HomeViewModel : ViewModel() {
 
                 systemStatus = SystemStatus(
                     isManager = isManager,
-                    ksuVersion = ksuVersion,
-                    ksuFullVersion = ksuFullVersion,
+                    tamisuVersion = tamisuVersion,
+                    tamisuFullVersion = tamisuFullVersion,
                     kernelVersion = kernelVersion,
                     isRootAvailable = isRootAvailable,
                     requireNewKernel = requireNewKernel,
@@ -265,7 +265,7 @@ class HomeViewModel : ViewModel() {
     private suspend fun checkIfDataNeedsRefresh(): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                val currentKsuVersion = try {
+                val currentTamisuVersion = try {
                     if (Natives.isManager) {
                         Natives.version
                     } else null
@@ -273,7 +273,7 @@ class HomeViewModel : ViewModel() {
                     null
                 }
 
-                if (currentKsuVersion != systemStatus.ksuVersion) {
+                if (currentTamisuVersion != systemStatus.tamisuVersion) {
                     return@withContext true
                 }
 

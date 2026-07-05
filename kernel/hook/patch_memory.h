@@ -3,8 +3,8 @@
  * Copyright (C) 2023 bmax121. All Rights Reserved.
  */
 
-#ifndef __KSU_PATCH_MEMORY_H
-#define __KSU_PATCH_MEMORY_H
+#ifndef __TAMISU_PATCH_MEMORY_H
+#define __TAMISU_PATCH_MEMORY_H
 
 #include <linux/types.h>
 #include <linux/version.h>
@@ -21,9 +21,9 @@
 #error "Unsupported arch"
 #endif // #ifdef __aarch64__
 
-#define KSU_PATCH_TEXT_FLUSH_DCACHE 1
+#define TAMISU_PATCH_TEXT_FLUSH_DCACHE 1
 
 unsigned long phys_from_virt(unsigned long addr, int *err);
-int ksu_patch_text(void *dst, void *src, size_t len, int flags);
+int tamisu_patch_text(void *dst, void *src, size_t len, int flags);
 
-#endif // #ifndef __KSU_PATCH_MEMORY_H
+#endif // #ifndef __TAMISU_PATCH_MEMORY_H

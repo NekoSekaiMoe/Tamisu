@@ -33,7 +33,7 @@ import me.dabao1955.tamisu.ui.util.execKsud
 import me.dabao1955.tamisu.ui.util.*
 import me.dabao1955.tamisu.ui.util.getRootShell
 import me.dabao1955.tamisu.ui.util.isSELinuxEnforcing
-import me.dabao1955.tamisu.ui.util.ksudReadString
+import me.dabao1955.tamisu.ui.util.tamisu_daemonReadString
 import com.topjohnwu.superuser.ShellUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -83,7 +83,7 @@ class MoreSettingsHandlers(
         CardConfig.save(context)
 
         state.selinuxEnabled = isSELinuxEnforcing()
-        state.hideBlEnabled = ksudReadString("feature hide-bl").contains("enabled")
+        state.hideBlEnabled = tamisu_daemonReadString("feature hide-bl").contains("enabled")
     }
 
     fun handleThemeModeChange(index: Int) {

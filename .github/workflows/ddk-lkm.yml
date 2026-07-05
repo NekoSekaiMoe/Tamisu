@@ -1,4 +1,4 @@
-name: Build KernelSU Kernel Module
+name: Build Tamisu Kernel Module
 
 on:
   workflow_call:
@@ -17,8 +17,8 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
-  build-kernelsu-ko:
-    name: Build kernelsu.ko for ${{ inputs.kmi }}
+  build-tamisu-ko:
+    name: Build tamisu.ko for ${{ inputs.kmi }}
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/ylarod/ddk-min:${{ inputs.kmi }}-${{ inputs.ddk_release }}
@@ -34,7 +34,7 @@ jobs:
         cd kernel
         test -f include/uapi/supercall.h
 
-        echo "=== Building kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
+        echo "=== Building tamisu.ko for KMI: ${{ inputs.kmi }} ==="
         CONFIG_TAMISU=m CC=clang make
         
         echo "=== Build completed ==="
@@ -50,7 +50,7 @@ jobs:
         llvm-strip -d "/github/workspace/out/$OUTPUT_NAME"
         echo "Size after stripping: $(du -h "/github/workspace/out/$OUTPUT_NAME" | cut -f1)"
         
-    - name: Upload kernelsu.ko artifact
+    - name: Upload tamisu.ko artifact
       uses: actions/upload-artifact@v6
       with:
         name: ${{ inputs.kmi }}-lkm

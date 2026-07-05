@@ -1,5 +1,5 @@
 #include "module.hpp"
-#include "../core/ksucalls.hpp"
+#include "../core/tamisuctl.hpp"
 #include "../core/restorecon.hpp"
 #include "../defs.hpp"
 #include "../log.hpp"
@@ -23,7 +23,7 @@
 extern "C" int resetprop_main(int argc, char** argv);
 #endif // #if defined(RESETPROP_ALONE_AVAILABLE) ...
 
-namespace ksud {
+namespace tamisu_daemon {
 
 namespace {
 
@@ -34,7 +34,7 @@ bool file_exists(const std::string& path) {
     return stat(path.c_str(), &st) == 0;
 }
 
-std::filesystem::path preinit_ksu_dir() {
+std::filesystem::path preinit_tamisu_dir() {
     if (std::filesystem::is_directory("/metadata/watchdog")) {
         return PREINIT_DIR_WATCHDOG;
     }
@@ -101,8 +101,8 @@ void warn_regenerate_preinit_rc_failed(int ret) {
 CommonScriptEnv build_common_script_env() {
     CommonScriptEnv env;
     env.kernel_ver_code = std::to_string(get_version());
-    env.late_load = (get_flags() & KSU_GET_INFO_FLAG_LATE_LOAD) != 0;
-    const auto [zygisk_value, zygisk_supported] = get_feature(KSU_FEATURE_YUKIZYGISK);
+    env.late_load = (get_flags() & TAMISU_GET_INFO_FLAG_LATE_LOAD) != 0;
+    const auto [zygisk_value, zygisk_supported] = get_feature(TAMISU_FEATURE_YUKIZYGISK);
     env.zygisk_enabled = zygisk_supported && zygisk_value != 0;
 
     std::string binary_dir = std::string(BINARY_DIR);
@@ -123,17 +123,17 @@ CommonScriptEnv build_common_script_env() {
 void apply_common_script_env(const CommonScriptEnv& env, const char* module_id,
                              bool set_magisk_compat) {
     setenv("ASH_STANDALONE", "1", 1);
-    setenv("KSU", "true", 1);
+    setenv("TAMISU", "true", 1);
     setenv("YUKISU", "1", 1);
-    setenv("KSU_KERNEL_VER_CODE", env.kernel_ver_code.c_str(), 1);
-    setenv("KSU_VER_CODE", VERSION_CODE, 1);
-    setenv("KSU_VER", VERSION_NAME, 1);
+    setenv("TAMISU_KERNEL_VER_CODE", env.kernel_ver_code.c_str(), 1);
+    setenv("TAMISU_VER_CODE", VERSION_CODE, 1);
+    setenv("TAMISU_VER", VERSION_NAME, 1);
     setenv("PATH", env.path.c_str(), 1);
 
     if (env.late_load) {
-        setenv("KSU_LATE_LOAD", "1", 1);
+        setenv("TAMISU_LATE_LOAD", "1", 1);
     } else {
-        unsetenv("KSU_LATE_LOAD");
+        unsetenv("TAMISU_LATE_LOAD");
     }
 
     if (env.zygisk_enabled) {
@@ -148,9 +148,9 @@ void apply_common_script_env(const CommonScriptEnv& env, const char* module_id,
     }
 
     if (module_id != nullptr && module_id[0] != '\0') {
-        setenv("KSU_MODULE", module_id, 1);
+        setenv("TAMISU_MODULE", module_id, 1);
     } else {
-        unsetenv("KSU_MODULE");
+        unsetenv("TAMISU_MODULE");
     }
 }
 
@@ -159,7 +159,7 @@ void apply_common_script_env(const CommonScriptEnv& env, const char* module_id,
 int run_script(const std::string& script, bool block, const std::string& module_id = "");
 
 int regenerate_preinit_rc() {
-    const std::filesystem::path preinit_dir = preinit_ksu_dir();
+    const std::filesystem::path preinit_dir = preinit_tamisu_dir();
     std::error_code ec;
     std::filesystem::create_directories(preinit_dir, ec);
     if (ec) {
@@ -331,7 +331,7 @@ int exec_stage_script(const std::string& stage, bool block) {
         if (file_exists(module_path + "/" + REMOVE_FILE_NAME))
             continue;
 
-        // Run stage script with module_id for KSU_MODULE env var
+        // Run stage script with module_id for TAMISU_MODULE env var
         std::string script;
         script.reserve(module_path.size() + 1U + stage.size() + 3U);
         script += module_path;
@@ -594,4 +594,4 @@ std::map<std::string, std::vector<std::string>> get_managed_features() {
     return managed_features_map;
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon

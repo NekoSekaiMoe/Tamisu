@@ -10,14 +10,14 @@
 #include <sys/system_properties.h>
 #endif  // #ifdef __ANDROID__
 
-namespace ksud {
+namespace tamisu_daemon {
 
 namespace {
 
 constexpr size_t kLogTagSize = 32U;
 
 LogLevel g_log_level = LogLevel::INFO;
-std::array<char, kLogTagSize> g_log_tag = {"KernelSU"};
+std::array<char, kLogTagSize> g_log_tag = {"Tamisu"};
 
 void log_write(LogLevel level, const char* fmt, va_list args) {
     if (level < g_log_level) {
@@ -130,4 +130,4 @@ void log_e(const char* fmt, ...) {  // NOLINT(cert-dcl50-cpp)
     va_end(args);
 }
 
-}  // namespace ksud
+}  // namespace tamisu_daemon
