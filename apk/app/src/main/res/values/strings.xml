@@ -47,13 +47,7 @@
     <string name="profile_selinux_context">SELinux context</string>
     <string name="profile_umount_modules">Umount modules</string>
     <string name="profile_no_new_privs">No new privileges</string>
-    <string name="failed_to_update_app_profile">Failed to update App Profile for %s</string>
-    <string name="set_as_dynamic_manager">Set as dynamic manager</string>
-    <string name="set_as_dynamic_manager_summary">Persist this app signature and trust it as a dynamic manager</string>
-    <string name="dynamic_manager_set_failed">Failed to set %s as dynamic manager</string>
-    <string name="dynamic_manager_del_failed">Failed to remove %s from dynamic managers</string>
-    <string name="dynamic_manager_signature_unavailable">Unable to extract dynamic manager signature for %s</string>
-    <string name="uapi_mismatch">The manager (UAPI %1$d) and kernel (UAPI %2$d) are out of sync. Please update both the kernel and the manager to matching versions.</string>
+    <string name="failed_to_update_app_profile">Failed to update App Profile for %s</string>    <string name="uapi_mismatch">The manager (UAPI %1$d) and kernel (UAPI %2$d) are out of sync. Please update both the kernel and the manager to matching versions.</string>
     <string name="settings_yukizygisk">YukiZygisk</string>
     <string name="settings_yukizygisk_summary">Capture zygote and inject Zygisk modules. Takes effect after a reboot. Off by default.</string>
     <string name="settings_yukizygisk_toast_on">YukiZygisk enabled — reboot to apply</string>
@@ -91,9 +85,7 @@
     <string name="settings_check_update_summary">Automatically check for updates when opening the app</string>
     <string name="grant_root_failed">Failed to grant root!</string>
     <string name="action">Action</string>
-    <string name="close">Close</string>
-    <string name="home_auth_signature_tag">Signature</string>
-    <!-- Kasumi toasts -->
+    <string name="close">Close</string>    <!-- Kasumi toasts -->
     <string name="direct_install">Direct install (Recommended)</string>
     <string name="select_file">Select an image to patch</string>
     <string name="install_inactive_slot">Install to inactive slot (After OTA)</string>
@@ -290,11 +282,7 @@
     <string name="show_password">Show password</string>
     <string name="hide_password">Hide password</string>
     
-    <!-- SuperKey settings -->
-    <string name="signature_bypass_title">SuperKey Only Mode</string>
-    <string name="signature_bypass_desc">Disable APK signature verification. Manager will only be recognized through SuperKey authentication.</string>
-
-    <!-- Kasumi Configuration -->
+    <!-- SuperKey settings -->    <!-- Kasumi Configuration -->
     <!-- Kasumi uname spoofing -->
     <!-- Kasumi user hide rules -->
 

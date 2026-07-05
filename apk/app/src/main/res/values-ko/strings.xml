@@ -39,13 +39,7 @@
     <string name="profile_capabilities">권한</string>
     <string name="profile_selinux_context">SELinux 컨텍스트</string>
     <string name="profile_umount_modules">모듈 사용 해제</string>
-    <string name="failed_to_update_app_profile">%s에 대한 앱 프로필 업데이트 실패</string>
-    <string name="set_as_dynamic_manager">동적 관리자로 설정</string>
-    <string name="set_as_dynamic_manager_summary">이 앱의 서명을 유지하고 동적 관리자로 신뢰합니다</string>
-    <string name="dynamic_manager_set_failed">%s을(를) 동적 관리자로 설정하지 못했습니다</string>
-    <string name="dynamic_manager_del_failed">%s을(를) 동적 관리자에서 제거하지 못했습니다</string>
-    <string name="dynamic_manager_signature_unavailable">%s의 동적 관리자 서명을 추출할 수 없습니다</string>
-    <string name="profile_selinux_domain">도메인</string>
+    <string name="failed_to_update_app_profile">%s에 대한 앱 프로필 업데이트 실패</string>    <string name="profile_selinux_domain">도메인</string>
     <string name="profile_selinux_rules">규칙</string>
     <string name="module_update">업데이트</string>
     <string name="new_version_available">새 버전: %s이 사용 가능합니다, 여기를 눌러 업그레이드하세요.</string>
@@ -77,10 +71,7 @@
     <string name="settings_check_update_summary">앱 실행시 자동으로 업데이트 확인</string>
     <string name="grant_root_failed">루트 부여 실패!</string>
     <string name="action">동작</string>
-    <string name="close">닫기</string>
-    <string name="home_auth_signature_tag">Signature</string>
-    
-    <string name="direct_install">직접 설치 (권장)</string>
+    <string name="close">닫기</string>    <string name="direct_install">직접 설치 (권장)</string>
     <string name="select_file">패치가 필요한 이미지를 선택하세요</string>
     <string name="install_inactive_slot">비활성 슬롯에 설치 (OTA 이후)</string>
     <string name="install_inactive_slot_warning">재부팅 후 기기는 **강제로** 비활성 슬롯으로 부팅합니다!\nOTA를 진행한 후에만 이 옵션을 사용하세요.\n진행할까요?</string>
@@ -277,20 +268,7 @@
 
     
     <string name="show_password">비밀번호 표시</string>
-    <string name="hide_password">비밀번호 숨기기</string>
-
-    
-    <string name="signature_bypass_title">SuperKey 전용 모드</string>
-    <string name="signature_bypass_desc">APK 서명 확인을 비활성화합니다. 관리자는 SuperKey 인증을 통해서만 인식됩니다.</string>
-
-    
-    
-    
-
-    
-
-    
-    <string name="partition_slot_info">슬롯 정보</string>
+    <string name="hide_password">비밀번호 숨기기</string>    <string name="partition_slot_info">슬롯 정보</string>
     <string name="partition_device_type">기기 유형</string>
     <string name="partition_current_slot">현재 슬롯</string>
     <string name="partition_other_slot">다른 슬롯</string>

@@ -39,13 +39,7 @@
     <string name="profile_capabilities">權限</string>
     <string name="profile_selinux_context">SELinux</string>
     <string name="profile_umount_modules">卸載模組</string>
-    <string name="failed_to_update_app_profile">為 %s 更新 App Profile 失敗</string>
-    <string name="set_as_dynamic_manager">設為動態管理器</string>
-    <string name="set_as_dynamic_manager_summary">持久化此應用簽章並信任為動態管理器</string>
-    <string name="dynamic_manager_set_failed">將 %s 設為動態管理器失敗</string>
-    <string name="dynamic_manager_del_failed">從動態管理器中移除 %s 失敗</string>
-    <string name="dynamic_manager_signature_unavailable">無法擷取 %s 的動態管理器簽章</string>
-    <string name="profile_selinux_domain">域</string>
+    <string name="failed_to_update_app_profile">為 %s 更新 App Profile 失敗</string>    <string name="profile_selinux_domain">域</string>
     <string name="profile_selinux_rules">規則</string>
     <string name="module_update">更新</string>
     <string name="new_version_available">發現新版本：%s，點擊升級。</string>
@@ -77,10 +71,7 @@
     <string name="settings_check_update_summary">喺應用啟動後自動檢查是否有最新版</string>
     <string name="grant_root_failed">獲取 root 失敗！</string>
     <string name="action">執行</string>
-    <string name="close">關閉</string>
-    <string name="home_auth_signature_tag">Signature</string>
-    
-    <string name="direct_install">直接安裝（推薦）</string>
+    <string name="close">關閉</string>    <string name="direct_install">直接安裝（推薦）</string>
     <string name="select_file">選擇一個需要修補嘅鏡像</string>
     <string name="install_inactive_slot">安裝到未使用嘅槽位（OTA 後）</string>
     <string name="install_inactive_slot_warning">將喺重新啟動後強制切換到另一個槽位！\n注意只能喺 OTA 更新完成後嘅重新啟動之前使用。\n確認？</string>
@@ -277,20 +268,7 @@
 
     
     <string name="show_password">顯示密碼</string>
-    <string name="hide_password">隱藏密碼</string>
-
-    
-    <string name="signature_bypass_title">僅超級密鑰模式</string>
-    <string name="signature_bypass_desc">停用 APK 簽章驗證。管理器將僅透過超級密鑰認證來識別。</string>
-
-    
-    
-    
-
-    
-
-    
-    <string name="partition_slot_info">插槽資訊</string>
+    <string name="hide_password">隱藏密碼</string>    <string name="partition_slot_info">插槽資訊</string>
     <string name="partition_device_type">裝置類型</string>
     <string name="partition_current_slot">目前插槽</string>
     <string name="partition_other_slot">其他插槽</string>

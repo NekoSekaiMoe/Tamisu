@@ -39,13 +39,7 @@
     <string name="profile_capabilities">ケイパビリティ</string>
     <string name="profile_selinux_context">SELinux コンテキスト</string>
     <string name="profile_umount_modules">モジュールのアンマウント</string>
-    <string name="failed_to_update_app_profile">%s のアプリのプロファイルの更新をできませでした</string>
-    <string name="set_as_dynamic_manager">動的マネージャーとして設定</string>
-    <string name="set_as_dynamic_manager_summary">このアプリの署名を保持し、動的マネージャーとして信頼します</string>
-    <string name="dynamic_manager_set_failed">%s を動的マネージャーに設定できませんでした</string>
-    <string name="dynamic_manager_del_failed">%s を動的マネージャーから削除できませんでした</string>
-    <string name="dynamic_manager_signature_unavailable">%s の動的マネージャー署名を取得できませんでした</string>
-    <string name="profile_selinux_domain">ドメイン</string>
+    <string name="failed_to_update_app_profile">%s のアプリのプロファイルの更新をできませでした</string>    <string name="profile_selinux_domain">ドメイン</string>
     <string name="profile_selinux_rules">ルール</string>
     <string name="module_update">更新</string>
     <string name="new_version_available">最新のバージョン「%s」が利用可能です。タップしてダウンロード。</string>
@@ -77,10 +71,7 @@
     <string name="settings_check_update_summary">アプリの起動時に更新を自動で確認します。</string>
     <string name="grant_root_failed">root の付与に失敗しました！</string>
     <string name="action">アクション</string>
-    <string name="close">閉じる</string>
-    <string name="home_auth_signature_tag">Signature</string>
-    
-    <string name="direct_install">直接インストール (推奨)</string>
+    <string name="close">閉じる</string>    <string name="direct_install">直接インストール (推奨)</string>
     <string name="select_file">パッチを行うイメージを選択</string>
     <string name="install_inactive_slot">非アクティブなスロットにインストール (OTA 後)</string>
     <string name="install_inactive_slot_warning">再起動後、デバイスは**強制的に**、現在の非アクティブスロットから起動します。
@@ -279,20 +270,7 @@
 
     
     <string name="show_password">パスワードを表示</string>
-    <string name="hide_password">パスワードを非表示</string>
-
-    
-    <string name="signature_bypass_title">SuperKey のみモード</string>
-    <string name="signature_bypass_desc">APK 署名検証を無効にします。マネージャーは SuperKey 認証でのみ認識されます。</string>
-
-    
-    
-    
-
-    
-
-    
-    <string name="partition_slot_info">スロット情報</string>
+    <string name="hide_password">パスワードを非表示</string>    <string name="partition_slot_info">スロット情報</string>
     <string name="partition_device_type">デバイスの種類</string>
     <string name="partition_current_slot">現在のスロット</string>
     <string name="partition_other_slot">他のスロット</string>

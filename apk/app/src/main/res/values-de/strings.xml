@@ -39,13 +39,7 @@
     <string name="profile_capabilities">Fähigkeiten</string>
     <string name="profile_selinux_context">SELinux-Kontext</string>
     <string name="profile_umount_modules">Module aushängen</string>
-    <string name="failed_to_update_app_profile">App-Profilaktualisierung für %s fehlgeschlagen</string>
-    <string name="set_as_dynamic_manager">Als dynamischen Manager festlegen</string>
-    <string name="set_as_dynamic_manager_summary">Diese App-Signatur dauerhaft speichern und ihr als dynamischem Manager vertrauen</string>
-    <string name="dynamic_manager_set_failed">%s konnte nicht als dynamischer Manager festgelegt werden</string>
-    <string name="dynamic_manager_del_failed">%s konnte nicht aus den dynamischen Managern entfernt werden</string>
-    <string name="dynamic_manager_signature_unavailable">Signatur des dynamischen Managers für %s konnte nicht ermittelt werden</string>
-    <string name="profile_selinux_domain">Domäne</string>
+    <string name="failed_to_update_app_profile">App-Profilaktualisierung für %s fehlgeschlagen</string>    <string name="profile_selinux_domain">Domäne</string>
     <string name="profile_selinux_rules">Regeln</string>
     <string name="module_update">Aktualisieren</string>
     <string name="new_version_available">Neue Version %s verfügbar, tippen zum Aktualisieren.</string>
@@ -77,10 +71,7 @@
     <string name="settings_check_update_summary">Prüfe automatisch auf Aktualisierungen, wenn die App geöffnet wird</string>
     <string name="grant_root_failed">Root-Zugriff konnte nicht gewährt werden!</string>
     <string name="action">Aktion</string>
-    <string name="close">Schließen</string>
-    <string name="home_auth_signature_tag">Signature</string>
-    
-    <string name="direct_install">Direkte Installation (empfohlen)</string>
+    <string name="close">Schließen</string>    <string name="direct_install">Direkte Installation (empfohlen)</string>
     <string name="select_file">Datei auswählen</string>
     <string name="install_inactive_slot">In inaktiven Slot installieren (nach OTA)</string>
     <string name="install_inactive_slot_warning">Nach einem Neustart wird dein Gerät **GEZWUNGEN** in den derzeit inaktiven Slot zu starten!
@@ -279,20 +270,7 @@
 
     
     <string name="show_password">Passwort anzeigen</string>
-    <string name="hide_password">Passwort verbergen</string>
-
-    
-    <string name="signature_bypass_title">Nur-SuperKey-Modus</string>
-    <string name="signature_bypass_desc">APK-Signaturprüfung deaktivieren. Der Manager wird nur über die SuperKey-Authentifizierung erkannt.</string>
-
-    
-    
-    
-
-    
-
-    
-    <string name="partition_slot_info">Slot-Informationen</string>
+    <string name="hide_password">Passwort verbergen</string>    <string name="partition_slot_info">Slot-Informationen</string>
     <string name="partition_device_type">Gerätetyp</string>
     <string name="partition_current_slot">Aktueller Slot</string>
     <string name="partition_other_slot">Anderer Slot</string>

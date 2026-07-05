@@ -39,13 +39,7 @@
     <string name="profile_capabilities">Capacités</string>
     <string name="profile_selinux_context">Contexte SELinux</string>
     <string name="profile_umount_modules">Démonter les modules</string>
-    <string name="failed_to_update_app_profile">Échec de la modification du profil d\'application de %s</string>
-    <string name="set_as_dynamic_manager">Définir comme gestionnaire dynamique</string>
-    <string name="set_as_dynamic_manager_summary">Conserver la signature de cette application et lui faire confiance en tant que gestionnaire dynamique</string>
-    <string name="dynamic_manager_set_failed">Impossible de définir %s comme gestionnaire dynamique</string>
-    <string name="dynamic_manager_del_failed">Impossible de retirer %s des gestionnaires dynamiques</string>
-    <string name="dynamic_manager_signature_unavailable">Impossible d\'extraire la signature du gestionnaire dynamique pour %s</string>
-    <string name="profile_selinux_domain">Domaine</string>
+    <string name="failed_to_update_app_profile">Échec de la modification du profil d\'application de %s</string>    <string name="profile_selinux_domain">Domaine</string>
     <string name="profile_selinux_rules">Règles</string>
     <string name="module_update">Mettre à jour</string>
     <string name="new_version_available">La nouvelle version %s est disponible, appuyez ici pour mettre à jour.</string>
@@ -77,10 +71,7 @@
     <string name="settings_check_update_summary">Vérifier automatiquement les mises à jour à l\'ouverture de l\'application</string>
     <string name="grant_root_failed">Échec de l\'octroi des privilèges root !</string>
     <string name="action">Exécuter</string>
-    <string name="close">Fermer</string>
-    <string name="home_auth_signature_tag">Signature</string>
-    
-    <string name="direct_install">Installation directe (recommandé)</string>
+    <string name="close">Fermer</string>    <string name="direct_install">Installation directe (recommandé)</string>
     <string name="select_file">Sélectionner un fichier</string>
     <string name="install_inactive_slot">Installer dans l\'emplacement inactif (après OTA)</string>
     <string name="install_inactive_slot_warning">Votre appareil sera **FORCÉ** à démarrer sur l\'emplacement inactif actuel après un redémarrage !
@@ -279,20 +270,7 @@
 
     
     <string name="show_password">Afficher le mot de passe</string>
-    <string name="hide_password">Masquer le mot de passe</string>
-
-    
-    <string name="signature_bypass_title">Mode SuperKey uniquement</string>
-    <string name="signature_bypass_desc">Désactiver la vérification de signature APK. Le gestionnaire ne sera reconnu que par l\'authentification SuperKey.</string>
-
-    
-    
-    
-
-    
-
-    
-    <string name="partition_slot_info">Informations sur les slots</string>
+    <string name="hide_password">Masquer le mot de passe</string>    <string name="partition_slot_info">Informations sur les slots</string>
     <string name="partition_device_type">Type d\'appareil</string>
     <string name="partition_current_slot">Slot actuel</string>
     <string name="partition_other_slot">Autre slot</string>

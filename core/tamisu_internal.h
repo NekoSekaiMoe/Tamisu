@@ -17,7 +17,7 @@ static inline bool is_appuid(uid_t uid)
 }
 
 bool only_root(void);
-bool manager_or_root(void);
+bool trusted_caller(void);
 bool always_allow(void);
 bool injected_app(void);
 long tamisu_supercall_handle_ioctl(unsigned int cmd, void __user *argp);
