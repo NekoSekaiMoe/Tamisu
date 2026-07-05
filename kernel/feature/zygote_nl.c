@@ -12,6 +12,7 @@
 #include <net/sock.h>
 
 #include "feature/zygote_nl.h"
+#include "feature/zygote_orch.h"
 #include "uapi/yukizygisk.h"
 #include "klog.h" // IWYU pragma: keep
 

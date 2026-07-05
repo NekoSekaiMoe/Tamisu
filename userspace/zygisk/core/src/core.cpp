@@ -17,6 +17,7 @@
 #include <android/dlext.h>
 #include <dlfcn.h>
 #include <link.h>
+#include <linux/netlink.h>
 #include <regex.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
@@ -247,6 +248,48 @@ int connect_zygiskd() {
     return -1;
   }
   return fd;
+}
+
+/* Report app specialization to kernel via netlink.
+ * This provides more reliable detection than kernel-side UID change monitoring. */
+static void report_specialization_to_kernel(pid_t pid, uid_t uid) {
+  int sock = socket(AF_NETLINK, SOCK_RAW, YZ_NETLINK_PROTO);
+  if (sock < 0) {
+    ZLOGE("report_specialization: failed to create netlink socket: %s",
+          strerror(errno));
+    return;
+  }
+
+  sockaddr_nl addr{};
+  addr.nl_family = AF_NETLINK;
+  addr.nl_pid = 0; // kernel
+  addr.nl_groups = 0;
+
+  struct {
+    nlmsghdr hdr;
+    yz_event ev;
+  } msg{};
+
+  msg.hdr.nlmsg_len = sizeof(msg);
+  msg.hdr.nlmsg_type = YZ_NL_MSG_EVENT;
+  msg.hdr.nlmsg_flags = 0;
+  msg.hdr.nlmsg_seq = 0;
+  msg.hdr.nlmsg_pid = getpid();
+
+  msg.ev.type = YZ_EV_REPORT_SPECIALIZE;
+  msg.ev.pid = pid;
+  msg.ev.appid = uid; // full uid, kernel will extract appid
+
+  ssize_t ret =
+      sendto(sock, &msg, sizeof(msg), 0, reinterpret_cast<sockaddr *>(&addr),
+             sizeof(addr));
+  if (ret < 0) {
+    ZLOGE("report_specialization: sendto failed: %s", strerror(errno));
+  } else {
+    ZLOGI("report_specialization: reported pid=%d uid=%u to kernel", pid, uid);
+  }
+
+  close(sock);
 }
 
 /* One-shot fd request to zygiskd. */
@@ -631,6 +674,12 @@ static void yz_revert_self_mounts() {
 void run_app_post_impl(const zygisk::AppSpecializeArgs *args) {
   auto *mut = const_cast<zygisk::AppSpecializeArgs *>(args);
   AppSpecializeArgs_v1 v1args(mut);
+
+  /* Report specialization to kernel before running module hooks.
+   * This provides dual-path detection: userspace report (primary) +
+   * kernel LSM hook (fallback). */
+  report_specialization_to_kernel(getpid(), args->uid);
+
   for (auto &m : g_modules)
     if (m.abi != nullptr && m.abi->postAppSpecialize != nullptr) {
       g_cur = &m;
