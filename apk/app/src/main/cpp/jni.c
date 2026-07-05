@@ -33,7 +33,7 @@ NativeBridgeNP(getHookType, jstring) {
 
 NativeBridgeNP(isTamisuDriverPresent, jboolean) { return tamisu_driver_present(); }
 
-// --- YukiZygisk injection-status query ---
+// --- Tamisu Zygisk injection-status query ---
 #define YZ_REQ_GET_STATUS 7 /* == zygiskd::Request::GetStatus (zygiskd.hpp) */
 #define YZ_STATUS_MAX (1u << 20)
 

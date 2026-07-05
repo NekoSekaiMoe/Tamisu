@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * YukiZygisk AT_ENTRY injector.
+ * Tamisu Zygisk AT_ENTRY injector.
  *
  * Author: Anatdx
  */
@@ -43,11 +43,11 @@
 #include "tamisu_selinux.h"
 #include "tamisu.h"
 #include "klog.h" // IWYU pragma: keep
-#include "uapi/yukizygisk.h"
+#include "uapi/zygisk.h"
 
 static const char app_process[] = "app_process";
 
-static bool yukizygisk_enabled;
+static bool zygisk_enabled;
 
 #define ZP_ENABLE_LSM_INJECTOR 1
 
@@ -289,25 +289,25 @@ static struct tamisu_lsm_hook zygote_probe_hook = TAMISU_LSM_HOOK_INIT(
 
 typedef void (*bprm_committed_creds_fn)(zp_bprm_arg_t *bprm);
 
-static int yukizygisk_feature_get(u64 *value)
+static int zygisk_feature_get(u64 *value)
 {
-	*value = READ_ONCE(yukizygisk_enabled) ? 1 : 0;
+	*value = READ_ONCE(zygisk_enabled) ? 1 : 0;
 	return 0;
 }
 
-static int yukizygisk_feature_set(u64 value)
+static int zygisk_feature_set(u64 value)
 {
-	WRITE_ONCE(yukizygisk_enabled, value != 0);
-	pr_info("zygote_probe: YukiZygisk %s\n",
-		yukizygisk_enabled ? "ENABLED" : "disabled");
+	WRITE_ONCE(zygisk_enabled, value != 0);
+	pr_info("zygote_probe: Tamisu Zygisk %s\n",
+		zygisk_enabled ? "ENABLED" : "disabled");
 	return 0;
 }
 
-static const struct tamisu_feature_handler yukizygisk_feature_handler = {
+static const struct tamisu_feature_handler zygisk_feature_handler = {
     .feature_id = TAMISU_FEATURE_YUKIZYGISK,
-    .name = "yukizygisk",
-    .get_handler = yukizygisk_feature_get,
-    .set_handler = yukizygisk_feature_set,
+    .name = "zygisk",
+    .get_handler = zygisk_feature_get,
+    .set_handler = zygisk_feature_set,
 };
 
 static bool zp_is_app_process_path(const char *filename)
@@ -438,9 +438,9 @@ static bool zp_parse_zygote_args(struct mm_struct *mm, char *socket_name,
 	return found;
 }
 
-#define ZP_LOADER_PATH "/data/tamisu/lib/yukizygisk/libyukilinker.so"
-#define ZP_CORE_PATH "/data/tamisu/lib/yukizygisk/libzygisk.so"
-#define ZP_NATIVE_CORE_PATH "/data/tamisu/lib/yukizygisk/libyukizncore.so"
+#define ZP_LOADER_PATH "/data/tamisu/lib/zygisk/libzygisk_linker.so"
+#define ZP_CORE_PATH "/data/tamisu/lib/zygisk/libzygisk.so"
+#define ZP_NATIVE_CORE_PATH "/data/tamisu/lib/zygisk/libzygisk_zncore.so"
 #define ZP_VMA_NAME "memfd:data-code-cache"
 #define ZP_VMA_NAME_LEN sizeof(ZP_VMA_NAME)
 #define ZP_LOADER_MAX_SZ (8u << 20) /* sanity cap on a payload image */
@@ -760,7 +760,7 @@ static void zp_inject_tw_func(struct callback_head *cb)
 	}
 
 	/* Redirect only after the stub is staged. */
-	if (yukizygisk_enabled && at_entry_uaddr && at_entry_uval == saved &&
+	if (zygisk_enabled && at_entry_uaddr && at_entry_uval == saved &&
 	    saved) {
 #ifdef CONFIG_ARM64
 		/* AArch64 AT_ENTRY stub. */
@@ -858,13 +858,13 @@ static void zp_inject_tw_func(struct callback_head *cb)
 
 		/* Choose first-stage entry. */
 		if (yuki) {
-			lib_str = "libyukilinker.so";
-			lib_len = sizeof("libyukilinker.so");
+			lib_str = "libzygisk_linker.so";
+			lib_len = sizeof("libzygisk_linker.so");
 			entry_str = "yuki_bootstrap";
 			entry_len = sizeof("yuki_bootstrap");
 		} else {
-			lib_str = native ? "libyukizncore.so" : "libzygisk.so";
-			lib_len = native ? sizeof("libyukizncore.so")
+			lib_str = native ? "libzygisk_zncore.so" : "libzygisk.so";
+			lib_len = native ? sizeof("libzygisk_zncore.so")
 					 : sizeof("libzygisk.so");
 			entry_str = "zygisk_core_entry_direct";
 			entry_len = sizeof("zygisk_core_entry_direct");
@@ -933,7 +933,7 @@ static void __nocfi my_bprm_committed_creds(zp_bprm_arg_t *bprm)
 	bool by_native;
 
 	((bprm_committed_creds_fn)zygote_probe_hook.original)(bprm);
-	if (unlikely(!READ_ONCE(yukizygisk_enabled)))
+	if (unlikely(!READ_ONCE(zygisk_enabled)))
 		return;
 
 	by_sid = is_zygote(current_cred());
@@ -988,8 +988,8 @@ void tamisu_zygote_probe_init(void)
 	pr_info("zygote_probe: LSM injector disabled for bootloop isolation\n");
 #endif // #if ZP_ENABLE_LSM_INJECTOR
 
-	if (tamisu_register_feature_handler(&yukizygisk_feature_handler))
-		pr_err("zygote_probe: failed to register YukiZygisk feature\n");
+	if (tamisu_register_feature_handler(&zygisk_feature_handler))
+		pr_err("zygote_probe: failed to register Tamisu Zygisk feature\n");
 	else
 		pr_info("zygote_probe: feature registered\n");
 }
@@ -997,7 +997,7 @@ void tamisu_zygote_probe_init(void)
 void tamisu_zygote_probe_exit(void)
 {
 	tamisu_unregister_feature_handler(TAMISU_FEATURE_YUKIZYGISK);
-	WRITE_ONCE(yukizygisk_enabled, false);
+	WRITE_ONCE(zygisk_enabled, false);
 #if ZP_ENABLE_LSM_INJECTOR
 	tamisu_unregister_lsm_hook(&zygote_probe_hook);
 #endif // #if ZP_ENABLE_LSM_INJECTOR

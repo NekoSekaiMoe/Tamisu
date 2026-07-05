@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk daemon protocol.
+ * Tamisu Zygisk daemon protocol.
  *
  * Author: Anatdx
  */

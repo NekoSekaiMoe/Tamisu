@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk native core.
+ * Tamisu Zygisk native core.
  *
  * Author: Anatdx
  */
@@ -11,7 +11,7 @@
 #include "yukilinker.h"
 #include "zygiskd.h"
 
-#include "uapi/yukizygisk.h"
+#include "uapi/zygisk.h"
 
 #include "lsplt.h"
 

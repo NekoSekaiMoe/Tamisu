@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * YukiZygisk - kernel <-> zygiskd netlink channel (lifecycle event push).
+ * Tamisu Zygisk - kernel <-> zygiskd netlink channel (lifecycle event push).
  *
  * Author: Anatdx
  */
@@ -13,7 +13,7 @@
 
 #include "tamisu_zygote_nl.h"
 #include "tamisu_zygote_orch.h"
-#include "uapi/yukizygisk.h"
+#include "uapi/zygisk.h"
 #include "klog.h" // IWYU pragma: keep
 
 static struct sock *yz_sock;

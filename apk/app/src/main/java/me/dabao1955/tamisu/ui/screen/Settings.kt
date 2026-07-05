@@ -110,36 +110,36 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     content = {
                         var yukiZygiskEnabled by remember { mutableStateOf(false) }
                         val yukiZygiskStatus by produceState(initialValue = "") {
-                            value = getFeatureStatus("yukizygisk")
+                            value = getFeatureStatus("zygisk")
                         }
                         LaunchedEffect(Unit) {
-                            yukiZygiskEnabled = getFeatureValue("yukizygisk")
+                            yukiZygiskEnabled = getFeatureValue("zygisk")
                         }
                         val yukiZygiskSummary = when (yukiZygiskStatus) {
                             "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
                             "managed" -> stringResource(id = R.string.feature_status_managed_summary)
-                            else -> stringResource(id = R.string.settings_yukizygisk_summary)
+                            else -> stringResource(id = R.string.settings_zygisk_summary)
                         }
                         SwitchItem(
                             icon = Icons.Filled.Extension,
-                            title = stringResource(id = R.string.settings_yukizygisk),
+                            title = stringResource(id = R.string.settings_zygisk),
                             summary = yukiZygiskSummary,
                             checked = yukiZygiskEnabled,
                             enabled = yukiZygiskStatus == "supported",
                             onCheckedChange = { enable ->
                                 yukiZygiskEnabled = enable
                                 scope.launch {
-                                    if (setFeatureValue("yukizygisk", enable)) {
+                                    if (setFeatureValue("zygisk", enable)) {
                                         snackBarHost.showSnackbar(
                                             context.getString(
-                                                if (enable) R.string.settings_yukizygisk_toast_on
-                                                else R.string.settings_yukizygisk_toast_off
+                                                if (enable) R.string.settings_zygisk_toast_on
+                                                else R.string.settings_zygisk_toast_off
                                             )
                                         )
                                     } else {
-                                        yukiZygiskEnabled = getFeatureValue("yukizygisk")
+                                        yukiZygiskEnabled = getFeatureValue("zygisk")
                                         snackBarHost.showSnackbar(
-                                            context.getString(R.string.settings_yukizygisk_toast_failed)
+                                            context.getString(R.string.settings_zygisk_toast_failed)
                                         )
                                     }
                                 }

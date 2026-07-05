@@ -1,10 +1,10 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk manager panel.
+ * Tamisu Zygisk manager panel.
  *
  * Author: Anatdx
  */
-package ui.screen.yukizygisk
+package ui.screen.zygisk
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -90,7 +90,7 @@ import org.json.JSONObject
 import ui.screen.moreSettings.component.SettingsCard
 import ui.screen.moreSettings.component.SwitchSettingItem
 
-private const val YZCONFIG_DIR = "/data/tamisu/yukizygisk"
+private const val YZCONFIG_DIR = "/data/tamisu/zygisk"
 private const val YZCONFIG_PATH = "$YZCONFIG_DIR/yzconfig.json"
 
 data class YzConfig(
@@ -137,7 +137,7 @@ private suspend fun writeYzConfig(cfg: YzConfig) = withContext(Dispatchers.IO) {
         newJob().add("mkdir -p $YZCONFIG_DIR").exec()
         newJob().add("echo '$json' > $YZCONFIG_PATH").exec()
     }
-    execTamisuDaemon("yukizygisk reload")
+    execTamisuDaemon("zygisk reload")
 }
 
 private enum class MonitorState {
@@ -315,7 +315,7 @@ private const val YZ_POLL_INTERVAL_MS = 2000L
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
 @Composable
-fun YukiZygiskScreen(navigator: DestinationsNavigator) {
+fun Tamisu ZygiskScreen(navigator: DestinationsNavigator) {
     val scrollBehavior =
         TopAppBarDefaults.pinnedScrollBehavior(androidx.compose.material3.rememberTopAppBarState())
     val scope = rememberCoroutineScope()
@@ -334,7 +334,7 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
     LaunchedEffect(Unit) {
         config = readYzConfig()
         injectionActive =
-            ShellUtils.fastCmd(getRootShell(), "tamisu_daemon feature get yukizygisk 2>/dev/null")
+            ShellUtils.fastCmd(getRootShell(), "tamisu_daemon feature get zygisk 2>/dev/null")
                 ?.contains("enabled", ignoreCase = true) == true
     }
 
@@ -388,7 +388,7 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
             TopAppBar(
                 title = {
                     Text(
-                        stringResource(R.string.settings_yukizygisk),
+                        stringResource(R.string.settings_zygisk),
                         style = MaterialTheme.typography.titleLarge,
                     )
                 },
@@ -411,35 +411,35 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
                 .padding(horizontal = 16.dp)
                 .padding(top = 8.dp),
         ) {
-            SettingsCard(title = stringResource(R.string.yukizygisk_injection_status)) {
+            SettingsCard(title = stringResource(R.string.zygisk_injection_status)) {
                 StatusRow(
-                    stringResource(R.string.yukizygisk_kernel_injection),
-                    if (injectionActive) stringResource(R.string.yukizygisk_status_active)
-                    else stringResource(R.string.yukizygisk_status_off),
+                    stringResource(R.string.zygisk_kernel_injection),
+                    if (injectionActive) stringResource(R.string.zygisk_status_active)
+                    else stringResource(R.string.zygisk_status_off),
                 )
                 StatusRow(
-                    stringResource(R.string.yukizygisk_module_loader),
-                    if (config.yukilinker) stringResource(R.string.yukizygisk_loader_anon)
-                    else stringResource(R.string.yukizygisk_loader_system),
+                    stringResource(R.string.zygisk_module_loader),
+                    if (config.yukilinker) stringResource(R.string.zygisk_loader_anon)
+                    else stringResource(R.string.zygisk_loader_system),
                 )
                 StatusRow(
-                    stringResource(R.string.yukizygisk_denylist_behaviour),
+                    stringResource(R.string.zygisk_denylist_behaviour),
                     when (config.denylistMode) {
-                        1 -> stringResource(R.string.yukizygisk_denylist_force_long)
-                        2 -> stringResource(R.string.yukizygisk_denylist_restore_long)
-                        else -> stringResource(R.string.yukizygisk_status_off)
+                        1 -> stringResource(R.string.zygisk_denylist_force_long)
+                        2 -> stringResource(R.string.zygisk_denylist_restore_long)
+                        else -> stringResource(R.string.zygisk_status_off)
                     },
                 )
                 StatusRow(
-                    stringResource(R.string.yukizygisk_injections_session),
+                    stringResource(R.string.zygisk_injections_session),
                     injectionCount.toString(),
                 )
             }
 
-            SettingsCard(title = stringResource(R.string.yukizygisk_injected_zygotes)) {
+            SettingsCard(title = stringResource(R.string.zygisk_injected_zygotes)) {
                 if (monitoredZygotes.isEmpty()) {
                     Text(
-                        stringResource(R.string.yukizygisk_no_zygotes),
+                        stringResource(R.string.zygisk_no_zygotes),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
@@ -455,7 +455,7 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
             }
 
             MonitorCard(
-                title = stringResource(R.string.yukizygisk_native_injections),
+                title = stringResource(R.string.zygisk_native_injections),
                 trailing = {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -469,9 +469,9 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
                         Text(
                             when (nativeMonitorMode) {
                                 NativeMonitorMode.Module ->
-                                    stringResource(R.string.yukizygisk_native_mode_module)
+                                    stringResource(R.string.zygisk_native_mode_module)
                                 NativeMonitorMode.Process ->
-                                    stringResource(R.string.yukizygisk_native_mode_process)
+                                    stringResource(R.string.zygisk_native_mode_process)
                             },
                             style = MaterialTheme.typography.bodySmall,
                             fontWeight = FontWeight.Light,
@@ -539,14 +539,14 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
 
                 if (nativeMonitorMode == NativeMonitorMode.Module && moduleRows.isEmpty()) {
                     Text(
-                        stringResource(R.string.yukizygisk_no_native_modules),
+                        stringResource(R.string.zygisk_no_native_modules),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
                     )
                 } else if (nativeMonitorMode == NativeMonitorMode.Process && processRows.isEmpty()) {
                     Text(
-                        stringResource(R.string.yukizygisk_no_native_injections),
+                        stringResource(R.string.zygisk_no_native_injections),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
@@ -568,16 +568,16 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
                 }
             }
 
-            SettingsCard(title = stringResource(R.string.yukizygisk_module_loading)) {
+            SettingsCard(title = stringResource(R.string.zygisk_module_loading)) {
                 SwitchSettingItem(
                     icon = Icons.Filled.Memory,
-                    title = stringResource(R.string.yukizygisk_anon_loading_title),
-                    summary = stringResource(R.string.yukizygisk_anon_loading_summary),
+                    title = stringResource(R.string.zygisk_anon_loading_title),
+                    summary = stringResource(R.string.zygisk_anon_loading_summary),
                     checked = config.yukilinker,
                     onChange = { save(config.copy(yukilinker = it)) },
                 )
                 Text(
-                    stringResource(R.string.yukizygisk_loaded_modules_count, modulesLoadedCount),
+                    stringResource(R.string.zygisk_loaded_modules_count, modulesLoadedCount),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
@@ -588,11 +588,11 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
             }
 
             // --- Per-module zygote grant ---
-            SettingsCard(title = stringResource(R.string.yukizygisk_grant_title)) {
+            SettingsCard(title = stringResource(R.string.zygisk_grant_title)) {
                 SwitchSettingItem(
                     icon = Icons.Filled.Memory,
-                    title = stringResource(R.string.yukizygisk_grant_filter_title),
-                    summary = stringResource(R.string.yukizygisk_grant_filter_summary),
+                    title = stringResource(R.string.zygisk_grant_filter_title),
+                    summary = stringResource(R.string.zygisk_grant_filter_summary),
                     checked = config.grantFilterActive,
                     onChange = { save(config.copy(grantFilterActive = it)) },
                 )
@@ -612,9 +612,9 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
             }
 
             // --- Denylist behaviour ---
-            SettingsCard(title = stringResource(R.string.yukizygisk_denylist_behaviour)) {
+            SettingsCard(title = stringResource(R.string.zygisk_denylist_behaviour)) {
                 Text(
-                    stringResource(R.string.yukizygisk_denylist_desc),
+                    stringResource(R.string.zygisk_denylist_desc),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
@@ -629,11 +629,11 @@ fun YukiZygiskScreen(navigator: DestinationsNavigator) {
                 ) { save(config.copy(denylistMode = it)) }
             }
 
-            SettingsCard(title = stringResource(R.string.yukizygisk_log_dmesg_title)) {
+            SettingsCard(title = stringResource(R.string.zygisk_log_dmesg_title)) {
                 SwitchSettingItem(
                     icon = Icons.AutoMirrored.Filled.Article,
-                    title = stringResource(R.string.yukizygisk_log_dmesg_title),
-                    summary = stringResource(R.string.yukizygisk_log_dmesg_summary),
+                    title = stringResource(R.string.zygisk_log_dmesg_title),
+                    summary = stringResource(R.string.zygisk_log_dmesg_summary),
                     checked = config.dmesgLog,
                     onChange = { save(config.copy(dmesgLog = it)) },
                 )
@@ -664,7 +664,7 @@ private fun ZygoteMonitorRow(zygote: ZygoteMonitorEntry, onStatusClick: () -> Un
         supportingContent = {
             Text(
                 stringResource(
-                    R.string.yukizygisk_zygote_detail,
+                    R.string.zygisk_zygote_detail,
                     zygote.abi,
                     zygote.pid,
                 ),
@@ -702,11 +702,11 @@ private fun NativeModuleMonitorRow(module: NativeModuleMonitorEntry, onStatusCli
         supportingContent = {
             Text(
                 stringResource(
-                    R.string.yukizygisk_native_module_detail,
+                    R.string.zygisk_native_module_detail,
                     module.targetType,
                     module.target,
-                    if (module.companion) stringResource(R.string.yukizygisk_native_companion)
-                    else stringResource(R.string.yukizygisk_native_no_companion),
+                    if (module.companion) stringResource(R.string.zygisk_native_companion)
+                    else stringResource(R.string.zygisk_native_no_companion),
                 ),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -742,7 +742,7 @@ private fun NativeProcessMonitorRow(process: NativeProcessEntry, onStatusClick: 
         supportingContent = {
             Text(
                 stringResource(
-                    R.string.yukizygisk_native_process_detail,
+                    R.string.zygisk_native_process_detail,
                     process.abi,
                     process.pid,
                 ),
@@ -828,9 +828,9 @@ private fun MonitorCard(
 @Composable
 private fun zygoteDialog(zygote: ZygoteMonitorEntry): MonitorDialogState {
     val message = when (zygote.state) {
-        MonitorState.Injected -> stringResource(R.string.yukizygisk_zygote_injected_message)
-        MonitorState.Unsupported32 -> stringResource(R.string.yukizygisk_zygote_unsupported_message)
-        MonitorState.Failed -> stringResource(R.string.yukizygisk_zygote_failed_message)
+        MonitorState.Injected -> stringResource(R.string.zygisk_zygote_injected_message)
+        MonitorState.Unsupported32 -> stringResource(R.string.zygisk_zygote_unsupported_message)
+        MonitorState.Failed -> stringResource(R.string.zygisk_zygote_failed_message)
     }
     return MonitorDialogState(zygote.name, message)
 }
@@ -839,13 +839,13 @@ private fun zygoteDialog(zygote: ZygoteMonitorEntry): MonitorDialogState {
 private fun nativeProcessDialog(process: NativeProcessEntry): MonitorDialogState {
     val context = LocalContext.current
     val modules = process.modules.joinToString("\n") {
-        context.getString(R.string.yukizygisk_native_process_module_line, it)
+        context.getString(R.string.zygisk_native_process_module_line, it)
     }
     val base = when (process.state) {
-        MonitorState.Injected -> stringResource(R.string.yukizygisk_native_process_injected_message)
+        MonitorState.Injected -> stringResource(R.string.zygisk_native_process_injected_message)
         MonitorState.Unsupported32 ->
-            stringResource(R.string.yukizygisk_native_process_unsupported_message)
-        MonitorState.Failed -> stringResource(R.string.yukizygisk_native_process_failed_message)
+            stringResource(R.string.zygisk_native_process_unsupported_message)
+        MonitorState.Failed -> stringResource(R.string.zygisk_native_process_failed_message)
     }
     return MonitorDialogState(process.process, appendDetail(base, modules))
 }
@@ -855,17 +855,17 @@ private fun nativeModuleDialog(module: NativeModuleMonitorEntry): MonitorDialogS
     val context = LocalContext.current
     val targets = module.targets.joinToString("\n") {
         context.getString(
-            R.string.yukizygisk_native_target_line,
+            R.string.zygisk_native_target_line,
             it.process.ifEmpty { it.target },
             it.abi,
             it.pid,
         )
     }
     val base = when (module.state) {
-        MonitorState.Injected -> stringResource(R.string.yukizygisk_native_module_injected_message)
+        MonitorState.Injected -> stringResource(R.string.zygisk_native_module_injected_message)
         MonitorState.Unsupported32 ->
-            stringResource(R.string.yukizygisk_native_module_unsupported_message)
-        MonitorState.Failed -> stringResource(R.string.yukizygisk_native_module_failed_message)
+            stringResource(R.string.zygisk_native_module_unsupported_message)
+        MonitorState.Failed -> stringResource(R.string.zygisk_native_module_failed_message)
     }
     return MonitorDialogState(module.id, appendDetail(base, targets))
 }
@@ -905,9 +905,9 @@ private fun DenylistModeSelector(
     onSelect: (Int) -> Unit,
 ) {
     val options = listOf(
-        stringResource(R.string.yukizygisk_denylist_off),
-        stringResource(R.string.yukizygisk_denylist_force),
-        stringResource(R.string.yukizygisk_denylist_restore),
+        stringResource(R.string.zygisk_denylist_off),
+        stringResource(R.string.zygisk_denylist_force),
+        stringResource(R.string.zygisk_denylist_restore),
     )
     SingleChoiceSegmentedButtonRow(modifier = modifier) {
         options.forEachIndexed { index, label ->
@@ -948,7 +948,7 @@ private fun ZygoteModuleGrantList(
     ) {
         if (modules.isEmpty()) {
             Text(
-                stringResource(R.string.yukizygisk_grant_empty),
+                stringResource(R.string.zygisk_grant_empty),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 8.dp),

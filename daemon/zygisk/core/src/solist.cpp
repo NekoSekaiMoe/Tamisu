@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk solist/maps helpers.
+ * Tamisu Zygisk solist/maps helpers.
  *
  * Author: Anatdx
  */

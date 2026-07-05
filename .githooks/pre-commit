@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Pre-commit hook for YukiSU
+# Pre-commit hook for Tamisu
 # - 为所有已暂存的 C/C++ 源文件自动补全 #endif 注释
 # - 然后运行 clang-format
 

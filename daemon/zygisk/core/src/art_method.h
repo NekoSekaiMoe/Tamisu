@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk ArtMethod helper.
+ * Tamisu Zygisk ArtMethod helper.
  *
  * Author: Anatdx
  */

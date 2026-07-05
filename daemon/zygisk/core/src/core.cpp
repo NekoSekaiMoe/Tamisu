@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk core.
+ * Tamisu Zygisk core.
  *
  * Author: Anatdx
  */
@@ -12,7 +12,7 @@
 #include "zygisk.h"
 
 #include "uapi/supercall.h"
-#include "uapi/yukizygisk.h"
+#include "uapi/zygisk.h"
 
 #include <android/dlext.h>
 #include <dlfcn.h>
@@ -650,7 +650,7 @@ void run_app_pre_impl(zygisk::AppSpecializeArgs *args) {
 /* Hide injected linker entries. */
 void hide_injection() {
   yuki::solist::hide_from_solist("libzygisk");
-  yuki::solist::hide_from_solist("libyukilinker"); // split-out loader .so
+  yuki::solist::hide_from_solist("libzygisk_linker"); // split-out loader .so
   yuki::solist::drop_module_from_solist(kExecMemfdName, false);
   /* Relabel bare anonymous executable segments as ART JIT, so /proc/self/maps
    * reads them as dalvik-jit-code-cache rather than nameless rwx pages. */
@@ -969,7 +969,7 @@ void zygisk_self_destruct(JNIEnv *env, bool isolated) {
   if (!isolated) {
     bool reverted = yz_report_self_unmap();
     yuki::solist::hide_from_solist("libzygisk");
-    yuki::solist::hide_from_solist("libyukilinker");
+    yuki::solist::hide_from_solist("libzygisk_linker");
     if (!reverted)
       yz_revert_self_mounts();
   }

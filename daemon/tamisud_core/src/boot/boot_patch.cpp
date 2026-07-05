@@ -558,7 +558,7 @@ int boot_patch_impl(const std::vector<std::string>& args) {
                 printf("!   %s%s\n", BINARY_DIR, kmi_lkm_name.c_str());
                 printf("!\n");
                 printf("! You can download LKM from:\n");
-                printf("!   https://github.com/Anatdx/YukiSU/releases\n");
+                printf("!   https://github.com/Anatdx/Tamisu/releases\n");
                 printf("\n");
                 cleanup();
                 return 1;

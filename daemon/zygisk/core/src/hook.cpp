@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk zygote lifecycle hooks.
+ * Tamisu Zygisk zygote lifecycle hooks.
  *
  * Author: Anatdx
  */

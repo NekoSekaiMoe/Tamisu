@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0
-# Simplified clang-format configuration for YukiSU kernel
+# Simplified clang-format configuration for Tamisu kernel
 ---
 BasedOnStyle: LLVM
 IndentWidth: 8

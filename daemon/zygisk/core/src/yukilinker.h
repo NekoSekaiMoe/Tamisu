@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk in-memory ELF loader.
+ * Tamisu Zygisk in-memory ELF loader.
  *
  * Author: Anatdx
  */

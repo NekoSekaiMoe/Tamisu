@@ -30,7 +30,7 @@ jobs:
 
     - name: Build ko
       run: |
-        git config --global --add safe.directory /__w/YukiSU/YukiSU
+        git config --global --add safe.directory /__w/Tamisu/Tamisu
         cd core
         test -f include/uapi/supercall.h
 

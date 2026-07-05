@@ -16,7 +16,7 @@
 #include "utils.h"
 
 extern "C" {
-#include "uapi/yukizygisk.h"
+#include "uapi/zygisk.h"
 }
 
 #include <unistd.h>
@@ -175,9 +175,9 @@ int cmd_initrc(const std::vector<std::string>& args) {
     return 1;
 }
 
-int cmd_yukizygisk(const std::vector<std::string>& args) {
+int cmd_zygisk(const std::vector<std::string>& args) {
     if (args.empty() || args[0] != "reload") {
-        printf("Usage: tamisu_daemon yukizygisk reload\n");
+        printf("Usage: tamisu_daemon zygisk reload\n");
         return 1;
     }
     // Fires TAMISU_IOCTL_YZ_RELOAD -> kernel multicasts YZ_EV_RELOAD -> zygiskd
@@ -651,8 +651,8 @@ int cli_run(int argc, char** argv) {
         return cmd_sepolicy(args);
     } else if (cmd == "feature") {
         return cmd_feature(args);
-    } else if (cmd == "yukizygisk") {
-        return cmd_yukizygisk(args);
+    } else if (cmd == "zygisk") {
+        return cmd_zygisk(args);
     } else if (cmd == "initrc") {
         return cmd_initrc(args);
     } else if (cmd == "boot-patch") {

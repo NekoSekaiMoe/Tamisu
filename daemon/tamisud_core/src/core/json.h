@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
  * Minimal self-contained JSON (value / parse / dump). Extracted from the
- * to-be-removed hymo component so YukiZygisk config code carries no dependency
+ * to-be-removed hymo component so Tamisu Zygisk config code carries no dependency
  * on it. Header-only; suitable for tamisu_daemon + zygiskd config (yzconfig.json).
  */
 #pragma once

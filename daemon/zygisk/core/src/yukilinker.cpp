@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk in-memory ELF loader.
+ * Tamisu Zygisk in-memory ELF loader.
  *
  * Author: Anatdx
  */
@@ -1052,7 +1052,7 @@ static inline void yuki_raw_close(int fd) {
 #endif // #if defined(__aarch64__)
 }
 
-static constexpr char kCorePath[] = "/data/tamisu/lib/yukizygisk/libzygisk.so";
+static constexpr char kCorePath[] = "/data/tamisu/lib/zygisk/libzygisk.so";
 
 extern "C" {
 

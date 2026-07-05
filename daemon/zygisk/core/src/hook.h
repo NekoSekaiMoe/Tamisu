@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk zygote hook glue.
+ * Tamisu Zygisk zygote hook glue.
  *
  * Author: Anatdx
  */

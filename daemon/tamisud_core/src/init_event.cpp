@@ -196,7 +196,7 @@ int spawn_zygiskd() {
     return 0;
 }
 
-bool yukizygisk_feature_enabled() {
+bool zygisk_feature_enabled() {
     if (is_safe_mode()) {
         return false;
     }
@@ -204,25 +204,25 @@ bool yukizygisk_feature_enabled() {
     return supported && value != 0;
 }
 
-void ensure_yukizygisk_payload_if_enabled() {
-    if (!yukizygisk_feature_enabled()) {
+void ensure_zygisk_payload_if_enabled() {
+    if (!zygisk_feature_enabled()) {
         return;
     }
-    ensure_yukizygisk(true);
+    ensure_zygisk(true);
 }
 
 void ensure_zygiskd_running_if_enabled() {
-    if (!yukizygisk_feature_enabled())
+    if (!zygisk_feature_enabled())
         return;
     // Yield to Magisk Zygisk if it is enabled. Magisk injects via the native
     // bridge and reaches zygote earlier than we do; running both loaders in
     // one zygote process corrupts PLT hooks and crashes the process.
     // Priority: Magisk Zygisk > Tamisu > {ZygiskNext, NeoZygisk, ReZygisk}.
     if (is_magisk_zygisk_enabled()) {
-        LOGW("YukiZygisk disabled: Magisk Zygisk has higher priority");
+        LOGW("Tamisu Zygisk disabled: Magisk Zygisk has higher priority");
         return;
     }
-    LOGI("YukiZygisk feature on -- launching zygiskd");
+    LOGI("Tamisu Zygisk feature on -- launching zygiskd");
     spawn_zygiskd();
 }
 
@@ -293,7 +293,7 @@ int on_post_data_fs() {
 
     // Load feature config (with init_features handling managed features)
     init_features();
-    ensure_yukizygisk_payload_if_enabled();
+    ensure_zygisk_payload_if_enabled();
     ensure_zygiskd_running_if_enabled();
 
     // Tamisu is a zygisk provider, not a mount solution. Module mounting

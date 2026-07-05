@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk logging.
+ * Tamisu Zygisk logging.
  *
  * Author: Anatdx
  */

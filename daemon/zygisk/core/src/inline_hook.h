@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk AArch64 inline hook.
+ * Tamisu Zygisk AArch64 inline hook.
  *
  * Author: Anatdx
  */

@@ -53,7 +53,7 @@ Shell scripts: ShellCheck in CI. `installer.sh` is excluded from checks.
 The daemon is a multi-call binary. When invoked as `magiskboot`, `bootctl`, `resetprop`, `busybox`, or `zygiskd` (via argv[0] / symlinks), it dispatches to the respective embedded tool. Third-party tools are compiled from git submodules under `daemon/tamisud_core/third_party/`.
 
 Zygisk injection is two-stage:
-1. Kernel rewrites zygote's `AT_ENTRY` → single-page ARM64 stub calls system linker to load `libyukilinker.so`
+1. Kernel rewrites zygote's `AT_ENTRY` → single-page ARM64 stub calls system linker to load `libzygisk_linker.so`
 2. yukilinker (custom ELF loader) loads `libzygisk.so` and modules from memfd without bionic
 
 The kernel module hooks: `sys_ni_syscall` slot (TSR dispatcher), `sched_process_fork/free` tracepoints, LSM `bprm_committed_creds`, and a static-key-gated `__NR_execve` hook (disabled after init second stage).

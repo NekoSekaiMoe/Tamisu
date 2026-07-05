@@ -1,7 +1,7 @@
 /*
  * Tamisu Main Entry Point (LKM only)
  *
- * YukiSU supports only loadable kernel module (CONFIG_TAMISU=m).
+ * Tamisu supports only loadable kernel module (CONFIG_TAMISU=m).
  * Zygisk-only build: all su/profile/apk/sulog features removed.
  */
 

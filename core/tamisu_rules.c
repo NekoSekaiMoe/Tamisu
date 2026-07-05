@@ -437,7 +437,7 @@ void apply_tamisu_rules(void)
 	tamisu_allow(db, "system_server", TAMISU_DOMAIN, "process", "getpgid");
 	tamisu_allow(db, "system_server", TAMISU_DOMAIN, "process", "sigkill");
 
-	// YukiZygisk system_server trampolines.
+	// Tamisu Zygisk system_server trampolines.
 	tamisu_allow(db, "system_server", "system_server", "process",
 		     "execmem");
 	// https://android-review.googlesource.com/c/platform/system/logging/+/3725346

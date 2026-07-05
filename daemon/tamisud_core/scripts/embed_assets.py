@@ -193,8 +193,8 @@ int ensure_binaries(bool ignore_if_exist) {
         // Skip kernel modules and zygisk payloads - they are extracted on demand
         if (name.find("_tamisu.ko") != std::string::npos ||
             name.find("_kasumi_lkm.ko") != std::string::npos ||
-            name == "libzygisk.so" || name == "libyukizncore.so" ||
-            name == "libyukilinker.so") {
+            name == "libzygisk.so" || name == "libzygisk_zncore.so" ||
+            name == "libzygisk_linker.so") {
             continue;
         }
         

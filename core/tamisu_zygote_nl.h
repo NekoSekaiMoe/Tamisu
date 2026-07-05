@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * YukiZygisk - kernel <-> zygiskd netlink channel.
+ * Tamisu Zygisk - kernel <-> zygiskd netlink channel.
  *
  * Author: Anatdx
  */

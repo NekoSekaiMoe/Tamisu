@@ -32,20 +32,20 @@ constexpr const char* TAMISURC_PATH = "/data/tamisu/.tamisurc";
 constexpr const char* DAEMON_PATH = "/data/tamisu_daemon";
 constexpr const char* MAGISKBOOT_PATH = "/data/tamisu/bin/magiskboot";
 
-// YukiZygisk runtime payload: tamisu_daemon stages these at post-fs-data; the kernel
+// Tamisu Zygisk runtime payload: tamisu_daemon stages these at post-fs-data; the kernel
 // reads the first-stage/core libraries as tamisu_cred and hands them to target
 // processes via memfd, so target processes never open these paths directly.
 // Private to tamisu's lib dir to avoid colliding with other zygisk implementations
 // under /data/adb/zygisk.
-constexpr const char* YUKIZYGISK_DIR = "/data/tamisu/lib/yukizygisk/";
-constexpr const char* ZCORE_PATH = "/data/tamisu/lib/yukizygisk/libzygisk.so";
-constexpr const char* ZNCORE_PATH = "/data/tamisu/lib/yukizygisk/libyukizncore.so";
+constexpr const char* YUKIZYGISK_DIR = "/data/tamisu/lib/zygisk/";
+constexpr const char* ZCORE_PATH = "/data/tamisu/lib/zygisk/libzygisk.so";
+constexpr const char* ZNCORE_PATH = "/data/tamisu/lib/zygisk/libzygisk_zncore.so";
 // Split-out anonymous module loader; core dlopen's it (fd brokered by zygiskd).
-constexpr const char* ZYUKILINKER_PATH = "/data/tamisu/lib/yukizygisk/libyukilinker.so";
+constexpr const char* ZYUKILINKER_PATH = "/data/tamisu/lib/zygisk/libzygisk_linker.so";
 // Runtime config, kept apart from the binary payload dir so the manager can
 // rewrite it freely. zygiskd parses it and brokers it to core.
-constexpr const char* YZCONFIG_DIR = "/data/tamisu/yukizygisk/";
-constexpr const char* YZCONFIG_PATH = "/data/tamisu/yukizygisk/yzconfig.json";
+constexpr const char* YZCONFIG_DIR = "/data/tamisu/zygisk/";
+constexpr const char* YZCONFIG_PATH = "/data/tamisu/zygisk/yzconfig.json";
 constexpr const char* DAEMON_LINK_PATH = "/data/tamisu/bin/tamisu_daemon";
 
 constexpr const char* MODULE_DIR = "/data/adb/modules/";

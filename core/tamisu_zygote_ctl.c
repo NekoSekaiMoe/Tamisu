@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * YukiZygisk - kernel control plane: zygiskd -> kernel handoff + fd brokering,
+ * Tamisu Zygisk - kernel control plane: zygiskd -> kernel handoff + fd brokering,
  * plus in-context delivery (push) of the brokered fds into the target.
  *
  * zygiskd opens the per-app module .so files and hands their fds to the kernel
@@ -22,7 +22,7 @@
 #include <linux/uaccess.h>
 
 #include "tamisu_zygote_ctl.h"
-#include "uapi/yukizygisk.h"
+#include "uapi/zygisk.h"
 #include "klog.h" // IWYU pragma: keep
 
 struct yz_pending {

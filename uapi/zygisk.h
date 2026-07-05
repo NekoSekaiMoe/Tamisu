@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * YukiZygisk UAPI.
+ * Tamisu Zygisk UAPI.
  *
  * Author: Anatdx
  */
-#ifndef _UAPI_YUKIZYGISK_H
-#define _UAPI_YUKIZYGISK_H
+#ifndef _UAPI_TAMISU_ZYGISK_H
+#define _UAPI_TAMISU_ZYGISK_H
 
 #include <linux/ioctl.h>
 #include <linux/types.h>
@@ -118,4 +118,4 @@ struct yz_config {
   __u8 grant_filter_active;
 };
 
-#endif /* _UAPI_YUKIZYGISK_H */
+#endif /* _UAPI_TAMISU_ZYGISK_H */

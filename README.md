@@ -2,15 +2,16 @@ Tamisu
 ======
 
 Tamisu is a **kernel-level Zygisk provider** (à la ZygiskNext), not a
-root provider. It is built on the KernelSU LKM architecture and
-YukiSU's YukiZygisk injection. Its goal is to be a GKI 2.0-compatible
-ZygiskNext-style zygote injection implementation that **coexists** with
-a separate root solution (KernelSU, Magisk, APatch, ...): Tamisu owns
-zygote injection, the root solution owns `su` / app profile / modules.
+root provider. It is built on the KernelSU LKM architecture and the
+zygisk injection design inherited from YukiSU's YukiZygisk. Its goal
+is to be a GKI 2.0-compatible ZygiskNext-style zygote injection
+implementation that **coexists** with a separate root solution
+(KernelSU, Magisk, APatch, ...): Tamisu owns zygote injection, the
+root solution owns `su` / app profile / modules.
 
 Delivered as a loadable kernel module (`tamisu.ko`) + userspace daemon
-(`tamisu_daemon`) + zygisk payload (`libzygisk.so` / `libyukilinker.so`
-/ `libyukizncore.so`) + Manager APK. Built-in kernel (`CONFIG_TAMISU=y`)
+(`tamisu_daemon`) + zygisk payload (`libzygisk.so` / `libzygisk_linker.so`
+/ `libzygisk_zncore.so`) + Manager APK. Built-in kernel (`CONFIG_TAMISU=y`)
 is **not** supported — only `=m`.
 
 > [!CAUTION]
@@ -39,7 +40,7 @@ core/                          tamisu.ko LKM source (flat layout)
   tamisu_*.c / tamisu_*.h      hook, dispatch, selinux, zygote_probe, ...
   include/                     shared headers (tamisu.h, arch.h, klog.h)
   include/uapi/                UAPI mirror (feature.h, supercall.h,
-                               selinux.h, yukizygisk.h)
+                               selinux.h, zygisk.h)
   tools/                       out-of-tree helper tools
   Kbuild / Kconfig             build source of truth
 daemon/
@@ -48,7 +49,7 @@ daemon/
     assets/installer.sh        boot-time installer script
     scripts/embed_assets.py    embeds .ko and zygisk payloads
   zygisk/
-    core/                      libyukilinker.so + libzygisk.so + libyukizncore.so
+    core/                      libzygisk_linker.so + libzygisk.so + libzygisk_zncore.so
     daemon/                    zygiskd (companion daemon)
 apk/                           Manager APK (Gradle / Kotlin / Compose)
   app/src/main/cpp/            manager JNI (libtamisu.so)
@@ -127,10 +128,10 @@ linker**:
    stub calls the **target process's own system linker** —
    `android_dlopen_ext` / `dlsym` resolved inside `/system/bin/linker64`
    (offsets shipped by `zygiskd` via `send_dlopen_offset`). The system
-   linker brings in either `libyukilinker.so` (default) or, if
+   linker brings in either `libzygisk_linker.so` (default) or, if
    yukilinker is disabled, `libzygisk.so` directly.
 
-2. **Second stage** — `libyukilinker.so` is a custom in-process ELF
+2. **Second stage** — `libzygisk_linker.so` is a custom in-process ELF
    loader (`daemon/zygisk/core/src/yukilinker.cpp`). From here on,
    `libzygisk.so` (the core) and every zygisk module are loaded by
    yukilinker from memfd, without going through bionic's linker.
@@ -176,7 +177,7 @@ Tamisu shortcut.
 
 ### What the "anonymous loading" toggle actually does
 
-The yukilinker toggle in the manager (`yukizygisk_anon_loading_*`)
+The yukilinker toggle in the manager (`zygisk_anon_loading_*`)
 controls second-stage loading. When on:
 
 - modules are `mmap`'d from a memfd into anonymous pages by yukilinker

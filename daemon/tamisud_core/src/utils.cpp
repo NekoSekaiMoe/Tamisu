@@ -738,7 +738,7 @@ int uninstall(const std::optional<std::string>& magiskboot_path) {
         printf("Warning: Failed to restore boot image, you may need to manually restore\n");
     }
 
-    printf("- Uninstall YukiSU manager..\n");
+    printf("- Uninstall Tamisu manager..\n");
     system("pm uninstall me.dabao1955.tamisu");
 
     printf("- Rebooting in 5 seconds..\n");

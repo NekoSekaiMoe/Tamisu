@@ -1,12 +1,12 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk daemon.
+ * Tamisu Zygisk daemon.
  *
  * Author: Anatdx
  */
 
 #include "zygiskd.h"
-#include "uapi/yukizygisk.h"
+#include "uapi/zygisk.h"
 
 #include "core/json.h"
 #include "core/restorecon.h"

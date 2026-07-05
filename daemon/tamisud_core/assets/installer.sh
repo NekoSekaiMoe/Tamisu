@@ -478,5 +478,5 @@ SERVICED=$NVBASE/service.d
 export MAGISK_VER=25.2
 export MAGISK_VER_CODE=25200
 
-# YukiSU-specific extension semantic marker for module scripts.
+# Tamisu-specific extension semantic marker for module scripts.
 export YUKISU=1

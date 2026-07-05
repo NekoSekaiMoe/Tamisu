@@ -7,7 +7,7 @@
 
 struct file;
 
-/* YukiSU defaults to the su domain; keep tamisu as a future feature-controlled
+/* Tamisu defaults to the su domain; keep tamisu as a future feature-controlled
  * option. */
 #define TAMISU_DOMAIN "su"
 #define KERNEL_SU_FILE "tamisu_file"

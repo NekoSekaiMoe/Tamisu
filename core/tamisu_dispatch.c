@@ -33,7 +33,7 @@
 #include "tamisu_zygote_ctl.h"
 #include "tamisu_zygote_nl.h"
 #include "tamisu_zygote_probe.h"
-#include "uapi/yukizygisk.h"
+#include "uapi/zygisk.h"
 #include "tamisu_syscall_hook_manager.h"
 #include "tamisu_tp_marker.h"
 

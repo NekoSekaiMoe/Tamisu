@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-3.0 */
 /*
- * YukiZygisk self-unmap helpers.
+ * Tamisu Zygisk self-unmap helpers.
  *
  * Author: Anatdx
  */

@@ -12,16 +12,16 @@
 namespace tamisu_daemon {
 
 // Hand-written asset helpers.
-// Stage YukiZygisk payloads when embedded.
-int ensure_yukizygisk(bool ignore_if_exist) {
+// Stage Tamisu Zygisk payloads when embedded.
+int ensure_zygisk(bool ignore_if_exist) {
     struct Payload {
         const char* asset;
         const char* dest;
     };
     static const Payload payload[] = {
         {"libzygisk.so", ZCORE_PATH},
-        {"libyukizncore.so", ZNCORE_PATH},
-        {"libyukilinker.so", ZYUKILINKER_PATH},
+        {"libzygisk_zncore.so", ZNCORE_PATH},
+        {"libzygisk_linker.so", ZYUKILINKER_PATH},
     };
 
     bool embedded = false;
@@ -38,7 +38,7 @@ int ensure_yukizygisk(bool ignore_if_exist) {
     }
 
     if (!ensure_dir_exists(YUKIZYGISK_DIR)) {
-        LOGE("yukizygisk: failed to create %s", YUKIZYGISK_DIR);
+        LOGE("zygisk: failed to create %s", YUKIZYGISK_DIR);
         return 1;
     }
 
@@ -51,12 +51,12 @@ int ensure_yukizygisk(bool ignore_if_exist) {
 
         (void)ignore_if_exist;
         if (!copy_asset_to_file(p.asset, p.dest)) {
-            LOGE("yukizygisk: failed to stage %s", p.dest);
+            LOGE("zygisk: failed to stage %s", p.dest);
             continue;
         }
         chmod(p.dest, 0644);
         lsetfilecon(p.dest, SYSTEM_LIB_CON);
-        LOGI("yukizygisk: staged %s", p.dest);
+        LOGI("zygisk: staged %s", p.dest);
     }
     return 0;
 }

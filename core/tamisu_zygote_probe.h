@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * YukiZygisk - kernel-side zygote detection and AT_ENTRY injection.
+ * Tamisu Zygisk - kernel-side zygote detection and AT_ENTRY injection.
  *
  * Author: Anatdx
  */
