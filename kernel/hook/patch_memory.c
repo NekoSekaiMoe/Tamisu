@@ -82,7 +82,7 @@ fail:
 }
 
 #ifdef TAMISU_HAS_NEW_DCACHE_FLUSH
-#define tamisu_flush_dcache(start, sz)                                            \
+#define tamisu_flush_dcache(start, sz)                                         \
 	({                                                                     \
 		unsigned long __start = (start);                               \
 		unsigned long __end = __start + (sz);                          \
@@ -142,8 +142,8 @@ static int tamisu_patch_text_cb(void *arg)
 	int ret = 0;
 
 	if (atomic_inc_return(&pp->cpu_count) == num_online_cpus()) {
-		ret =
-		    tamisu_patch_text_nosync(pp->dst, pp->src, pp->len, pp->flags);
+		ret = tamisu_patch_text_nosync(pp->dst, pp->src, pp->len,
+					       pp->flags);
 		atomic_inc(&pp->cpu_count);
 	} else {
 		while (atomic_read(&pp->cpu_count) <= num_online_cpus())

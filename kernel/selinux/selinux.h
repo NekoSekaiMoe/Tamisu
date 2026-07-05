@@ -42,9 +42,10 @@ struct tamisu_file_load_policy {
 	u32 tmpfs_added_av;
 };
 
-int tamisu_file_load_policy_allow_current(struct file *file,
-				       struct tamisu_file_load_policy *state);
-int tamisu_file_load_policy_restore(const struct tamisu_file_load_policy *state);
+int tamisu_file_load_policy_allow_current(
+    struct file *file, struct tamisu_file_load_policy *state);
+int tamisu_file_load_policy_restore(
+    const struct tamisu_file_load_policy *state);
 
 int handle_sepolicy(void __user *user_data, u64 data_len);
 

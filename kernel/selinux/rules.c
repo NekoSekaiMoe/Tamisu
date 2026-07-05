@@ -97,7 +97,7 @@ static u32 tamisu_file_perm_mask(struct class_datum *cls, const char *perm_name)
 }
 
 static u32 tamisu_required_av(struct class_datum *cls, const char *const *perms,
-			   int count)
+			      int count)
 {
 	u32 av = 0;
 	int i;
@@ -108,7 +108,7 @@ static u32 tamisu_required_av(struct class_datum *cls, const char *const *perms,
 }
 
 static u32 tamisu_direct_allowed_av(struct policydb *db, u32 src_type,
-				 u32 tgt_type, u16 target_class)
+				    u32 tgt_type, u16 target_class)
 {
 	struct avtab_key key = {};
 	struct avtab_node *node;
@@ -141,8 +141,8 @@ static u32 tamisu_type_value_by_name(struct policydb *db, const char *name)
 }
 
 static bool tamisu_apply_file_av(struct policydb *db, const char *src,
-			      const char *tgt, u32 av, bool allow,
-			      const char *const *perms, int count)
+				 const char *tgt, u32 av, bool allow,
+				 const char *const *perms, int count)
 {
 	struct class_datum *cls;
 	bool ok = true;
@@ -166,7 +166,7 @@ static bool tamisu_apply_file_av(struct policydb *db, const char *src,
 }
 
 int tamisu_file_load_policy_allow_current(struct file *file,
-				       struct tamisu_file_load_policy *state)
+					  struct tamisu_file_load_policy *state)
 {
 	struct selinux_policy *pol, *old_pol;
 	struct policydb *db;
@@ -222,18 +222,18 @@ int tamisu_file_load_policy_allow_current(struct file *file,
 	}
 
 	required_av = tamisu_required_av(cls, tamisu_file_load_perms,
-				      ARRAY_SIZE(tamisu_file_load_perms));
+					 ARRAY_SIZE(tamisu_file_load_perms));
 	direct_av = tamisu_direct_allowed_av(db, scontext->type, tcontext->type,
-					  cls->value);
+					     cls->value);
 	add_av = required_av & ~direct_av;
 
 	tmpfs_type = tamisu_type_value_by_name(db, "tmpfs");
 	if (tmpfs_type) {
 		tmpfs_required_av =
 		    tamisu_required_av(cls, tamisu_tmpfs_hook_perms,
-				    ARRAY_SIZE(tamisu_tmpfs_hook_perms));
-		tmpfs_direct_av = tamisu_direct_allowed_av(db, scontext->type,
-							tmpfs_type, cls->value);
+				       ARRAY_SIZE(tamisu_tmpfs_hook_perms));
+		tmpfs_direct_av = tamisu_direct_allowed_av(
+		    db, scontext->type, tmpfs_type, cls->value);
 		tmpfs_add_av = tmpfs_required_av & ~tmpfs_direct_av;
 	}
 
@@ -248,17 +248,18 @@ int tamisu_file_load_policy_allow_current(struct file *file,
 		goto out_unlock;
 	}
 	db = &pol->policydb;
-	if (add_av && !tamisu_apply_file_av(db, src_name, tgt_name, add_av, true,
-					 tamisu_file_load_perms,
-					 ARRAY_SIZE(tamisu_file_load_perms))) {
+	if (add_av &&
+	    !tamisu_apply_file_av(db, src_name, tgt_name, add_av, true,
+				  tamisu_file_load_perms,
+				  ARRAY_SIZE(tamisu_file_load_perms))) {
 		tamisu_destroy_sepolicy(pol);
 		ret = -EINVAL;
 		goto out_unlock;
 	}
 	if (tmpfs_add_av &&
 	    !tamisu_apply_file_av(db, src_name, "tmpfs", tmpfs_add_av, true,
-			       tamisu_tmpfs_hook_perms,
-			       ARRAY_SIZE(tamisu_tmpfs_hook_perms))) {
+				  tamisu_tmpfs_hook_perms,
+				  ARRAY_SIZE(tamisu_tmpfs_hook_perms))) {
 		tamisu_destroy_sepolicy(pol);
 		ret = -EINVAL;
 		goto out_unlock;
@@ -320,17 +321,17 @@ int tamisu_file_load_policy_restore(const struct tamisu_file_load_policy *state)
 	}
 	db = &pol->policydb;
 	if (state->added_av &&
-	    !tamisu_apply_file_av(db, src_name, tgt_name, state->added_av, false,
-			       tamisu_file_load_perms,
-			       ARRAY_SIZE(tamisu_file_load_perms))) {
+	    !tamisu_apply_file_av(db, src_name, tgt_name, state->added_av,
+				  false, tamisu_file_load_perms,
+				  ARRAY_SIZE(tamisu_file_load_perms))) {
 		tamisu_destroy_sepolicy(pol);
 		ret = -EINVAL;
 		goto out_unlock;
 	}
 	if (state->tmpfs_added_av &&
-	    !tamisu_apply_file_av(db, src_name, tmpfs_name, state->tmpfs_added_av,
-			       false, tamisu_tmpfs_hook_perms,
-			       ARRAY_SIZE(tamisu_tmpfs_hook_perms))) {
+	    !tamisu_apply_file_av(
+		db, src_name, tmpfs_name, state->tmpfs_added_av, false,
+		tamisu_tmpfs_hook_perms, ARRAY_SIZE(tamisu_tmpfs_hook_perms))) {
 		tamisu_destroy_sepolicy(pol);
 		ret = -EINVAL;
 		goto out_unlock;
@@ -427,7 +428,7 @@ void apply_tamisu_rules(void)
 	tamisu_allow(db, "hwservicemanager", TAMISU_DOMAIN, "file", "read");
 	tamisu_allow(db, "hwservicemanager", TAMISU_DOMAIN, "file", "open");
 	tamisu_allow(db, "hwservicemanager", TAMISU_DOMAIN, "process",
-		  "getattr");
+		     "getattr");
 
 	// Allow all binder transactions
 	tamisu_allow(db, ALL, TAMISU_DOMAIN, "binder", ALL);
@@ -437,7 +438,8 @@ void apply_tamisu_rules(void)
 	tamisu_allow(db, "system_server", TAMISU_DOMAIN, "process", "sigkill");
 
 	// YukiZygisk system_server trampolines.
-	tamisu_allow(db, "system_server", "system_server", "process", "execmem");
+	tamisu_allow(db, "system_server", "system_server", "process",
+		     "execmem");
 	// https://android-review.googlesource.com/c/platform/system/logging/+/3725346
 	tamisu_dontaudit(db, "untrusted_app", TAMISU_DOMAIN, "dir", "getattr");
 	mutex_unlock(&tamisu_rules);
@@ -546,19 +548,20 @@ static int apply_one_sepolicy_cmd(struct policydb *db,
 	switch (header->cmd) {
 	case TAMISU_SEPOLICY_CMD_NORMAL_PERM:
 		if (header->subcmd == TAMISU_SEPOLICY_SUBCMD_NORMAL_PERM_ALLOW)
-			success =
-			    tamisu_allow(db, args[0], args[1], args[2], args[3]);
-		else if (header->subcmd == TAMISU_SEPOLICY_SUBCMD_NORMAL_PERM_DENY)
+			success = tamisu_allow(db, args[0], args[1], args[2],
+					       args[3]);
+		else if (header->subcmd ==
+			 TAMISU_SEPOLICY_SUBCMD_NORMAL_PERM_DENY)
 			success =
 			    tamisu_deny(db, args[0], args[1], args[2], args[3]);
 		else if (header->subcmd ==
 			 TAMISU_SEPOLICY_SUBCMD_NORMAL_PERM_AUDITALLOW)
-			success = tamisu_auditallow(db, args[0], args[1], args[2],
-						 args[3]);
+			success = tamisu_auditallow(db, args[0], args[1],
+						    args[2], args[3]);
 		else if (header->subcmd ==
 			 TAMISU_SEPOLICY_SUBCMD_NORMAL_PERM_DONTAUDIT)
-			success = tamisu_dontaudit(db, args[0], args[1], args[2],
-						args[3]);
+			success = tamisu_dontaudit(db, args[0], args[1],
+						   args[2], args[3]);
 		else
 			pr_err("sepol: unknown subcmd: %d\n", header->subcmd);
 		return success ? 0 : -EINVAL;
@@ -572,14 +575,16 @@ static int apply_one_sepolicy_cmd(struct policydb *db,
 			return ret;
 
 		if (header->subcmd == TAMISU_SEPOLICY_SUBCMD_XPERM_ALLOW)
-			success = tamisu_allowxperm(db, args[0], args[1], args[2],
-						 args[4]);
-		else if (header->subcmd == TAMISU_SEPOLICY_SUBCMD_XPERM_AUDITALLOW)
+			success = tamisu_allowxperm(db, args[0], args[1],
+						    args[2], args[4]);
+		else if (header->subcmd ==
+			 TAMISU_SEPOLICY_SUBCMD_XPERM_AUDITALLOW)
 			success = tamisu_auditallowxperm(db, args[0], args[1],
-						      args[2], args[4]);
-		else if (header->subcmd == TAMISU_SEPOLICY_SUBCMD_XPERM_DONTAUDIT)
+							 args[2], args[4]);
+		else if (header->subcmd ==
+			 TAMISU_SEPOLICY_SUBCMD_XPERM_DONTAUDIT)
 			success = tamisu_dontauditxperm(db, args[0], args[1],
-						     args[2], args[4]);
+							args[2], args[4]);
 		else
 			pr_err("sepol: unknown subcmd: %d\n", header->subcmd);
 		return success ? 0 : -EINVAL;
@@ -589,7 +594,8 @@ static int apply_one_sepolicy_cmd(struct policydb *db,
 		if (ret < 0)
 			return ret;
 
-		if (header->subcmd == TAMISU_SEPOLICY_SUBCMD_TYPE_STATE_PERMISSIVE)
+		if (header->subcmd ==
+		    TAMISU_SEPOLICY_SUBCMD_TYPE_STATE_PERMISSIVE)
 			success = tamisu_permissive(db, args[0]);
 		else if (header->subcmd ==
 			 TAMISU_SEPOLICY_SUBCMD_TYPE_STATE_ENFORCE)
@@ -643,7 +649,7 @@ static int apply_one_sepolicy_cmd(struct policydb *db,
 			return ret;
 
 		success = tamisu_type_transition(db, args[0], args[1], args[2],
-					      args[3], args[4]);
+						 args[3], args[4]);
 		return success ? 0 : -EINVAL;
 
 	case TAMISU_SEPOLICY_CMD_TYPE_CHANGE:
@@ -661,12 +667,12 @@ static int apply_one_sepolicy_cmd(struct policydb *db,
 			return ret;
 
 		if (header->subcmd == TAMISU_SEPOLICY_SUBCMD_TYPE_CHANGE_CHANGE)
-			success = tamisu_type_change(db, args[0], args[1], args[2],
-						  args[3]);
+			success = tamisu_type_change(db, args[0], args[1],
+						     args[2], args[3]);
 		else if (header->subcmd ==
 			 TAMISU_SEPOLICY_SUBCMD_TYPE_CHANGE_MEMBER)
-			success = tamisu_type_member(db, args[0], args[1], args[2],
-						  args[3]);
+			success = tamisu_type_member(db, args[0], args[1],
+						     args[2], args[3]);
 		else
 			pr_err("sepol: unknown subcmd: %d\n", header->subcmd);
 		return success ? 0 : -EINVAL;

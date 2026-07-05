@@ -98,7 +98,8 @@ void tamisu_zygote_probe_set_yukilinker(bool enabled)
 	pr_info("zygote_probe: yukilinker first-stage = %d\n", enabled);
 }
 
-int tamisu_zygote_probe_set_native_targets(const struct yz_native_targets_cmd *cmd)
+int tamisu_zygote_probe_set_native_targets(
+    const struct yz_native_targets_cmd *cmd)
 {
 	u32 i, n;
 
@@ -132,7 +133,8 @@ int tamisu_zygote_probe_set_native_targets(const struct yz_native_targets_cmd *c
 	return 0;
 }
 
-static void zp_restore_native_policy_state(struct tamisu_file_load_policy *state)
+static void
+zp_restore_native_policy_state(struct tamisu_file_load_policy *state)
 {
 	if (!zp_native_policy_has_additions(state))
 		return;
@@ -165,8 +167,9 @@ static void zp_native_policy_timeout(struct work_struct *work)
 	kfree(entry);
 }
 
-static void zp_publish_native_policy_state(pid_t tgid,
-					   struct tamisu_file_load_policy *state)
+static void
+zp_publish_native_policy_state(pid_t tgid,
+			       struct tamisu_file_load_policy *state)
 {
 	struct zp_native_policy_pending *entry;
 	struct zp_native_policy_pending *cur;
@@ -536,7 +539,8 @@ static int zp_stage_fd(const char *path, const char *name,
 	}
 
 	if (policy_state) {
-		int ret = tamisu_file_load_policy_allow_current(src, policy_state);
+		int ret =
+		    tamisu_file_load_policy_allow_current(src, policy_state);
 		if (ret)
 			pr_info("zygote_probe: [2c-3b] native policy allow %s "
 				"failed: %d\n",

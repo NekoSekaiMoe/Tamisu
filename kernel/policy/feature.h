@@ -14,7 +14,8 @@ struct tamisu_feature_handler {
 	tamisu_feature_set_t set_handler;
 };
 
-int tamisu_register_feature_handler(const struct tamisu_feature_handler *handler);
+int tamisu_register_feature_handler(
+    const struct tamisu_feature_handler *handler);
 
 int tamisu_unregister_feature_handler(u32 feature_id);
 

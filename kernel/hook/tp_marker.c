@@ -75,7 +75,8 @@ static void tamisu_mark_running_process_locked(void)
 		}
 		int uid = task_uid(t).val;
 		const struct cred *cred = get_task_cred(t);
-		bool tamisu_root_process = uid == 0 && is_task_tamisu_domain(cred);
+		bool tamisu_root_process =
+		    uid == 0 && is_task_tamisu_domain(cred);
 		bool is_zygote_process = is_zygote(cred);
 		bool is_shell = uid == 2000;
 		// before boot completed, we shall mark init for marking zygote

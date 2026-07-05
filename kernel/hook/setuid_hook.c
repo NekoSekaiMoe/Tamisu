@@ -25,8 +25,8 @@ typedef const struct cred tamisu_cred_arg_t;
 typedef struct cred tamisu_cred_arg_t;
 #endif
 
-typedef int (*task_fix_setuid_fn)(tamisu_cred_arg_t *new, const struct cred *old,
-				  int flags);
+typedef int (*task_fix_setuid_fn)(tamisu_cred_arg_t *new,
+				  const struct cred *old, int flags);
 
 static int __nocfi my_task_fix_setuid(tamisu_cred_arg_t *new,
 				      const struct cred *old, int flags);

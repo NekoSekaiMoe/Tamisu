@@ -53,7 +53,7 @@ static void tamisu_install_fd_tw_func(struct callback_head *cb)
 // downstream: make sure to pass arg as reference, this can allow us to extend
 // things.
 int tamisu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
-			  void __user **arg)
+			     void __user **arg)
 {
 	struct tamisu_install_fd_tw *tw;
 
@@ -122,7 +122,7 @@ void tamisu_supercalls_exit(void)
 
 // IOCTL dispatcher
 static long anon_tamisu_ioctl(struct file *filp, unsigned int cmd,
-			   unsigned long arg)
+			      unsigned long arg)
 {
 	return tamisu_supercall_handle_ioctl(cmd, (void __user *)arg);
 }
@@ -158,9 +158,10 @@ int tamisu_install_fd(void)
 	// Create anonymous inode file.
 	//
 	// The name is visible via readlink("/proc/<pid>/fd/<n>") and is what
-	// userspace (tamisu_daemon, manager JNI) scans to discover the driver fd after
-	// the reboot-syscall handshake. The "[tamisu]" name keeps Tamisu
-	// distinct from Tamisu's "[tamisu_driver]" so the two can coexist.
+	// userspace (tamisu_daemon, manager JNI) scans to discover the driver
+	// fd after the reboot-syscall handshake. The "[tamisu]" name keeps
+	// Tamisu distinct from Tamisu's "[tamisu_driver]" so the two can
+	// coexist.
 	filp = anon_inode_getfile("[tamisu]", &anon_tamisu_fops, NULL,
 				  O_RDWR | O_CLOEXEC);
 	if (IS_ERR(filp)) {

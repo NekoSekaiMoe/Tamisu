@@ -59,12 +59,13 @@ long __nocfi tamisu_hook_execve(int orig_nr, const struct pt_regs *regs)
 	const char __user **filename_user =
 	    (const char __user **)&PT_REGS_PARM1(regs);
 
-	/* tamisu_daemon boot-time tracking (init second_stage, zygote detection).
-	 * Gated by a static key that tamisu_stop_tamisu_daemon_execve_hook() disables
-	 * once init second_stage has run, so the common case post-boot is
-	 * zero-overhead. Persistent zygote re-detection is handled entirely
-	 * by the LSM bprm_committed_creds hook in zygote_probe.c — the
-	 * syscall path no longer carries a long-lived execve interceptor. */
+	/* tamisu_daemon boot-time tracking (init second_stage, zygote
+	 * detection). Gated by a static key that
+	 * tamisu_stop_tamisu_daemon_execve_hook() disables once init
+	 * second_stage has run, so the common case post-boot is zero-overhead.
+	 * Persistent zygote re-detection is handled entirely by the LSM
+	 * bprm_committed_creds hook in zygote_probe.c — the syscall path no
+	 * longer carries a long-lived execve interceptor. */
 	if (static_branch_unlikely(&tamisu_daemon_execve_key))
 		tamisu_execve_hook_tamisu_daemon(regs);
 

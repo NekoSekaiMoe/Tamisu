@@ -29,8 +29,9 @@ struct user_arg_ptr {
 	} ptr;
 };
 
-void tamisu_handle_execveat_tamisu_daemon(const char *filename, struct user_arg_ptr *argv,
-			      struct user_arg_ptr *envp);
+void tamisu_handle_execveat_tamisu_daemon(const char *filename,
+					  struct user_arg_ptr *argv,
+					  struct user_arg_ptr *envp);
 void tamisu_execve_hook_tamisu_daemon(const struct pt_regs *regs);
 
 #endif // #ifndef __TAMISU_H_DAEMON

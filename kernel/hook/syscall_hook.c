@@ -37,7 +37,7 @@ static int patch_syscall_table(int nr, syscall_fn_t fn)
 		(unsigned long)fn);
 
 	if (tamisu_patch_text(&tamisu_syscall_table[nr], &fn, sizeof(fn),
-			   TAMISU_PATCH_TEXT_FLUSH_DCACHE)) {
+			      TAMISU_PATCH_TEXT_FLUSH_DCACHE)) {
 		pr_err("patch syscall %d failed\n", nr);
 		return -EIO;
 	}
@@ -127,7 +127,8 @@ static int tamisu_find_ni_syscall_slots(int *out_slots, int max_slots)
 	if (!tamisu_syscall_table || max_slots <= 0)
 		return 0;
 
-	ni_syscall = (unsigned long)tamisu_lookup_symbol("__arm64_sys_ni_syscall");
+	ni_syscall =
+	    (unsigned long)tamisu_lookup_symbol("__arm64_sys_ni_syscall");
 
 	pr_info("sys_ni_syscall: 0x%lx\n", ni_syscall);
 
@@ -207,7 +208,8 @@ int tamisu_syscall_hook_init(void)
 
 	memset(syscall_hooks, 0, sizeof(syscall_hooks));
 
-	tamisu_syscall_table = (syscall_fn_t *)tamisu_lookup_symbol("sys_call_table");
+	tamisu_syscall_table =
+	    (syscall_fn_t *)tamisu_lookup_symbol("sys_call_table");
 	pr_info("sys_call_table=0x%lx", (unsigned long)tamisu_syscall_table);
 
 	if (!tamisu_syscall_table)
@@ -219,8 +221,9 @@ int tamisu_syscall_hook_init(void)
 	}
 
 	tamisu_dispatcher_nr = ni_slot;
-	ret = tamisu_syscall_table_hook(
-	    tamisu_dispatcher_nr, (syscall_fn_t)tamisu_syscall_dispatcher, NULL);
+	ret = tamisu_syscall_table_hook(tamisu_dispatcher_nr,
+					(syscall_fn_t)tamisu_syscall_dispatcher,
+					NULL);
 	if (ret) {
 		tamisu_dispatcher_nr = -1;
 		return ret;
@@ -244,8 +247,9 @@ void tamisu_syscall_hook_exit(void)
 
 		pr_info("restore syscall %d to 0x%lx\n", nr,
 			(unsigned long)orig);
-		if (tamisu_patch_text(&tamisu_syscall_table[nr], &orig, sizeof(orig),
-				   TAMISU_PATCH_TEXT_FLUSH_DCACHE)) {
+		if (tamisu_patch_text(&tamisu_syscall_table[nr], &orig,
+				      sizeof(orig),
+				      TAMISU_PATCH_TEXT_FLUSH_DCACHE)) {
 			pr_err("restore syscall %d failed\n", nr);
 		}
 	}

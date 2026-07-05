@@ -71,7 +71,7 @@ static int tamisu_lsm_hook_patch_slot(void **slot, void *value)
 	int ret;
 
 	ret = tamisu_patch_text(slot, &patched, sizeof(patched),
-			     TAMISU_PATCH_TEXT_FLUSH_DCACHE);
+				TAMISU_PATCH_TEXT_FLUSH_DCACHE);
 	if (!ret)
 		smp_wmb();
 
@@ -79,7 +79,8 @@ static int tamisu_lsm_hook_patch_slot(void **slot, void *value)
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
-static int tamisu_lsm_hook_update_scall(struct lsm_static_call *scall, void *value)
+static int tamisu_lsm_hook_update_scall(struct lsm_static_call *scall,
+					void *value)
 {
 	__static_call_update(scall->key, scall->trampoline, value);
 	smp_wmb();
@@ -278,7 +279,8 @@ int tamisu_lsm_hook(struct tamisu_lsm_hook *hook)
 	}
 
 	if (tamisu_lsm_hook_update_scall(selected_scall, hook->replacement)) {
-		if (tamisu_lsm_hook_patch_slot(selected_slot, selected_origin)) {
+		if (tamisu_lsm_hook_patch_slot(selected_slot,
+					       selected_origin)) {
 			pr_err("lsm_hook: failed to roll back %s after static "
 			       "call update failure\n",
 			       hook->head_name ?: "unknown");

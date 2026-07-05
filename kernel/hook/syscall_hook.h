@@ -37,8 +37,8 @@ void tamisu_unregister_syscall_hook(int nr);
 bool tamisu_has_syscall_hook(int nr);
 
 /*
- * Direct syscall table patching (for boot-time hooks like tamisu_daemon's read/execve).
- * These replace the actual entry in sys_call_table.
+ * Direct syscall table patching (for boot-time hooks like tamisu_daemon's
+ * read/execve). These replace the actual entry in sys_call_table.
  */
 int tamisu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old);
 int tamisu_syscall_table_unhook(int nr);

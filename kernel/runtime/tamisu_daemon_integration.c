@@ -36,15 +36,18 @@ static const char TAMISU_RC[] =
     "on post-fs-data\n"
     "    start logd\n"
     // We should wait for the post-fs-data finish
-    "    exec u:r:" TAMISU_DOMAIN ":s0 root -- " TAMISU_DAEMON_PATH " post-fs-data\n"
+    "    exec u:r:" TAMISU_DOMAIN ":s0 root -- " TAMISU_DAEMON_PATH
+    " post-fs-data\n"
     "\n"
 
     "on nonencrypted\n"
-    "    exec u:r:" TAMISU_DOMAIN ":s0 root -- " TAMISU_DAEMON_PATH " services\n"
+    "    exec u:r:" TAMISU_DOMAIN ":s0 root -- " TAMISU_DAEMON_PATH
+    " services\n"
     "\n"
 
     "on property:vold.decrypt=trigger_restart_framework\n"
-    "    exec u:r:" TAMISU_DOMAIN ":s0 root -- " TAMISU_DAEMON_PATH " services\n"
+    "    exec u:r:" TAMISU_DOMAIN ":s0 root -- " TAMISU_DAEMON_PATH
+    " services\n"
     "\n"
 
     "on property:sys.boot_completed=1\n"
@@ -141,8 +144,9 @@ fail:
  * IMPORTANT NOTE: the TSR execve path still cannot rely on envp on some
  * GKI kernels, so callers may legitimately pass NULL for that argument.
  */
-void tamisu_handle_execveat_tamisu_daemon(const char *filename, struct user_arg_ptr *argv,
-			      struct user_arg_ptr *envp)
+void tamisu_handle_execveat_tamisu_daemon(const char *filename,
+					  struct user_arg_ptr *argv,
+					  struct user_arg_ptr *envp)
 {
 	static const char app_process[] = "/system/bin/app_process";
 	static bool first_zygote = true;
@@ -615,7 +619,7 @@ static bool is_volumedown_enough(unsigned int count)
 }
 
 int tamisu_handle_input_handle_event(unsigned int *type, unsigned int *code,
-				  int *value)
+				     int *value)
 {
 	if (*type == EV_KEY && *code == KEY_VOLUMEDOWN) {
 		int val = *value;
@@ -722,11 +726,12 @@ void tamisu_tamisu_daemon_init(void)
 	int ret;
 
 	/* Install syscall table hooks for init.rc injection */
-	ret = tamisu_syscall_table_hook(__NR_read, tamisu_sys_read, &orig_sys_read);
+	ret = tamisu_syscall_table_hook(__NR_read, tamisu_sys_read,
+					&orig_sys_read);
 	pr_info("tamisu_daemon: sys_read table hook: %d\n", ret);
 
-	ret =
-	    tamisu_syscall_table_hook(__NR_fstat, tamisu_sys_fstat, &orig_sys_fstat);
+	ret = tamisu_syscall_table_hook(__NR_fstat, tamisu_sys_fstat,
+					&orig_sys_fstat);
 	pr_info("tamisu_daemon: sys_fstat table hook: %d\n", ret);
 
 	/* Input event kprobe (for safe mode detection) */

@@ -3,11 +3,13 @@
 
 #include <linux/mutex.h>
 
-static const struct tamisu_feature_handler *feature_handlers[TAMISU_FEATURE_MAX];
+static const struct tamisu_feature_handler
+    *feature_handlers[TAMISU_FEATURE_MAX];
 
 static DEFINE_MUTEX(feature_mutex);
 
-int tamisu_register_feature_handler(const struct tamisu_feature_handler *handler)
+int tamisu_register_feature_handler(
+    const struct tamisu_feature_handler *handler)
 {
 	if (!handler) {
 		pr_err("feature: register handler is NULL\n");

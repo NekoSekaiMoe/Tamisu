@@ -40,7 +40,7 @@
 static int do_get_info(void __user *arg)
 {
 	struct tamisu_get_info_cmd cmd = {.version = KERNEL_SU_VERSION,
-				       .flags = 0};
+					  .flags = 0};
 
 	cmd.flags |= TAMISU_GET_INFO_FLAG_LKM;
 	if (tamisu_late_loaded) {
@@ -682,6 +682,7 @@ long tamisu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
 		}
 	}
 
-	pr_warn("tamisu ioctl: unknown cmd 0x%x uid=%d\n", cmd, current_uid().val);
+	pr_warn("tamisu ioctl: unknown cmd 0x%x uid=%d\n", cmd,
+		current_uid().val);
 	return -EINVAL;
 }

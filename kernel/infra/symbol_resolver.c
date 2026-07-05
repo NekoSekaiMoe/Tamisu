@@ -66,7 +66,8 @@ unsigned long __nocfi find_kernel_symbol_exact(const char *symbol_name)
 }
 
 static inline bool tamisu_symbol_has_suffix(const char *name, size_t name_len,
-					 const char *suffix, size_t suffix_len)
+					    const char *suffix,
+					    size_t suffix_len)
 {
 	return name_len >= suffix_len &&
 	       strcmp(name + name_len - suffix_len, suffix) == 0;
@@ -96,7 +97,8 @@ static int lookup_symbol_variant_cb(void *data, const char *name,
 	}
 
 #if !USE_KCFI
-	if (tamisu_symbol_has_suffix(name, name_len, cfi_suffix, cfi_suffix_len)) {
+	if (tamisu_symbol_has_suffix(name, name_len, cfi_suffix,
+				     cfi_suffix_len)) {
 		ctx->match = (void *)addr;
 		pr_info("use .cfi_jt variant: %s\n", name);
 		return 1;

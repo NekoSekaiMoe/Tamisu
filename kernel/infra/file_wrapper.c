@@ -36,7 +36,8 @@ static int tamisu_wrapper_open(struct inode *ino, struct file *fp)
 	if (IS_ERR(orig_file)) {
 		return PTR_ERR(orig_file);
 	}
-	struct tamisu_file_wrapper *wrapper = tamisu_create_file_wrapper(orig_file);
+	struct tamisu_file_wrapper *wrapper =
+	    tamisu_create_file_wrapper(orig_file);
 	if (IS_ERR(wrapper)) {
 		filp_close(orig_file, current->files);
 		return PTR_ERR(wrapper);
@@ -58,7 +59,7 @@ static loff_t tamisu_wrapper_llseek(struct file *fp, loff_t off, int flags)
 }
 
 static ssize_t tamisu_wrapper_read(struct file *fp, char __user *ptr, size_t sz,
-				loff_t *off)
+				   loff_t *off)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
@@ -66,14 +67,15 @@ static ssize_t tamisu_wrapper_read(struct file *fp, char __user *ptr, size_t sz,
 }
 
 static ssize_t tamisu_wrapper_write(struct file *fp, const char __user *ptr,
-				 size_t sz, loff_t *off)
+				    size_t sz, loff_t *off)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
 	return orig->f_op->write(orig, ptr, sz, off);
 }
 
-static ssize_t tamisu_wrapper_read_iter(struct kiocb *iocb, struct iov_iter *iovi)
+static ssize_t tamisu_wrapper_read_iter(struct kiocb *iocb,
+					struct iov_iter *iovi)
 {
 	struct tamisu_file_wrapper *data = iocb->ki_filp->private_data;
 	struct file *orig = data->orig;
@@ -81,7 +83,8 @@ static ssize_t tamisu_wrapper_read_iter(struct kiocb *iocb, struct iov_iter *iov
 	return orig->f_op->read_iter(iocb, iovi);
 }
 
-static ssize_t tamisu_wrapper_write_iter(struct kiocb *iocb, struct iov_iter *iovi)
+static ssize_t tamisu_wrapper_write_iter(struct kiocb *iocb,
+					 struct iov_iter *iovi)
 {
 	struct tamisu_file_wrapper *data = iocb->ki_filp->private_data;
 	struct file *orig = data->orig;
@@ -91,7 +94,7 @@ static ssize_t tamisu_wrapper_write_iter(struct kiocb *iocb, struct iov_iter *io
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
 static int tamisu_wrapper_iopoll(struct kiocb *kiocb, struct io_comp_batch *icb,
-			      unsigned int v)
+				 unsigned int v)
 {
 	struct tamisu_file_wrapper *data = kiocb->ki_filp->private_data;
 	struct file *orig = data->orig;
@@ -117,14 +120,16 @@ static int tamisu_wrapper_iterate(struct file *fp, struct dir_context *dc)
 }
 #endif // #if LINUX_VERSION_CODE < KERNEL_VERSION...
 
-static int tamisu_wrapper_iterate_shared(struct file *fp, struct dir_context *dc)
+static int tamisu_wrapper_iterate_shared(struct file *fp,
+					 struct dir_context *dc)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
 	return orig->f_op->iterate_shared(orig, dc);
 }
 
-static __poll_t tamisu_wrapper_poll(struct file *fp, struct poll_table_struct *pts)
+static __poll_t tamisu_wrapper_poll(struct file *fp,
+				    struct poll_table_struct *pts)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
@@ -132,7 +137,7 @@ static __poll_t tamisu_wrapper_poll(struct file *fp, struct poll_table_struct *p
 }
 
 static long tamisu_wrapper_unlocked_ioctl(struct file *fp, unsigned int cmd,
-				       unsigned long arg)
+					  unsigned long arg)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
@@ -140,7 +145,7 @@ static long tamisu_wrapper_unlocked_ioctl(struct file *fp, unsigned int cmd,
 }
 
 static long tamisu_wrapper_compat_ioctl(struct file *fp, unsigned int cmd,
-				     unsigned long arg)
+					unsigned long arg)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
@@ -162,7 +167,7 @@ static int tamisu_wrapper_flush(struct file *fp, fl_owner_t id)
 }
 
 static int tamisu_wrapper_fsync(struct file *fp, loff_t off1, loff_t off2,
-			     int datasync)
+				int datasync)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
@@ -184,8 +189,9 @@ static int tamisu_wrapper_lock(struct file *fp, int arg1, struct file_lock *fl)
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 6, 0)
-static ssize_t tamisu_wrapper_sendpage(struct file *fp, struct page *pg, int arg1,
-				    size_t sz, loff_t *off, int arg2)
+static ssize_t tamisu_wrapper_sendpage(struct file *fp, struct page *pg,
+				       int arg1, size_t sz, loff_t *off,
+				       int arg2)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
@@ -197,10 +203,10 @@ static ssize_t tamisu_wrapper_sendpage(struct file *fp, struct page *pg, int arg
 #endif // #if LINUX_VERSION_CODE < KERNEL_VERSION...
 
 static unsigned long tamisu_wrapper_get_unmapped_area(struct file *fp,
-						   unsigned long arg1,
-						   unsigned long arg2,
-						   unsigned long arg3,
-						   unsigned long arg4)
+						      unsigned long arg1,
+						      unsigned long arg2,
+						      unsigned long arg3,
+						      unsigned long arg4)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
@@ -224,8 +230,8 @@ static int tamisu_wrapper_flock(struct file *fp, int arg1, struct file_lock *fl)
 }
 
 static ssize_t tamisu_wrapper_splice_write(struct pipe_inode_info *pii,
-					struct file *fp, loff_t *off, size_t sz,
-					unsigned int arg1)
+					   struct file *fp, loff_t *off,
+					   size_t sz, unsigned int arg1)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
@@ -236,8 +242,8 @@ static ssize_t tamisu_wrapper_splice_write(struct pipe_inode_info *pii,
 }
 
 static ssize_t tamisu_wrapper_splice_read(struct file *fp, loff_t *off,
-				       struct pipe_inode_info *pii, size_t sz,
-				       unsigned int arg1)
+					  struct pipe_inode_info *pii,
+					  size_t sz, unsigned int arg1)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
@@ -260,7 +266,7 @@ void tamisu_wrapper_splice_eof(struct file *fp)
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
 static int tamisu_wrapper_setlease(struct file *fp, int arg1,
-				struct file_lease **fl, void **p)
+				   struct file_lease **fl, void **p)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
@@ -271,7 +277,7 @@ static int tamisu_wrapper_setlease(struct file *fp, int arg1,
 }
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
 static int tamisu_wrapper_setlease(struct file *fp, int arg1,
-				struct file_lock **fl, void **p)
+				   struct file_lock **fl, void **p)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
@@ -282,7 +288,7 @@ static int tamisu_wrapper_setlease(struct file *fp, int arg1,
 }
 #else
 static int tamisu_wrapper_setlease(struct file *fp, long arg1,
-				struct file_lock **fl, void **p)
+				   struct file_lock **fl, void **p)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
@@ -294,7 +300,7 @@ static int tamisu_wrapper_setlease(struct file *fp, long arg1,
 #endif // #if LINUX_VERSION_CODE >= KERNEL_VERSIO...
 
 static long tamisu_wrapper_fallocate(struct file *fp, int mode, loff_t offset,
-				  loff_t len)
+				     loff_t len)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
@@ -314,10 +320,11 @@ static void tamisu_wrapper_show_fdinfo(struct seq_file *m, struct file *f)
 }
 
 // https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/fs/read_write.c;l=1593-1606;drc=398da7defe218d3e51b0f3bdff75147e28125b60
-static ssize_t tamisu_wrapper_copy_file_range(struct file *file_in, loff_t pos_in,
-					   struct file *file_out,
-					   loff_t pos_out, size_t len,
-					   unsigned int flags)
+static ssize_t tamisu_wrapper_copy_file_range(struct file *file_in,
+					      loff_t pos_in,
+					      struct file *file_out,
+					      loff_t pos_out, size_t len,
+					      unsigned int flags)
 {
 	struct tamisu_file_wrapper *data = file_out->private_data;
 	struct file *orig = data->orig;
@@ -325,10 +332,11 @@ static ssize_t tamisu_wrapper_copy_file_range(struct file *file_in, loff_t pos_i
 					   flags);
 }
 
-static loff_t tamisu_wrapper_remap_file_range(struct file *file_in, loff_t pos_in,
-					   struct file *file_out,
-					   loff_t pos_out, loff_t len,
-					   unsigned int remap_flags)
+static loff_t tamisu_wrapper_remap_file_range(struct file *file_in,
+					      loff_t pos_in,
+					      struct file *file_out,
+					      loff_t pos_out, loff_t len,
+					      unsigned int remap_flags)
 {
 	if (remap_flags & REMAP_FILE_DEDUP) {
 		struct tamisu_file_wrapper *data = file_out->private_data;
@@ -344,7 +352,7 @@ static loff_t tamisu_wrapper_remap_file_range(struct file *file_in, loff_t pos_i
 }
 
 static int tamisu_wrapper_fadvise(struct file *fp, loff_t off1, loff_t off2,
-			       int flags)
+				  int flags)
 {
 	struct tamisu_file_wrapper *data = fp->private_data;
 	struct file *orig = data->orig;
@@ -382,7 +390,8 @@ static struct tamisu_file_wrapper *tamisu_create_file_wrapper(struct file *fp)
 	p->ops.llseek = fp->f_op->llseek ? tamisu_wrapper_llseek : NULL;
 	p->ops.read = fp->f_op->read ? tamisu_wrapper_read : NULL;
 	p->ops.write = fp->f_op->write ? tamisu_wrapper_write : NULL;
-	p->ops.read_iter = fp->f_op->read_iter ? tamisu_wrapper_read_iter : NULL;
+	p->ops.read_iter =
+	    fp->f_op->read_iter ? tamisu_wrapper_read_iter : NULL;
 	p->ops.write_iter =
 	    fp->f_op->write_iter ? tamisu_wrapper_write_iter : NULL;
 	p->ops.iopoll = fp->f_op->iopoll ? tamisu_wrapper_iopoll : NULL;
@@ -410,8 +419,9 @@ static struct tamisu_file_wrapper *tamisu_create_file_wrapper(struct file *fp)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 6, 0)
 	p->ops.sendpage = fp->f_op->sendpage ? tamisu_wrapper_sendpage : NULL;
 #endif // #if LINUX_VERSION_CODE < KERNEL_VERSION...
-	p->ops.get_unmapped_area =
-	    fp->f_op->get_unmapped_area ? tamisu_wrapper_get_unmapped_area : NULL;
+	p->ops.get_unmapped_area = fp->f_op->get_unmapped_area
+				       ? tamisu_wrapper_get_unmapped_area
+				       : NULL;
 	p->ops.check_flags = fp->f_op->check_flags;
 	p->ops.flock = fp->f_op->flock ? tamisu_wrapper_flock : NULL;
 	p->ops.splice_write =
@@ -419,7 +429,8 @@ static struct tamisu_file_wrapper *tamisu_create_file_wrapper(struct file *fp)
 	p->ops.splice_read =
 	    fp->f_op->splice_read ? tamisu_wrapper_splice_read : NULL;
 	p->ops.setlease = fp->f_op->setlease ? tamisu_wrapper_setlease : NULL;
-	p->ops.fallocate = fp->f_op->fallocate ? tamisu_wrapper_fallocate : NULL;
+	p->ops.fallocate =
+	    fp->f_op->fallocate ? tamisu_wrapper_fallocate : NULL;
 	p->ops.show_fdinfo =
 	    fp->f_op->show_fdinfo ? tamisu_wrapper_show_fdinfo : NULL;
 	p->ops.copy_file_range =
@@ -443,7 +454,7 @@ static void tamisu_release_file_wrapper(struct tamisu_file_wrapper *data)
 }
 
 static char *tamisu_wrapper_d_dname(struct dentry *dentry, char *buffer,
-				 int buflen)
+				    int buflen)
 {
 	struct path *orig_path = dentry->d_fsdata;
 	return d_path(orig_path, buffer, buflen);
@@ -474,7 +485,7 @@ static struct vfsmount *anon_inode_mnt __read_mostly;
 
 static struct inode *
 tamisu_anon_inode_make_secure_inode(const char *name,
-				 const struct inode *context_inode)
+				    const struct inode *context_inode)
 {
 	struct inode *inode;
 	const struct qstr qname = QSTR_INIT(name, strlen(name));

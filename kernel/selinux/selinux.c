@@ -113,8 +113,8 @@ void cache_sid(void)
 {
 	int err;
 
-	err = security_secctx_to_secid(
-	    TAMISU_CONTEXT, strlen(TAMISU_CONTEXT), &cached_su_sid);
+	err = security_secctx_to_secid(TAMISU_CONTEXT, strlen(TAMISU_CONTEXT),
+				       &cached_su_sid);
 	if (err) {
 		pr_warn("Failed to cache kernel su domain SID: %d\n", err);
 		cached_su_sid = 0;
@@ -140,8 +140,8 @@ void cache_sid(void)
 		pr_info("Cached init SID: %u\n", cached_init_sid);
 	}
 
-	err = security_secctx_to_secid(TAMISU_FILE_CONTEXT,
-				       strlen(TAMISU_FILE_CONTEXT), &tamisu_file_sid);
+	err = security_secctx_to_secid(
+	    TAMISU_FILE_CONTEXT, strlen(TAMISU_FILE_CONTEXT), &tamisu_file_sid);
 	if (err) {
 		pr_warn("Failed to cache tamisu_file SID: %d\n", err);
 		tamisu_file_sid = 0;
