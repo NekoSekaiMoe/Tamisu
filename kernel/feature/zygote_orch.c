@@ -188,8 +188,9 @@ void ksu_zygote_orch_on_uid_change(uid_t old_uid, uid_t new_uid)
 	spin_unlock_irqrestore(&zo_lock, flags);
 
 	if (specialized) {
-		pr_info("zygote_orch: [specialize-kernel] pid=%d uid=%u appid=%u\n",
-			pid, new_uid, new_uid % 100000);
+		pr_info(
+		    "zygote_orch: [specialize-kernel] pid=%d uid=%u appid=%u\n",
+		    pid, new_uid, new_uid % 100000);
 		ksu_zygote_nl_emit_specialize(pid, new_uid % 100000);
 	}
 }
@@ -216,7 +217,8 @@ void ksu_zygote_orch_on_userspace_report(pid_t pid, uid_t uid)
 	spin_unlock_irqrestore(&zo_lock, flags);
 
 	if (specialized) {
-		pr_info("zygote_orch: [specialize-userspace] pid=%d uid=%u appid=%u\n",
+		pr_info("zygote_orch: [specialize-userspace] pid=%d uid=%u "
+			"appid=%u\n",
 			pid, uid, uid % 100000);
 		/* No need to emit netlink event - userspace already knows */
 	}

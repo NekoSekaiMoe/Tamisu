@@ -13,7 +13,8 @@
 void ksu_zygote_orch_init(void);
 void ksu_zygote_orch_exit(void);
 
-/* Fed by the LSM hook to learn a tracked child's identity via kernel detection. */
+/* Fed by the LSM hook to learn a tracked child's identity via kernel detection.
+ */
 void ksu_zygote_orch_on_uid_change(uid_t old_uid, uid_t new_uid);
 
 /* Fed by userspace via netlink when zygisk core reports specialization. */

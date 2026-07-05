@@ -40,7 +40,7 @@ static int __nocfi my_task_fix_setuid(ksu_cred_arg_t *new,
 }
 
 static struct ksu_lsm_hook setuid_lsm_hook = KSU_LSM_HOOK_INIT(
-	task_fix_setuid, "apparmor_task_setrlimit", my_task_fix_setuid, 0);
+    task_fix_setuid, "apparmor_task_setrlimit", my_task_fix_setuid, 0);
 
 void ksu_setuid_hook_init(void)
 {
