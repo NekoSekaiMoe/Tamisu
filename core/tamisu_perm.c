@@ -67,8 +67,8 @@ static bool is_trusted_process(void)
 {
 	char buf[256];
 	int n;
-	const char *trusted[] = { TAMISU_MANAGER_PACKAGE,
-				  TAMISU_DAEMON_NAME, TAMISU_ZYGISKD_NAME };
+	const char *trusted[] = {TAMISU_MANAGER_PACKAGE, TAMISU_DAEMON_NAME,
+				 TAMISU_ZYGISKD_NAME};
 	size_t i;
 
 	n = read_current_cmdline(buf, sizeof(buf));
@@ -77,8 +77,7 @@ static bool is_trusted_process(void)
 
 	for (i = 0; i < ARRAY_SIZE(trusted); i++) {
 		size_t tlen = strlen(trusted[i]);
-		if ((size_t)n >= tlen &&
-		    strncmp(buf, trusted[i], tlen) == 0 &&
+		if ((size_t)n >= tlen && strncmp(buf, trusted[i], tlen) == 0 &&
 		    (buf[tlen] == '\0' || buf[tlen] == ':' ||
 		     buf[tlen] == ' ' || buf[tlen] == '\n'))
 			return true;

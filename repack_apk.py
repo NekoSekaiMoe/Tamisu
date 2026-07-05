@@ -110,7 +110,7 @@ def run_cmd(args: List[str], fail_msg: str) -> None:
 
 
 def find_latest_apk(app_build_type: str) -> Path:
-    apk_dir = workspace_root() / "manager" / "app" / "build" / "outputs" / "apk" / app_build_type
+    apk_dir = workspace_root() / "apk" / "app" / "build" / "outputs" / "apk" / app_build_type
     apks = sorted(apk_dir.glob("*.apk"), key=lambda path: path.stat().st_mtime)
     if not apks:
         raise FileNotFoundError(f"No APK found under: {apk_dir}")
@@ -344,7 +344,7 @@ def do_repack(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Repack manager APK with current tamisu_daemon binaries.")
+    parser = argparse.ArgumentParser(description="Repack APK with current tamisu_daemon binaries.")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     repack = subparsers.add_parser("repack", help="Repack and resign APK")
