@@ -27,6 +27,7 @@
 #include "tamisu.h"
 #include "tamisu_daemon_boot.h"
 #include "tamisu_daemon.h"
+#include "tamisu_ksyms.h"
 #include "tamisu_selinux.h"
 #include "tamisu_supercall.h"
 #include "tamisu_internal.h"
@@ -135,9 +136,9 @@ static int do_check_safemode(void __user *arg)
 static int do_set_init_pgrp(void __user *arg)
 {
 	int err;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+#ifdef TAMISU_CHANGE_PID_HAS_PID_LINKS
 	struct pid *pids[PIDTYPE_MAX] = {0};
-#endif // #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+#endif // #ifdef TAMISU_CHANGE_PID_HAS_PID_LINKS
 	struct task_struct *p = current->group_leader;
 	struct pid *init_group = task_pgrp(&init_task);
 
@@ -148,18 +149,18 @@ static int do_set_init_pgrp(void __user *arg)
 
 	err = 0;
 	if (task_pgrp(p) != init_group) {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
-		change_pid(pids, p, PIDTYPE_PGID, init_group);
+#ifdef TAMISU_CHANGE_PID_HAS_PID_LINKS
+		tamisu_change_pid_new(pids, p, PIDTYPE_PGID, init_group);
 #else
-		change_pid(p, PIDTYPE_PGID, init_group);
-#endif // #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+		tamisu_change_pid(p, PIDTYPE_PGID, init_group);
+#endif // #ifdef TAMISU_CHANGE_PID_HAS_PID_LINKS
 	}
 
 out:
 	write_unlock_irq(&tasklist_lock);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+#ifdef TAMISU_CHANGE_PID_HAS_PID_LINKS
 	free_pids(pids);
-#endif // #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 15, 0)
+#endif // #ifdef TAMISU_CHANGE_PID_HAS_PID_LINKS
 	return err;
 }
 
@@ -412,8 +413,8 @@ static void yz_unmap_tw_func(struct callback_head *cb)
 		if (pc >= tw->addr[i] && pc < tw->addr[i] + tw->size[i]) {
 			if (++tw->retry < 16) {
 				init_task_work(&tw->cb, yz_unmap_tw_func);
-				if (!task_work_add(current, &tw->cb,
-						   TWA_RESUME))
+				if (!tamisu_task_work_add(current, &tw->cb,
+							  TWA_RESUME))
 					return; /* re-queued; keep tw */
 			}
 			pr_warn("yz_unmap: pc=0x%lx still in core after %u "
@@ -469,7 +470,7 @@ static int do_yz_unmap_pid(void __user *arg)
 		tw->addr[i] = (unsigned long)cmd.addr[i];
 		tw->size[i] = (unsigned long)cmd.size[i];
 	}
-	if (task_work_add(task, &tw->cb, TWA_RESUME)) {
+	if (tamisu_task_work_add(task, &tw->cb, TWA_RESUME)) {
 		kfree(tw);
 		put_task_struct(task);
 		return -ESRCH;
@@ -516,7 +517,7 @@ static int do_yz_unmap_self(void __user *arg)
 		tw->addr[i] = (unsigned long)cmd.addr[i];
 		tw->size[i] = (unsigned long)cmd.size[i];
 	}
-	if (task_work_add(current, &tw->cb, TWA_RESUME)) {
+	if (tamisu_task_work_add(current, &tw->cb, TWA_RESUME)) {
 		kfree(tw);
 		return -ESRCH;
 	}

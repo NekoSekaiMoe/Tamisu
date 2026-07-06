@@ -13,8 +13,7 @@
 #include <linux/tracepoint.h>
 #include <linux/types.h>
 
-#include <trace/events/sched.h>
-
+#include "tamisu_ksyms.h"
 #include "tamisu_zygote_orch.h"
 #include "tamisu_zygote_nl.h"
 #include "tamisu_zygote_ctl.h"
@@ -118,17 +117,20 @@ static void zo_on_free(void *data, struct task_struct *p)
 
 void tamisu_zygote_orch_init(void)
 {
-	int ret = register_trace_sched_process_fork(zo_on_fork, NULL);
+	int ret = tamisu_tracepoint_probe_register("sched_process_fork",
+						   (void *)zo_on_fork, NULL);
 
 	if (ret) {
 		pr_err("zygote_orch: register fork probe failed: %d\n", ret);
 		return;
 	}
 
-	ret = register_trace_sched_process_free(zo_on_free, NULL);
+	ret = tamisu_tracepoint_probe_register("sched_process_free",
+					       (void *)zo_on_free, NULL);
 	if (ret) {
 		pr_err("zygote_orch: register free probe failed: %d\n", ret);
-		unregister_trace_sched_process_fork(zo_on_fork, NULL);
+		tamisu_tracepoint_probe_unregister("sched_process_fork",
+						   (void *)zo_on_fork, NULL);
 		tracepoint_synchronize_unregister();
 		return;
 	}
@@ -138,8 +140,10 @@ void tamisu_zygote_orch_init(void)
 
 void tamisu_zygote_orch_exit(void)
 {
-	unregister_trace_sched_process_fork(zo_on_fork, NULL);
-	unregister_trace_sched_process_free(zo_on_free, NULL);
+	tamisu_tracepoint_probe_unregister("sched_process_fork",
+					   (void *)zo_on_fork, NULL);
+	tamisu_tracepoint_probe_unregister("sched_process_free",
+					   (void *)zo_on_free, NULL);
 	tracepoint_synchronize_unregister();
 }
 

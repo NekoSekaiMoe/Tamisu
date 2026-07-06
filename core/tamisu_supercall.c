@@ -22,6 +22,7 @@
 #include "tamisu_file_wrapper.h"
 #include "klog.h" // IWYU pragma: keep
 #include "tamisu_daemon.h"
+#include "tamisu_ksyms.h"
 #include "tamisu_selinux.h"
 #include "tamisu_supercall.h"
 #include "tamisu_internal.h"
@@ -74,7 +75,7 @@ int tamisu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 		tw->outp = (int __user *)*arg;
 		tw->cb.func = tamisu_install_fd_tw_func;
 
-		if (task_work_add(current, &tw->cb, TWA_RESUME)) {
+		if (tamisu_task_work_add(current, &tw->cb, TWA_RESUME)) {
 			kfree(tw);
 			pr_warn("install fd add task_work failed\n");
 		}

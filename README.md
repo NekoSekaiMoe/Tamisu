@@ -111,14 +111,11 @@ CONFIG_TAMISU=m CC=clang make -j$(nproc)
 ## Install
 
 Tamisu ships four loading paths, listed below in order of preference.
-The kernel module (`tamisu.ko`) cannot be loaded with the system
-`insmod` because it references non-exported GKI kernel symbols
-(`policydb_*`, `init_mm`, `selinux_state`, tracepoint data, ...). Every
-loading path below goes through Tamisu's own loader
-(`daemon/tamisud_core/src/kernelsu_loader.cpp`), which patches the
-ELF's `SHN_UNDEF` symbols to `SHN_ABS` with addresses resolved from
-`/proc/kallsyms` before calling `init_module` — bypassing the kernel
-module loader's `ksymtab` lookup entirely.
+The kernel module must be built for the target Android KMI/DDK so its
+exported-symbol CRCs match the booting kernel. Non-exported GKI
+internals needed by Tamisu (`policydb_*`, `init_mm`, `selinux_state`,
+tracepoint data, ...) are resolved by the module at runtime instead of
+being left as ELF undefined symbols for the kernel module loader.
 
 ### Path 1 — Boot-patch + init `modprobe` (recommended for production)
 
@@ -174,18 +171,16 @@ can bootstrap Tamisu via Magica. This is an edge path; see
 `apk/.../Install.kt` (`Trigger late-load` button falls back to Magica
 when no root shell is detected).
 
-### Why the system `insmod` does not work
+### Why KMI matching still matters
 
 Stock GKI kernels do not `EXPORT_SYMBOL` the SELinux policydb helpers,
 mm internals like `init_mm`, `kallsyms_lookup_name`, tracepoint data
 symbols, etc. Tamisu's privileged ioctls (in-kernel SELinux policy
-rewriting for zygiskd's allow rules) need these symbols. The system
-`insmod` from busybox / kmod calls `init_module(2)` directly, and the
-kernel's module loader refuses to resolve any symbol not present in
-`ksymtab` / `ksymtab_gpl` (`-ENOENT`). Tamisu's loader sidesteps this
-by rewriting the ELF before `init_module` so the loader sees each
-previously-undefined symbol as `SHN_ABS` with the real address, never
-looking it up in `ksymtab`.
+rewriting for zygiskd's allow rules) need these symbols, so the module
+looks them up from kallsyms after load. The `.ko` must still be built
+against the matching KMI/DDK `Module.symvers`; otherwise the kernel can
+reject exported symbols with errors such as `no symbol version for
+module_layout` or bad vermagic before Tamisu's runtime resolver runs.
 
 ## Injection architecture & detection surface
 

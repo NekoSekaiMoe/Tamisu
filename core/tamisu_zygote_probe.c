@@ -40,6 +40,7 @@
 #include "tamisu_feature.h"
 #include "tamisu_zygote_probe.h"
 #include "tamisu_lsm_hook.h"
+#include "tamisu_ksyms.h"
 #include "tamisu_selinux.h"
 #include "tamisu.h"
 #include "klog.h" // IWYU pragma: keep
@@ -966,7 +967,8 @@ static void __nocfi my_bprm_committed_creds(zp_bprm_arg_t *bprm)
 						     sizeof(tw->label),
 						     native_label);
 				init_task_work(&tw->cb, zp_inject_tw_func);
-				if (task_work_add(current, &tw->cb, TWA_RESUME))
+				if (tamisu_task_work_add(current, &tw->cb,
+							 TWA_RESUME))
 					kfree(tw);
 			}
 		}

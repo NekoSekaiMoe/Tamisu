@@ -3,6 +3,7 @@
 #include "linux/cred.h"
 #include "linux/sched.h"
 #include "linux/version.h"
+#include "tamisu_ksyms.h"
 #include "tamisu_selinux.h"
 #include "objsec.h"
 
@@ -28,12 +29,8 @@ static int transive_to_domain(const char *domain, struct cred *cred,
 {
 	u32 sid;
 	int error;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
-	struct task_security_struct *tsec;
-#else
-	struct cred_security_struct *tsec;
-#endif // #if LINUX_VERSION_CODE < KERNEL_VERSION...
-	tsec = cred->security;
+	tamisu_selinux_cred_security_t *tsec;
+	tsec = tamisu_selinux_cred(cred);
 	if (!tsec) {
 		pr_err("tsec == NULL!\n");
 		return -1;
@@ -66,20 +63,28 @@ void setup_tamisu_cred(void)
 void setenforce(bool enforce)
 {
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-	selinux_state.enforcing = enforce;
+	struct selinux_state *state = tamisu_get_selinux_state();
+
+	if (state)
+		state->enforcing = enforce;
 #endif // #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
 }
 
 bool getenforce(void)
 {
+	struct selinux_state *state = tamisu_get_selinux_state();
+
+	if (!state)
+		return true;
+
 #ifdef CONFIG_SECURITY_SELINUX_DISABLE
-	if (selinux_state.disabled) {
+	if (state->disabled) {
 		return false;
 	}
 #endif // #ifdef CONFIG_SECURITY_SELINUX_DISABLE
 
 #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-	return selinux_state.enforcing;
+	return state->enforcing;
 #else
 	return true;
 #endif // #ifdef CONFIG_SECURITY_SELINUX_DEVELOP
@@ -162,11 +167,7 @@ bool is_sid_match(const struct cred *cred, u32 cached_sid,
 	if (!cred) {
 		return false;
 	}
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
-	const struct task_security_struct *tsec = cred->security;
-#else
-	const struct cred_security_struct *tsec = selinux_cred(cred);
-#endif // #if LINUX_VERSION_CODE < KERNEL_VERSION...
+	const tamisu_selinux_cred_security_t *tsec = tamisu_selinux_cred(cred);
 	if (!tsec) {
 		return false;
 	}

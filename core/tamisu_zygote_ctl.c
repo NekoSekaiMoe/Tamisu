@@ -25,6 +25,7 @@
 #include "tamisu_zygote_ctl.h"
 #include "uapi/zygisk.h"
 #include "klog.h" // IWYU pragma: keep
+#include "tamisu_ksyms.h"
 
 struct yz_pending {
 	pid_t pid; /* tgid of the target app; 0 == free slot */
@@ -147,7 +148,7 @@ int tamisu_zygote_ctl_handoff(void __user *arg)
 		p->files[i] = files[i];
 	if (task) {
 		init_task_work(&p->twork, yz_deliver_cb);
-		task_work_add(task, &p->twork, TWA_RESUME);
+		tamisu_task_work_add(task, &p->twork, TWA_RESUME);
 	}
 	spin_unlock_irqrestore(&yz_ctl_lock, flags);
 

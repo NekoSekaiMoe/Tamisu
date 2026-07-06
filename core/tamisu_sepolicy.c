@@ -6,6 +6,7 @@
 #include <linux/vmalloc.h>
 
 #include "klog.h" // IWYU pragma: keep
+#include "tamisu_ksyms.h"
 #include "tamisu_sepolicy.h"
 #include "ss/services.h"
 #include "ss/symtab.h"
@@ -88,6 +89,35 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 #define symtab_search(s, name) hashtab_search((s)->table, name)
 #define symtab_insert(s, name, datum) hashtab_insert((s)->table, name, datum)
 #endif // #if LINUX_VERSION_CODE < KERNEL_VERSION...
+
+#undef avtab_alloc
+#undef avtab_destroy
+#undef avtab_insert_nonunique
+#undef avtab_search_node
+#undef avtab_search_node_next
+#undef ebitmap_get_bit
+#undef ebitmap_set_bit
+#undef hashtab_insert
+#undef policydb_destroy
+#undef policydb_filenametr_search
+#undef policydb_read
+#undef policydb_write
+#undef symtab_insert
+#undef symtab_search
+#define avtab_alloc tamisu_avtab_alloc
+#define avtab_destroy tamisu_avtab_destroy
+#define avtab_insert_nonunique tamisu_avtab_insert_nonunique
+#define avtab_search_node tamisu_avtab_search_node
+#define avtab_search_node_next tamisu_avtab_search_node_next
+#define ebitmap_get_bit tamisu_ebitmap_get_bit
+#define ebitmap_set_bit tamisu_ebitmap_set_bit
+#define hashtab_insert tamisu_hashtab_insert
+#define policydb_destroy tamisu_policydb_destroy
+#define policydb_filenametr_search tamisu_policydb_filenametr_search
+#define policydb_read tamisu_policydb_read
+#define policydb_write tamisu_policydb_write
+#define symtab_insert tamisu_symtab_insert
+#define symtab_search tamisu_symtab_search
 
 #define avtab_for_each(avtab, cur)                                             \
 	tamisu_hash_for_each(avtab.htable, avtab.nslot, cur);

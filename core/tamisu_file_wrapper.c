@@ -17,6 +17,7 @@
 #include <linux/version.h>
 
 #include "klog.h" // IWYU pragma: keep
+#include "tamisu_ksyms.h"
 #include "tamisu_selinux.h"
 
 #include "tamisu_file_wrapper.h"
@@ -473,7 +474,7 @@ static const struct dentry_operations tamisu_file_wrapper_d_ops = {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 8, 0)
 #define tamisu_anon_inode_create_getfile_compat anon_inode_create_getfile
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 16, 0)
-#define tamisu_anon_inode_create_getfile_compat anon_inode_getfile_secure
+#define tamisu_anon_inode_create_getfile_compat tamisu_anon_inode_getfile_secure
 #else
 // There is no anon_inode_create_getfile before 5.16, but it's not difficult to
 // implement it.
@@ -582,7 +583,7 @@ int tamisu_install_file_wrapper(int fd)
 	// buffer type.
 	wrapper_inode->i_mode = file_inode(orig_file)->i_mode;
 	struct inode_security_struct *wrapper_sec =
-	    selinux_inode(wrapper_inode);
+	    tamisu_selinux_inode(wrapper_inode);
 	// Use tamisu_file_sid to bypass SELinux check.
 	// When we call `su` from terminal app, this is useful.
 	if (wrapper_sec) {

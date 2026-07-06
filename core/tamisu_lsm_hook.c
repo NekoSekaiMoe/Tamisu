@@ -1,6 +1,5 @@
 #include <linux/compiler.h>
 #include <linux/errno.h>
-#include <linux/kallsyms.h>
 #include <linux/kernel.h>
 #include <linux/lsm_hooks.h>
 #include <linux/mutex.h>
@@ -9,6 +8,7 @@
 
 #include "tamisu_symbol_resolver.h"
 #include "klog.h" // IWYU pragma: keep
+#include "tamisu_ksyms.h"
 #include "tamisu_lsm_hook.h"
 #include "tamisu_patch_memory.h"
 
@@ -156,7 +156,8 @@ int tamisu_lsm_hook(struct tamisu_lsm_hook *hook)
 		u32 lsm_active_cnt = 5;
 		unsigned long addr;
 
-		if (!kallsyms_lookup_size_offset(scalls_addr, &sym_size, NULL))
+		if (!tamisu_kallsyms_lookup_size_offset(scalls_addr, &sym_size,
+							NULL))
 			pr_err("failed to get size\n");
 
 		addr = (unsigned long)tamisu_lookup_symbol("lsm_active_cnt");
@@ -310,7 +311,8 @@ int tamisu_lsm_hook(struct tamisu_lsm_hook *hook)
 		unsigned long heads_size = sizeof(struct security_hook_heads);
 		struct hlist_head *head_end;
 
-		if (!kallsyms_lookup_size_offset(heads_addr, &heads_size, NULL))
+		if (!tamisu_kallsyms_lookup_size_offset(heads_addr, &heads_size,
+							NULL))
 			pr_warn("lookup head size failed");
 
 		head = (struct hlist_head *)heads_addr;

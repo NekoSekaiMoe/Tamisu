@@ -10,26 +10,54 @@
 #include "klog.h" // IWYU pragma: keep
 #include "linux/lsm_audit.h" // IWYU pragma: keep
 #include "objsec.h"
+#include "tamisu_ksyms.h"
 #include "tamisu_selinux.h"
 #include "tamisu_sepolicy.h"
 #include "ss/context.h"
 #include "ss/services.h"
 #include "security.h"
 #include "uapi/selinux.h"
-#include "xfrm.h"
 
 #define SELINUX_POLICY_INSTEAD_SELINUX_SS
 
 #define ALL NULL
 
+#undef avtab_search_node
+#undef current_sid
+#undef ebitmap_get_bit
+#undef ebitmap_set_bit
+#undef policydb_load_isids
+#undef selinux_inode
+#undef sidtab_search
+#undef symtab_search
+#define avtab_search_node tamisu_avtab_search_node
+#define current_sid tamisu_current_sid
+#define ebitmap_get_bit tamisu_ebitmap_get_bit
+#define ebitmap_set_bit tamisu_ebitmap_set_bit
+#define policydb_load_isids tamisu_policydb_load_isids
+#define selinux_inode tamisu_selinux_inode
+#define sidtab_search tamisu_sidtab_search
+#define symtab_search tamisu_symtab_search
+
 struct selinux_policy *backup_sepolicy;
 
 static struct policydb *get_policydb(void)
 {
-	struct policydb *db;
-	struct selinux_policy *policy = selinux_state.policy;
-	db = &policy->policydb;
-	return db;
+	struct selinux_state *se_state = tamisu_get_selinux_state();
+	struct selinux_policy *policy;
+
+	if (!se_state) {
+		pr_err("selinux_state not found\n");
+		return NULL;
+	}
+
+	policy = se_state->policy;
+	if (!policy) {
+		pr_err("selinux policy not found\n");
+		return NULL;
+	}
+
+	return &policy->policydb;
 }
 
 static DEFINE_MUTEX(tamisu_rules);
@@ -38,12 +66,17 @@ static void reset_avc_cache(void);
 
 static void backup_original_sepolicy_once(void)
 {
+	struct selinux_state *se_state = tamisu_get_selinux_state();
 	int ret;
 
 	if (backup_sepolicy)
 		return;
+	if (!se_state || !se_state->policy) {
+		pr_err("selinux policy not found, skip backup\n");
+		return;
+	}
 
-	backup_sepolicy = tamisu_dup_sepolicy(selinux_state.policy);
+	backup_sepolicy = tamisu_dup_sepolicy(se_state->policy);
 	if (IS_ERR(backup_sepolicy)) {
 		pr_err("failed to create backup sepolicy: %ld\n",
 		       PTR_ERR(backup_sepolicy));
@@ -168,6 +201,7 @@ static bool tamisu_apply_file_av(struct policydb *db, const char *src,
 int tamisu_file_load_policy_allow_current(struct file *file,
 					  struct tamisu_file_load_policy *state)
 {
+	struct selinux_state *se_state;
 	struct selinux_policy *pol, *old_pol;
 	struct policydb *db;
 	struct inode_security_struct *isec;
@@ -190,6 +224,9 @@ int tamisu_file_load_policy_allow_current(struct file *file,
 	if (!file || !state)
 		return -EINVAL;
 	memset(state, 0, sizeof(*state));
+	se_state = tamisu_get_selinux_state();
+	if (!se_state || !se_state->policy)
+		return -ENOENT;
 
 	isec = selinux_inode(file_inode(file));
 	if (!isec)
@@ -199,9 +236,9 @@ int tamisu_file_load_policy_allow_current(struct file *file,
 	if (!ssid || !tsid)
 		return -EINVAL;
 
-	mutex_lock(&selinux_state.policy_mutex);
+	mutex_lock(&se_state->policy_mutex);
 
-	old_pol = selinux_state.policy;
+	old_pol = se_state->policy;
 	db = &old_pol->policydb;
 	scontext = sidtab_search(old_pol->sidtab, ssid);
 	tcontext = sidtab_search(old_pol->sidtab, tsid);
@@ -241,7 +278,7 @@ int tamisu_file_load_policy_allow_current(struct file *file,
 		goto out_unlock;
 
 	pol = tamisu_dup_sepolicy(rcu_dereference_protected(
-	    old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
+	    old_pol, lockdep_is_held(&se_state->policy_mutex)));
 	if (IS_ERR(pol)) {
 		ret = PTR_ERR(pol);
 		pr_err("file_load_policy: dup failed: %d\n", ret);
@@ -275,18 +312,19 @@ int tamisu_file_load_policy_allow_current(struct file *file,
 	pr_info("file_load_policy: allow src=%s tgt=%s file added=0x%x "
 		"tmpfs=0x%x\n",
 		src_name, tgt_name, add_av, tmpfs_add_av);
-	rcu_assign_pointer(selinux_state.policy, pol);
+	rcu_assign_pointer(se_state->policy, pol);
 	synchronize_rcu();
 	tamisu_destroy_sepolicy(old_pol);
 	reset_avc_cache();
 
 out_unlock:
-	mutex_unlock(&selinux_state.policy_mutex);
+	mutex_unlock(&se_state->policy_mutex);
 	return ret;
 }
 
 int tamisu_file_load_policy_restore(const struct tamisu_file_load_policy *state)
 {
+	struct selinux_state *se_state;
 	struct selinux_policy *pol, *old_pol;
 	struct policydb *db;
 	const char *src_name;
@@ -296,10 +334,13 @@ int tamisu_file_load_policy_restore(const struct tamisu_file_load_policy *state)
 
 	if (!state || (!state->added_av && !state->tmpfs_added_av))
 		return 0;
+	se_state = tamisu_get_selinux_state();
+	if (!se_state || !se_state->policy)
+		return -ENOENT;
 
-	mutex_lock(&selinux_state.policy_mutex);
+	mutex_lock(&se_state->policy_mutex);
 
-	old_pol = selinux_state.policy;
+	old_pol = se_state->policy;
 	db = &old_pol->policydb;
 	src_name = tamisu_type_name_by_value(db, state->src_type);
 	if (state->added_av)
@@ -313,7 +354,7 @@ int tamisu_file_load_policy_restore(const struct tamisu_file_load_policy *state)
 	}
 
 	pol = tamisu_dup_sepolicy(rcu_dereference_protected(
-	    old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
+	    old_pol, lockdep_is_held(&se_state->policy_mutex)));
 	if (IS_ERR(pol)) {
 		ret = PTR_ERR(pol);
 		pr_err("file_load_policy: restore dup failed: %d\n", ret);
@@ -341,13 +382,13 @@ int tamisu_file_load_policy_restore(const struct tamisu_file_load_policy *state)
 		"tmpfs=0x%x\n",
 		src_name, tgt_name ? tgt_name : "-", state->added_av,
 		state->tmpfs_added_av);
-	rcu_assign_pointer(selinux_state.policy, pol);
+	rcu_assign_pointer(se_state->policy, pol);
 	synchronize_rcu();
 	tamisu_destroy_sepolicy(old_pol);
 	reset_avc_cache();
 
 out_unlock:
-	mutex_unlock(&selinux_state.policy_mutex);
+	mutex_unlock(&se_state->policy_mutex);
 	return ret;
 }
 
@@ -364,6 +405,10 @@ void apply_tamisu_rules(void)
 	backup_original_sepolicy_once();
 
 	db = get_policydb();
+	if (!db) {
+		mutex_unlock(&tamisu_rules);
+		return;
+	}
 
 	tamisu_permissive(db, TAMISU_DOMAIN);
 	tamisu_typeattribute(db, TAMISU_DOMAIN, "mlstrustedsubject");
@@ -699,30 +744,16 @@ static int apply_one_sepolicy_cmd(struct policydb *db,
 		return -EINVAL;
 	}
 }
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0))
-extern int avc_ss_reset(u32 seqno);
-#else
-extern int avc_ss_reset(struct selinux_avc *avc, u32 seqno);
-#endif // #if (LINUX_VERSION_CODE >= KERNEL_VERSI...
 // reset avc cache table, otherwise the new rules will not take effect if
 // already denied
 static void reset_avc_cache(void)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0))
-	avc_ss_reset(0);
-	selnl_notify_policyload(0);
-	selinux_status_update_policyload(0);
-#else
-	struct selinux_avc *avc = selinux_state.avc;
-	avc_ss_reset(avc, 0);
-	selnl_notify_policyload(0);
-	selinux_status_update_policyload(&selinux_state, 0);
-#endif // #if (LINUX_VERSION_CODE >= KERNEL_VERSI...
-	selinux_xfrm_notify_policyload();
+	tamisu_selinux_policyload_notify(0);
 }
 
 int handle_sepolicy(void __user *user_data, u64 data_len)
 {
+	struct selinux_state *se_state;
 	struct selinux_policy *pol, *old_pol;
 	struct policydb *db;
 	struct sepol_batch_cursor cursor;
@@ -733,6 +764,9 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 
 	if (!user_data || !data_len)
 		return -EINVAL;
+	se_state = tamisu_get_selinux_state();
+	if (!se_state || !se_state->policy)
+		return -ENOENT;
 
 	if (data_len > TAMISU_SEPOLICY_MAX_BATCH_SIZE)
 		return -E2BIG;
@@ -750,11 +784,11 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 		pr_info("SELinux permissive or disabled when handle policy!\n");
 	}
 
-	mutex_lock(&selinux_state.policy_mutex);
+	mutex_lock(&se_state->policy_mutex);
 
-	old_pol = selinux_state.policy;
+	old_pol = se_state->policy;
 	pol = tamisu_dup_sepolicy(rcu_dereference_protected(
-	    old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
+	    old_pol, lockdep_is_held(&se_state->policy_mutex)));
 	if (IS_ERR(pol)) {
 		ret = PTR_ERR(pol);
 		pr_err("tamisu_dup_sepolicy err: %d\n", ret);
@@ -810,7 +844,7 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 		cmd_index++;
 	}
 
-	rcu_assign_pointer(selinux_state.policy, pol);
+	rcu_assign_pointer(se_state->policy, pol);
 	synchronize_rcu();
 	tamisu_destroy_sepolicy(old_pol);
 
@@ -821,7 +855,7 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 out_drop_new_policy:
 	tamisu_destroy_sepolicy(pol);
 out_unlock:
-	mutex_unlock(&selinux_state.policy_mutex);
+	mutex_unlock(&se_state->policy_mutex);
 out_free:
 	kvfree(payload);
 	return ret;

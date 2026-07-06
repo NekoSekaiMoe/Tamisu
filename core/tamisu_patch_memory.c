@@ -7,16 +7,19 @@
 
 #include "tamisu_patch_memory.h"
 #include "klog.h" // IWYU pragma: keep
+#include "tamisu_ksyms.h"
+#include "tamisu_symbol_resolver.h"
 #include <linux/cpumask.h>
 #include <linux/gfp.h> // IWYU pragma: keep
 #include <linux/stop_machine.h>
+#include <linux/string.h>
 #include <linux/uaccess.h>
 #include <asm/cacheflush.h>
 #include <asm-generic/fixmap.h>
 
 unsigned long phys_from_virt(unsigned long addr, int *err)
 {
-	struct mm_struct *mm = &init_mm;
+	struct mm_struct *mm = tamisu_get_init_mm();
 	pgd_t *pgd;
 	p4d_t *p4d;
 	pud_t *pud;
@@ -24,6 +27,8 @@ unsigned long phys_from_virt(unsigned long addr, int *err)
 	pte_t *pte;
 
 	*err = 0;
+	if (!mm)
+		goto fail;
 
 	pgd = pgd_offset(mm, addr);
 	if (pgd_none(*pgd) || pgd_bad(*pgd))
@@ -82,15 +87,47 @@ fail:
 }
 
 #ifdef TAMISU_HAS_NEW_DCACHE_FLUSH
-#define tamisu_flush_dcache(start, sz)                                         \
-	({                                                                     \
-		unsigned long __start = (start);                               \
-		unsigned long __end = __start + (sz);                          \
-		dcache_clean_inval_poc(__start, __end);                        \
-	})
+static void tamisu_flush_dcache(unsigned long start, size_t sz)
+{
+	typedef void (*fn_t)(unsigned long, unsigned long);
+	static fn_t fn;
+
+	if (!fn)
+		fn = (fn_t)tamisu_lookup_symbol("dcache_clean_inval_poc");
+	if (fn)
+		fn(start, start + sz);
+	else
+		pr_warn("dcache_clean_inval_poc not found\n");
+}
 #else
 #define tamisu_flush_dcache(start, sz) __flush_dcache_area((void *)start, sz)
 #endif // #ifdef TAMISU_HAS_NEW_DCACHE_FLUSH
+
+static void *tamisu_set_fixmap_offset(enum fixed_addresses idx,
+				      phys_addr_t phys)
+{
+	typedef void (*fn_t)(enum fixed_addresses, phys_addr_t, pgprot_t);
+	static fn_t fn;
+
+	if (!fn)
+		fn = (fn_t)tamisu_lookup_symbol("__set_fixmap");
+	if (!fn)
+		return NULL;
+
+	fn(idx, phys, FIXMAP_PAGE_NORMAL);
+	return (void *)(fix_to_virt(idx) + (phys & (PAGE_SIZE - 1)));
+}
+
+static void tamisu_clear_fixmap(enum fixed_addresses idx)
+{
+	typedef void (*fn_t)(enum fixed_addresses, phys_addr_t, pgprot_t);
+	static fn_t fn;
+
+	if (!fn)
+		fn = (fn_t)tamisu_lookup_symbol("__set_fixmap");
+	if (fn)
+		fn(idx, 0, FIXMAP_PAGE_CLEAR);
+}
 
 struct patch_text_info {
 	void *dst;
@@ -119,12 +156,18 @@ static int tamisu_patch_text_nosync(void *dst, void *src, size_t len, int flags)
 	}
 	pr_debug("phy addr for patch 0x%lx: 0x%lx\n", p, phy);
 
-	map = (void *)set_fixmap_offset(FIX_TEXT_POKE0, phy);
+	map = tamisu_set_fixmap_offset(FIX_TEXT_POKE0, phy);
+	if (!map) {
+		ret = -ENOENT;
+		pr_err("failed to resolve __set_fixmap\n");
+		goto err;
+	}
 	pr_debug("fixmap addr for patch 0x%lx: 0x%lx\n", p, (unsigned long)map);
 
-	ret = (int)copy_to_kernel_nofault(map, src, len);
+	memcpy(map, src, len);
+	ret = 0;
 
-	clear_fixmap(FIX_TEXT_POKE0);
+	tamisu_clear_fixmap(FIX_TEXT_POKE0);
 
 	if (!ret) {
 		if (flags & TAMISU_PATCH_TEXT_FLUSH_DCACHE)

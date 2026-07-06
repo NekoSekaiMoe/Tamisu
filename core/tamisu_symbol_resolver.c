@@ -1,5 +1,6 @@
 #include <linux/kallsyms.h>
 #include <linux/init.h>
+#include <linux/kprobes.h>
 #include <linux/module.h>
 #include <linux/printk.h>
 #include <linux/string.h>
@@ -18,7 +19,7 @@ static const char cfi_suffix[] = ".cfi_jt";
 static const size_t cfi_suffix_len = sizeof(cfi_suffix) - 1;
 #endif // #if !USE_KCFI
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+#ifdef TAMISU_KALLSYMS_ON_EACH_SYMBOL_NO_MODULE
 typedef int (*kallsyms_on_each_symbol_fn_t)(int (*fn)(void *, const char *,
 						      unsigned long),
 					    void *data);
@@ -27,12 +28,14 @@ typedef int (*kallsyms_on_each_symbol_fn_t)(int (*fn)(void *, const char *,
 						      struct module *,
 						      unsigned long),
 					    void *data);
-#endif // #if LINUX_VERSION_CODE >= KERNEL_VERSIO...
+#endif // #ifdef TAMISU_KALLSYMS_ON_EACH_SYMBOL_NO_MODULE
 
 typedef int (*kallsyms_on_each_match_symbol_fn_t)(int (*fn)(void *,
 							    unsigned long),
 						  const char *name, void *data);
+typedef unsigned long (*kallsyms_lookup_name_fn_t)(const char *name);
 
+static kallsyms_lookup_name_fn_t kallsyms_lookup_name_fn;
 static kallsyms_on_each_symbol_fn_t kallsyms_on_each_symbol_fn;
 static kallsyms_on_each_match_symbol_fn_t kallsyms_on_each_match_symbol_fn;
 
@@ -46,6 +49,22 @@ static int find_kernel_symbol_exact_cb(void *data, unsigned long addr)
 {
 	*(unsigned long *)data = addr;
 	return 0;
+}
+
+static unsigned long tamisu_bootstrap_kallsyms_lookup_name(void)
+{
+#ifdef CONFIG_KPROBES
+	struct kprobe kp = {.symbol_name = "kallsyms_lookup_name"};
+	unsigned long addr;
+
+	if (register_kprobe(&kp))
+		return 0;
+	addr = (unsigned long)kp.addr;
+	unregister_kprobe(&kp);
+	return addr;
+#else
+	return 0;
+#endif // #ifdef CONFIG_KPROBES
 }
 
 unsigned long __nocfi find_kernel_symbol_exact(const char *symbol_name)
@@ -62,7 +81,10 @@ unsigned long __nocfi find_kernel_symbol_exact(const char *symbol_name)
 			return addr;
 	}
 
-	return kallsyms_lookup_name(symbol_name);
+	if (kallsyms_lookup_name_fn)
+		return kallsyms_lookup_name_fn(symbol_name);
+
+	return 0;
 }
 
 static inline bool tamisu_symbol_has_suffix(const char *name, size_t name_len,
@@ -73,13 +95,13 @@ static inline bool tamisu_symbol_has_suffix(const char *name, size_t name_len,
 	       strcmp(name + name_len - suffix_len, suffix) == 0;
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
+#ifdef TAMISU_KALLSYMS_ON_EACH_SYMBOL_NO_MODULE
 static int lookup_symbol_variant_cb(void *data, const char *name,
 				    unsigned long addr)
 #else
 static int lookup_symbol_variant_cb(void *data, const char *name,
 				    struct module *mod, unsigned long addr)
-#endif // #if LINUX_VERSION_CODE >= KERNEL_VERSIO...
+#endif // #ifdef TAMISU_KALLSYMS_ON_EACH_SYMBOL_NO_MODULE
 {
 	struct tamisu_lookup_symbol_ctx *ctx = data;
 	size_t name_len;
@@ -175,14 +197,19 @@ void *tamisu_lookup_symbol(const char *symbol_name)
 
 void __init tamisu_init_symbol_resolver(void)
 {
+	kallsyms_lookup_name_fn =
+	    (kallsyms_lookup_name_fn_t)tamisu_bootstrap_kallsyms_lookup_name();
+	if (!kallsyms_lookup_name_fn)
+		pr_warn("kallsyms_lookup_name not found\n");
+
 	kallsyms_on_each_symbol_fn =
-	    (kallsyms_on_each_symbol_fn_t)kallsyms_lookup_name(
+	    (kallsyms_on_each_symbol_fn_t)find_kernel_symbol_exact(
 		"kallsyms_on_each_symbol");
 	if (!kallsyms_on_each_symbol_fn)
 		pr_warn("kallsyms_on_each_symbol not found\n");
 
 	kallsyms_on_each_match_symbol_fn =
-	    (kallsyms_on_each_match_symbol_fn_t)kallsyms_lookup_name(
+	    (kallsyms_on_each_match_symbol_fn_t)find_kernel_symbol_exact(
 		"kallsyms_on_each_match_symbol");
 	if (!kallsyms_on_each_match_symbol_fn)
 		pr_warn("kallsyms_on_each_match_symbol not found\n");
