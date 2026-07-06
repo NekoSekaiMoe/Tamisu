@@ -865,6 +865,13 @@ void read_yzconfig() {
         g_module_scopes.size());
 }
 
+bool g_safemode_active = false;
+uint32_t g_safemode_crashes = 0;
+std::string g_safemode_zygote;
+
+bool g_safemode_active = false;
+uint32_t g_safemode_crashes = 0;
+
 uint64_t g_inject_count = 0;
 std::deque<uint32_t> g_recent_appids;
 constexpr size_t kRecentMax = 16;
@@ -1230,7 +1237,12 @@ std::string build_status_json() {
     s += "\"";
     s += "}";
   }
-  s += "],\"native_injections\":[";
+  s += "],\"safemode\":{\"active\":";
+  s += g_safemode_active ? "true" : "false";
+  s += ",\"crashes\":";
+  s += std::to_string(g_safemode_crashes);
+  s += "}";
+  s += ",\"native_injections\":[";
   first = true;
   for (const auto &n : g_native_injections) {
     if (!first)
@@ -1646,6 +1658,10 @@ void nl_drain(int fd) {
     } else if (ev->type == YZ_EV_RELOAD) {
       rescan_modules();
       read_yzconfig();
+    } else if (ev->type == YZ_EV_SAFEMODE) {
+      g_safemode_active = true;
+      g_safemode_crashes = ev->appid;
+      DLOGE("safemode activated: pid=%u crashes=%u", ev->pid, ev->appid);
     }
   }
 }
