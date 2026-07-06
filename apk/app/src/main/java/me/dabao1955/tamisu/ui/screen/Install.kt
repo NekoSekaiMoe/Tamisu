@@ -131,8 +131,8 @@ fun InstallScreen(
         Unit
     }
 
-    val currentKmi by produceState(initialValue = "") {
-        value = getCurrentKmi()
+    val currentKmi by produceState<String?>(initialValue = null) {
+        value = runCatching { getCurrentKmi() }.getOrDefault("")
     }
 
     val selectKmiDialog = rememberSelectKmiDialog { kmi ->
@@ -143,7 +143,7 @@ fun InstallScreen(
     }
 
     val onClickNext = {
-        if (lkmSelection == LkmSelection.KmiNone && currentKmi.isBlank()) {
+        if (lkmSelection == LkmSelection.KmiNone && currentKmi?.isBlank() == true) {
             selectKmiDialog.show()
         } else {
             onInstall()

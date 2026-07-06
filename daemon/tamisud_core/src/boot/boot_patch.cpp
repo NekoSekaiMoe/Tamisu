@@ -1,6 +1,7 @@
 #include "boot_patch.h"
 #include "../assets.h"
 #include "../defs.h"
+#include "../flash/flash_partition.h"
 #include "../log.h"
 #include "../utils.h"
 #include "tools.h"
@@ -1314,6 +1315,11 @@ std::string choose_boot_partition(const std::string& kmi, bool ota,
         if (*override_partition == "boot" || *override_partition == "init_boot" ||
             *override_partition == "vendor_boot") {
             const std::string slot = get_slot_suffix(ota);
+            const std::string block_dev =
+                flash::find_partition_block_device(*override_partition, slot);
+            if (!block_dev.empty()) {
+                return block_dev;
+            }
             return "/dev/block/by-name/" + *override_partition + slot;
         }
         // Invalid partition name, fallback to auto-detect
@@ -1325,9 +1331,8 @@ std::string choose_boot_partition(const std::string& kmi, bool ota,
     const bool skip_init_boot = kmi.find("android12-") == 0;
 
     // Check if init_boot exists
-    std::string init_boot = "/dev/block/by-name/init_boot" + slot;
-    struct stat st{};
-    const bool init_boot_exist = (stat(init_boot.c_str(), &st) == 0);
+    const std::string init_boot = flash::find_partition_block_device("init_boot", slot);
+    const bool init_boot_exist = !init_boot.empty();
 
     // Use init_boot if:
     // - Not replacing kernel (LKM mode)
@@ -1338,6 +1343,10 @@ std::string choose_boot_partition(const std::string& kmi, bool ota,
     }
 
     // Fallback to boot
+    const std::string boot = flash::find_partition_block_device("boot", slot);
+    if (!boot.empty()) {
+        return boot;
+    }
     return "/dev/block/by-name/boot" + slot;
 }
 
@@ -1350,9 +1359,7 @@ std::string get_default_partition_name(const std::string& kmi, bool is_replace_k
     const bool skip_init_boot = kmi.find("android12-") == 0;
 
     // Check if init_boot exists
-    const std::string init_boot = "/dev/block/by-name/init_boot" + slot;
-    struct stat st{};
-    const bool init_boot_exist = (stat(init_boot.c_str(), &st) == 0);
+    const bool init_boot_exist = !flash::find_partition_block_device("init_boot", slot).empty();
 
     // Use init_boot if:
     // - Not replacing kernel (LKM mode)
@@ -1381,9 +1388,7 @@ int boot_info_available_partitions() {
     const std::array<const char*, 3> candidates = {"boot", "init_boot", "vendor_boot"};
 
     for (const char* name : candidates) {
-        const std::string full_path = std::string("/dev/block/by-name/") + name + slot;
-        struct stat st{};
-        if (stat(full_path.c_str(), &st) == 0) {
+        if (!flash::find_partition_block_device(name, slot).empty()) {
             printf("%s\n", name);
         }
     }
