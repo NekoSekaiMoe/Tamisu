@@ -1284,6 +1284,42 @@ std::string get_current_kmi() {
         return "android" + android_ver + "-" + major_minor;
     }
 
+    // Fallback: kernel release has no -androidXX suffix (self-built kernels,
+    // non-GKI builds, etc.). Walk the embedded asset list and pick the KMI
+    // whose major.minor matches. If multiple match (e.g. android13-6.1 and
+    // android14-6.1 both exist), prefer the highest android version, since
+    // KMI symbols only get added, not removed, across android releases on
+    // the same kernel LTS branch.
+    const auto supported = list_supported_kmi();
+    std::string best;
+    int best_android = -1;
+    for (const auto& kmi : supported) {
+        // KMI format: androidXX-X.Y
+        const size_t dash = kmi.find('-');
+        if (dash == std::string::npos) continue;
+        const std::string kmi_minor = kmi.substr(dash + 1);
+        if (kmi_minor != major_minor) continue;
+
+        const std::string android_part = kmi.substr(0, dash);
+        if (android_part.rfind("android", 0) != 0) continue;
+        const std::string num_str = android_part.substr(7);
+        int android_ver = 0;
+        try {
+            android_ver = std::stoi(num_str);
+        } catch (...) {
+            continue;
+        }
+        if (android_ver > best_android) {
+            best_android = android_ver;
+            best = kmi;
+        }
+    }
+    if (!best.empty()) {
+        LOGI("KMI fallback: matched %s from asset list (major.minor=%s)",
+             best.c_str(), major_minor.c_str());
+        return best;
+    }
+
     return major_minor;
 }
 
