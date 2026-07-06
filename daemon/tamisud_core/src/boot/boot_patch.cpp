@@ -700,6 +700,12 @@ int boot_patch_impl(const std::vector<std::string>& args) {
     // long before zygote), without needing a custom /init replacement.
     const std::string mod_dir = "lib/modules/" + kernel_release;
     const std::string mod_dir_local = workdir + "/modroot/lib/modules/" + kernel_release;
+    // magiskboot cpio add requires source paths relative to its cwd (workdir),
+    // not absolute paths. Absolute paths are silently mishandled on some
+    // magiskboot builds, producing 'open source file <path> failed: ENOENT'
+    // even when the file exists on disk. Compute the workdir-relative form
+    // of the source directory so cpio add gets a clean relative path.
+    const std::string mod_dir_rel = "modroot/lib/modules/" + kernel_release;
 
     // Build the modprobe directory tree on disk so we can add each file into the cpio.
     std::error_code ec;
@@ -756,7 +762,7 @@ int boot_patch_impl(const std::vector<std::string>& args) {
         }
     }
     for (const auto& name : {"tamisu.ko", "modules.load", "modules.dep"}) {
-        const std::string local = mod_dir_local + "/" + name;
+        const std::string local = mod_dir_rel + "/" + name;
         const std::string cpio_path = mod_dir + "/" + name;
         if (!do_cpio_cmd(magiskboot, workdir, ramdisk,
                          std::string("add 0644 ") + local + " " + cpio_path)) {
