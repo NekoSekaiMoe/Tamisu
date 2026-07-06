@@ -3,14 +3,11 @@
 
 #include <android/log.h>
 #include <dirent.h>
-#include <errno.h>
 #include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/syscall.h>
-#include <sys/reboot.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -62,28 +59,9 @@ static inline int scan_driver_fd() {
   return found;
 }
 
-// Probe the Tamisu driver fd for this process. The kernel hands out the
-// anonymous inode via the reboot syscall handshake (TAMISU_INSTALL_MAGIC1/2)
-// when SECCOMP allows it; otherwise the fd may already be inherited from
-// a forked-from-Zygote parent, which we discover by scanning /proc/self/fd.
-// We try the scan first (cheap, no syscall), then fall back to the
-// reboot handshake so a manager app that was not launched from a Tamisu-
-// injected zygote can still reach the driver.
-static int probe_driver_fd() {
-  int found = scan_driver_fd();
-  if (found >= 0) {
-    return found;
-  }
-
-  int fd_reboot = -1;
-  syscall(SYS_reboot, TAMISU_INSTALL_MAGIC1, TAMISU_INSTALL_MAGIC2, 0,
-          &fd_reboot);
-  return fd_reboot;
-}
-
 static int tamisuctl(unsigned long op, void *arg) {
   if (fd < 0) {
-    fd = probe_driver_fd();
+    fd = scan_driver_fd();
   }
   return ioctl(fd, op, arg);
 }
@@ -136,7 +114,7 @@ void get_hook_type(char *hook_type) {
 
 bool tamisu_driver_present(void) {
   if (fd < 0) {
-    fd = probe_driver_fd();
+    fd = scan_driver_fd();
   }
   return fd >= 0;
 }
