@@ -27,9 +27,7 @@
     <string name="show_system_apps">Mostrar apps do sistema</string>
     <string name="hide_system_apps">Ocultar apps do sistema</string>
     <string name="send_log">Reportar registros</string>
-    <string name="safe_mode">Modo de segurança</string>
-    <string name="jailbreak_timeout">O jailbreak pode ter falhado, verifique os registros</string>
-    <string name="reboot_to_apply">Reinicie para entrar em vigor</string>
+    <string name="safe_mode">Modo de segurança</string>    <string name="reboot_to_apply">Reinicie para entrar em vigor</string>
     <string name="about_source_code">Veja o código-fonte em %1$s&lt;br/&gt;Junte-se ao nosso canal %2$s</string>
     <string name="profile_default">Padrão</string>
     <string name="profile_template">Modelo</string>
@@ -78,13 +76,7 @@
 \nSó use esta opção após a conclusão do OTA.
 \nDeseja continuar?</string>
     <string name="install_next">Próximo</string>
-    <string name="install_select_partition">Selecionar partição</string>
-    <string name="install_jailbreak_title">Instalação por jailbreak</string>
-    <string name="install_jailbreak_summary">Acionar o carregamento tardio diretamente da página de instalação em um dispositivo permissivo. Se ainda não houver um shell de root disponível, o arranque do Magica será usado.</string>
-    <string name="install_jailbreak_requires_permissive">Esta ação só está disponível quando o SELinux está permissivo.</string>
-    <string name="install_jailbreak_button">Acionar carregamento tardio</string>
-    <string name="install_jailbreak_failed">Falha ao acionar o carregamento tardio</string>
-    <string name="advanced_options">Opções avançadas</string>
+    <string name="install_select_partition">Selecionar partição</string>    <string name="advanced_options">Opções avançadas</string>
     <string name="allow_shell">Sempre conceder root ao Shell</string>
     <string name="allow_shell_summary">Sempre permitir que o adb shell chame su. Não ative isto a menos que seja absolutamente necessário.</string>
     <string name="enable_adb">Forçar ativação do adb na inicialização</string>

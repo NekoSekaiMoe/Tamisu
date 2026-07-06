@@ -27,9 +27,7 @@
     <string name="show_system_apps">システムアプリを表示</string>
     <string name="hide_system_apps">システムアプリを非表示</string>
     <string name="send_log">ログを送信する</string>
-    <string name="safe_mode">セーフモード</string>
-    <string name="jailbreak_timeout">脱獄に失敗した可能性があります。ログを確認してください</string>
-    <string name="reboot_to_apply">再起動すると有効化されます</string>
+    <string name="safe_mode">セーフモード</string>    <string name="reboot_to_apply">再起動すると有効化されます</string>
     <string name="about_source_code">ソースコードは %1$s で確認できます&lt;br/&gt;%2$s チャンネルにご参加ください</string>
     <string name="profile_default">デフォルト</string>
     <string name="profile_template">テンプレート</string>
@@ -78,13 +76,7 @@
 \nこのオプションは、OTA が完了した後にのみ使用してください。
 \n続行しますか？</string>
     <string name="install_next">次へ</string>
-    <string name="install_select_partition">パーティションを選択</string>
-    <string name="install_jailbreak_title">脱獄インストール</string>
-    <string name="install_jailbreak_summary">Permissive なデバイスでインストールページから直接 late-load をトリガーします。root シェルがまだ使えない場合は、代わりに Magica ブートストラップが使用されます。</string>
-    <string name="install_jailbreak_requires_permissive">この操作は SELinux が Permissive のときのみ使用できます。</string>
-    <string name="install_jailbreak_button">late-load をトリガー</string>
-    <string name="install_jailbreak_failed">late-load のトリガーに失敗しました</string>
-    <string name="advanced_options">詳細オプション</string>
+    <string name="install_select_partition">パーティションを選択</string>    <string name="advanced_options">詳細オプション</string>
     <string name="allow_shell">Shell に常に root を許可</string>
     <string name="allow_shell_summary">adb shell が su を呼び出すことを常に許可します。本当に必要な場合以外は有効にしないでください。</string>
     <string name="enable_adb">起動時に adb を強制的に有効化</string>

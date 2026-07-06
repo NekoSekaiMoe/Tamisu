@@ -27,9 +27,7 @@
     <string name="show_system_apps">Mostrar aplicaciones del sistema</string>
     <string name="hide_system_apps">Ocultar aplicaciones del sistema</string>
     <string name="send_log">Enviar registros</string>
-    <string name="safe_mode">Modo seguro</string>
-    <string name="jailbreak_timeout">Es posible que el jailbreak haya fallado, revisa los registros</string>
-    <string name="reboot_to_apply">Reinicia para aplicar cambios</string>
+    <string name="safe_mode">Modo seguro</string>    <string name="reboot_to_apply">Reinicia para aplicar cambios</string>
     <string name="about_source_code">Ver el código fuente en %1$s&lt;br/&gt;Únete a nuestro canal %2$s</string>
     <string name="profile_default">Predeterminado</string>
     <string name="profile_template">Plantilla</string>
@@ -76,13 +74,7 @@
     <string name="install_inactive_slot">Instalar en ranura inactiva (Después de OTA)</string>
     <string name="install_inactive_slot_warning">¡Su dispositivo será **FORZADO** a arrancar en la ranura inactiva actual después de un reinicio!\nUtilice esta opción sólo después de que la OTA se haya realizado.\n¿Continuar?</string>
     <string name="install_next">Siguiente</string>
-    <string name="install_select_partition">Seleccionar partición</string>
-    <string name="install_jailbreak_title">Instalación por jailbreak</string>
-    <string name="install_jailbreak_summary">Activar la carga tardía directamente desde la página de instalación en un dispositivo permisivo. Si aún no hay un shell de root disponible, se usará el arranque de Magica en su lugar.</string>
-    <string name="install_jailbreak_requires_permissive">Esta acción solo está disponible cuando SELinux es permisivo.</string>
-    <string name="install_jailbreak_button">Activar carga tardía</string>
-    <string name="install_jailbreak_failed">No se pudo activar la carga tardía</string>
-    <string name="advanced_options">Opciones avanzadas</string>
+    <string name="install_select_partition">Seleccionar partición</string>    <string name="advanced_options">Opciones avanzadas</string>
     <string name="allow_shell">Conceder siempre root al Shell</string>
     <string name="allow_shell_summary">Permitir siempre que adb shell llame a su. No actives esto a menos que sea absolutamente necesario.</string>
     <string name="enable_adb">Forzar la activación de adb al arrancar</string>

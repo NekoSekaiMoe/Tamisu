@@ -427,14 +427,7 @@
 
     <!-- Install page: jailbreak (late-load trigger) and Kasumi integration.
          These UIs are still wired up in Install.kt and must not be deleted. -->
-    <string name="home_click_to_install">Click to install</string>
-    <string name="jailbreak_timeout">Jailbreak may have failed, please check logs</string>
-    <string name="install_jailbreak_title">Jailbreak install</string>
-    <string name="install_jailbreak_summary">Trigger late-load from the install page on a permissive device. If no root shell is available yet, Magica bootstrap will be used instead.</string>
-    <string name="install_jailbreak_requires_permissive">This action is only available while SELinux is permissive.</string>
-    <string name="install_jailbreak_button">Trigger late-load</string>
-    <string name="install_jailbreak_failed">Failed to trigger late-load</string>
-    <string name="kasumi_in_cpio_title">Experimental: Embed Kasumi in cpio</string>
+    <string name="home_click_to_install">Click to install</string>    <string name="kasumi_in_cpio_title">Experimental: Embed Kasumi in cpio</string>
     <string name="kasumi_in_cpio_desc">When enabled, the Kasumi LKM will be added to cpio and loaded at boot alongside Tamisu</string>
     <string name="kasumi_custom_lkm_title">Custom Kasumi LKM</string>
     <string name="kasumi_custom_lkm_desc">Tap to select custom .ko file (optional, uses embedded if not set)</string>
