@@ -92,6 +92,31 @@ fun InstallScreen(
             runCatching { Natives.isManager }.getOrDefault(false)
         }
     }
+    val isRootShellAvailable by produceState(initialValue = false) {
+        value = withContext(Dispatchers.IO) {
+            runCatching { rootAvailable() }.getOrDefault(false)
+        }
+    }
+    val isSelinuxPermissive = seLinuxStatus == context.getString(R.string.selinux_status_permissive)
+    val canJailbreakInstall = !isManager && isSelinuxPermissive
+    val onJailbreakInstall: () -> Unit = {
+        loadingDialog.show()
+        coroutineScope.launch {
+            if (!isRootShellAvailable) {
+                loadingDialog.hide()
+                Toast.makeText(context, R.string.install_jailbreak_failed, Toast.LENGTH_LONG).show()
+                return@launch
+            }
+            withContext(Dispatchers.IO) {
+                execTamisuDaemon("late-load", true)
+            }
+
+            delay(30_000)
+            loadingDialog.hide()
+            Toast.makeText(context, R.string.jailbreak_timeout, Toast.LENGTH_LONG).show()
+        }
+    }
+
     if (showRebootDialog) {
         RebootDialog(
             show = true,
@@ -371,6 +396,70 @@ fun InstallScreen(
                     }
                 }
 
+                AnimatedVisibility(
+                    visible = !isManager,
+                    enter = fadeIn() + expandVertically(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    ElevatedCard(
+                        colors = getCardColors(MaterialTheme.colorScheme.tertiaryContainer),
+                        elevation = getCardElevation(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Filled.DeveloperMode,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.tertiary
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(R.string.install_jailbreak_title),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.tertiary
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = stringResource(R.string.install_jailbreak_summary),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onTertiaryContainer
+                            )
+
+                            if (!isSelinuxPermissive) {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = stringResource(R.string.install_jailbreak_requires_permissive),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.75f)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(12.dp))
+
+                            Button(
+                                onClick = onJailbreakInstall,
+                                enabled = canJailbreakInstall,
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.tertiary,
+                                    contentColor = MaterialTheme.colorScheme.onTertiary
+                                )
+                            ) {
+                                Text(stringResource(R.string.install_jailbreak_button))
+                            }
+                        }
+                    }
+                }
 
                 Button(
                     modifier = Modifier.fillMaxWidth(),

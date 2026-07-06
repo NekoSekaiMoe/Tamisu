@@ -9,6 +9,7 @@
 #include "defs.h"
 #include "flash/flash_partition.h"
 #include "init_event.h"
+#include "late_load.h"
 #include "log.h"
 #include "module/module.h"
 #include "sepolicy/sepolicy.h"
@@ -133,6 +134,8 @@ void print_usage() {
     printf("Tamisu userspace daemon (zygisk-only)\n\n");
     printf("USAGE: tamisu_daemon <COMMAND>\n\n");
     printf("COMMANDS:\n");
+    printf("  insmod         Load a kernel module with kallsyms access\n");
+    printf("  late-load      Load tamisu.ko and execute late-load stage scripts\n");
     printf("  post-fs-data   Trigger post-fs-data event\n");
     printf("  services       Trigger service event\n");
     printf("  boot-completed Trigger boot-complete event\n");
@@ -248,6 +251,7 @@ int cmd_debug(const std::vector<std::string>& args) {
     if (args.empty()) {
         printf("USAGE: tamisu_daemon debug <SUBCOMMAND>\n\n");
         printf("SUBCOMMANDS:\n");
+        printf("  insmod <KO> [PARAMS...]  Load a kernel module (legacy alias)\n");
         printf("  version            Get kernel version\n");
         printf("  mark <get|mark|unmark|refresh> [PID]\n");
         return 1;
@@ -255,6 +259,8 @@ int cmd_debug(const std::vector<std::string>& args) {
 
     const std::string& subcmd = args[0];
 
+    if (subcmd == "insmod" && args.size() > 1) {
+        return debug_insmod(args[1], std::vector<std::string>(args.begin() + 2, args.end()));
     } else if (subcmd == "version") {
         printf("Kernel Version: %d\n", debug_get_kernel_version());
         return 0;
@@ -266,6 +272,14 @@ int cmd_debug(const std::vector<std::string>& args) {
     return 1;
 }
 
+int cmd_insmod(const std::vector<std::string>& args) {
+    if (args.empty()) {
+        printf("USAGE: tamisu_daemon insmod <KO> [PARAMS...]\n");
+        return 1;
+    }
+
+    return debug_insmod(args[0], std::vector<std::string>(args.begin() + 1, args.end()));
+}
 
 int cmd_kernel(const std::vector<std::string>& args) {
     if (args.empty()) {
@@ -561,6 +575,23 @@ int cmd_flash_new(const std::vector<std::string>& args) {
     return 1;
 }
 
+int cmd_late_load(const std::vector<std::string>& args) {
+    bool allow_shell = false;
+
+    for (size_t i = 0; i < args.size(); ++i) {
+        if (args[i] == "--allow-shell") {
+            allow_shell = true;
+            continue;
+        }
+
+        printf("Unknown late-load option: %s\n", args[i].c_str());
+        printf("Usage: tamisu_daemon late-load [--allow-shell]\n");
+        return 1;
+    }
+
+    return late_load::run(false, allow_shell);
+}
+
 }  // namespace
 
 int cli_run(int argc, char** argv) {
@@ -588,6 +619,10 @@ int cli_run(int argc, char** argv) {
                cmd == "--version") {
         print_version();
         return 0;
+    } else if (cmd == "insmod") {
+        return cmd_insmod(args);
+    } else if (cmd == "late-load") {
+        return cmd_late_load(args);
     } else if (cmd == "post-fs-data") {
         return on_post_data_fs();
     } else if (cmd == "services") {

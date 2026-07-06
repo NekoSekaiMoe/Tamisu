@@ -1,14 +1,16 @@
 #include "debug.h"
 #include "core/tamisuctl.h"
+#include "tamisu_loader.h"
 #include "log.h"
 #include "utils.h"
 
 #include <sys/utsname.h>
+#include <sys/stat.h>
 #include <cerrno>
 #include <cstdio>
 #include <cstring>
-#include <string>
-#include <vector>
+#include <filesystem>
+#include <fstream>
 
 namespace tamisu_daemon {
 
@@ -30,6 +32,31 @@ int get_version_impl() {
 
 int debug_get_kernel_version() {
     return get_version_impl();
+}
+
+int debug_insmod(const std::string& module, const std::vector<std::string>& params) {
+    std::error_code ec;
+    const auto resolved_path = std::filesystem::canonical(module, ec);
+    if (ec) {
+        printf("Failed to resolve module path %s: %s\n", module.c_str(), ec.message().c_str());
+        return 1;
+    }
+
+    std::string param_values;
+    for (size_t i = 0; i < params.size(); ++i) {
+        if (i != 0) {
+            param_values.push_back(' ');
+        }
+        param_values += params[i];
+    }
+
+    if (!tamisu_loader::load_module(resolved_path.c_str(), param_values)) {
+        printf("Failed to load kernel module: %s\n", resolved_path.c_str());
+        return 1;
+    }
+
+    printf("Loaded kernel module: %s\n", resolved_path.c_str());
+    return 0;
 }
 
 int debug_mark(const std::vector<std::string>& args) {
@@ -68,7 +95,7 @@ int debug_mark(const std::vector<std::string>& args) {
             printf("Failed to refresh marks\n");
             return 1;
         }
-        printf("Refreshed all marks\n");
+        printf("Refreshed all process marks\n");
         return 0;
     }
 

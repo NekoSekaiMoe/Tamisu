@@ -101,6 +101,7 @@ void warn_regenerate_preinit_rc_failed(int ret) {
 CommonScriptEnv build_common_script_env() {
     CommonScriptEnv env;
     env.kernel_ver_code = std::to_string(get_version());
+    env.late_load = (get_flags() & TAMISU_GET_INFO_FLAG_LATE_LOAD) != 0;
     const auto [zygisk_value, zygisk_supported] = get_feature(TAMISU_FEATURE_YUKIZYGISK);
     env.zygisk_enabled = zygisk_supported && zygisk_value != 0;
 
@@ -128,6 +129,12 @@ void apply_common_script_env(const CommonScriptEnv& env, const char* module_id,
     setenv("TAMISU_VER_CODE", VERSION_CODE, 1);
     setenv("TAMISU_VER", VERSION_NAME, 1);
     setenv("PATH", env.path.c_str(), 1);
+
+    if (env.late_load) {
+        setenv("TAMISU_LATE_LOAD", "1", 1);
+    } else {
+        unsetenv("TAMISU_LATE_LOAD");
+    }
 
     if (env.zygisk_enabled) {
         setenv("ZYGISK_ENABLED", "1", 1);

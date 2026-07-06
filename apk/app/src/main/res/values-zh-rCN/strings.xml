@@ -408,7 +408,14 @@
     <string name="zygisk_log_dmesg_title">记录到 dmesg</string>
     <string name="zygisk_log_dmesg_summary">输出到 dmesg。</string>
     <string name="zygisk_uid_fallback">uid %1$d</string>
-    <string name="home_click_to_install">点击安装</string>    <string name="kasumi_in_cpio_title">实验：将 Kasumi 刷入 cpio</string>
+    <string name="home_click_to_install">点击安装</string>
+    <string name="jailbreak_timeout">越狱可能失败了，请检查日志</string>
+    <string name="install_jailbreak_title">越狱安装</string>
+    <string name="install_jailbreak_summary">在安装页直接触发 late-load。如果当前还没有 root shell，会改为使用 Magica 引导。</string>
+    <string name="install_jailbreak_requires_permissive">只有在 SELinux 为宽容模式时才能使用此功能。</string>
+    <string name="install_jailbreak_button">触发 late-load</string>
+    <string name="install_jailbreak_failed">触发 late-load 失败</string>
+    <string name="kasumi_in_cpio_title">实验：将 Kasumi 刷入 cpio</string>
     <string name="kasumi_custom_lkm_title">自定义 Kasumi LKM</string>
     <string name="kasumi_custom_lkm_desc">点击选择自定义 .ko 文件（可选，未选择则使用内嵌）</string>
     <string name="kasumi_use_embedded">清除并使用内嵌 Kasumi</string>
