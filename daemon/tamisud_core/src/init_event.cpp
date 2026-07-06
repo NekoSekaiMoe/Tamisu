@@ -211,6 +211,8 @@ void ensure_zygisk_payload_if_enabled() {
     ensure_zygisk(true);
 }
 
+}  // namespace
+
 void ensure_zygiskd_running_if_enabled() {
     if (!zygisk_feature_enabled())
         return;
@@ -225,8 +227,6 @@ void ensure_zygiskd_running_if_enabled() {
     LOGI("Tamisu Zygisk feature on -- launching zygiskd");
     spawn_zygiskd();
 }
-
-}  // namespace
 
 int on_post_data_fs() {
     LOGI("post-fs-data triggered");
