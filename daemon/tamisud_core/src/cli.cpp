@@ -255,7 +255,7 @@ int cmd_debug(const std::vector<std::string>& args) {
 
     const std::string& subcmd = args[0];
 
-    } else if (subcmd == "version") {
+    if (subcmd == "version") {
         printf("Kernel Version: %d\n", debug_get_kernel_version());
         return 0;
     } else if (subcmd == "mark" && args.size() > 1) {
