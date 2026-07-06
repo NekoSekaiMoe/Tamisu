@@ -170,6 +170,12 @@ int run(bool post_magica, bool allow_shell) {
         LOGW("late-load: init_features failed");
     }
 
+    // late-load skips the post-fs-data stage (we are long past it), so we
+    // must explicitly bring zygiskd up here. Without this, zygote is never
+    // hooked by Tamisu and any app forked after late-load (including the
+    // manager) won't inherit the driver fd.
+    ensure_zygiskd_running_if_enabled();
+
     run_stage_scripts("late-load", true);
 
     if (load_system_prop() != 0) {
