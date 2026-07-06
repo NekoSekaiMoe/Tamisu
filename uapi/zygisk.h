@@ -18,6 +18,7 @@ enum yz_event_type {
   YZ_EV_SPECIALIZE = 1,
   YZ_EV_RELOAD = 2,
   YZ_EV_REPORT_SPECIALIZE = 3, /* userspace -> kernel */
+  YZ_EV_SAFEMODE = 4,
 };
 
 struct yz_event {
@@ -109,6 +110,17 @@ struct yz_native_targets_cmd {
 
 struct yz_native_load_policy_cmd {
   __u32 pid;
+};
+
+#define YZ_ZYGOTE_NAME_MAX 64
+#define YZ_ZYGOTE_CRASH_THRESHOLD 5
+
+#define TAMISU_IOCTL_YZ_GET_SAFEMODE _IOC(_IOC_READ, 'T', 60, 0)
+
+struct yz_safemode_status_cmd {
+  __u32 active;
+  __u32 zygote_crashes;
+  char zygote[YZ_ZYGOTE_NAME_MAX];
 };
 
 struct yz_config {

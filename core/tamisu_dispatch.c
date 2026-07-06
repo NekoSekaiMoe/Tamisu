@@ -393,6 +393,19 @@ static int do_yz_restore_native_load_policy(void __user *arg)
 	return tamisu_zygote_probe_restore_native_policy((pid_t)cmd.pid);
 }
 
+static int do_yz_get_safemode(void __user *arg)
+{
+	struct yz_safemode_status_cmd cmd;
+	int ret;
+
+	ret = tamisu_zygote_probe_get_safemode(&cmd);
+	if (ret)
+		return ret;
+	if (copy_to_user(arg, &cmd, sizeof(cmd)))
+		return -EFAULT;
+	return 0;
+}
+
 struct yz_unmap_tw {
 	struct callback_head cb;
 	unsigned long addr[YZ_MAX_UNMAP_SEGS];
@@ -632,6 +645,10 @@ static const struct tamisu_ioctl_cmd_map tamisu_ioctl_handlers[] = {
      .name = "YZ_RESTORE_NATIVE_LOAD_POLICY",
      .handler = do_yz_restore_native_load_policy,
      .perm_check = only_root},
+    {.cmd = TAMISU_IOCTL_YZ_GET_SAFEMODE,
+     .name = "YZ_GET_SAFEMODE",
+     .handler = do_yz_get_safemode,
+     .perm_check = trusted_caller},
     {.cmd = TAMISU_IOCTL_YZ_UNMAP_PID,
      .name = "YZ_UNMAP_PID",
      .handler = do_yz_unmap_pid,
