@@ -9,7 +9,6 @@ namespace tamisu_daemon {
 struct CommonScriptEnv {
     std::string kernel_ver_code;
     std::string path;
-    bool late_load{};
     bool zygisk_enabled{};
 };
 

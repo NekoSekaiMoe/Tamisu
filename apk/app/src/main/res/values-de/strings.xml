@@ -27,9 +27,7 @@
     <string name="show_system_apps">System-Apps anzeigen</string>
     <string name="hide_system_apps">System-Apps ausblenden</string>
     <string name="send_log">Protokoll senden</string>
-    <string name="safe_mode">Sicherer Modus</string>
-    <string name="jailbreak_timeout">Jailbreak ist möglicherweise fehlgeschlagen, bitte prüfe die Protokolle</string>
-    <string name="reboot_to_apply">Neustarten, damit Änderungen wirksam werden</string>
+    <string name="safe_mode">Sicherer Modus</string>    <string name="reboot_to_apply">Neustarten, damit Änderungen wirksam werden</string>
     <string name="about_source_code">Den Quellcode finden Sie unter %1$s&lt;br/&gt;Begleiten Sie uns %2$s-Kanal</string>
     <string name="profile_default">Standard</string>
     <string name="profile_template">Vorlage</string>
@@ -78,13 +76,7 @@
 \nBenutze dies nur nach Fertigstellung des OTA.
 \nFortfahren?</string>
     <string name="install_next">Weiter</string>
-    <string name="install_select_partition">Partition auswählen</string>
-    <string name="install_jailbreak_title">Jailbreak-Installation</string>
-    <string name="install_jailbreak_summary">Spätes Laden direkt von der Installationsseite auf einem permissiven Gerät auslösen. Wenn noch keine Root-Shell verfügbar ist, wird stattdessen der Magica-Start verwendet.</string>
-    <string name="install_jailbreak_requires_permissive">Diese Aktion ist nur verfügbar, solange SELinux permissiv ist.</string>
-    <string name="install_jailbreak_button">Spätes Laden auslösen</string>
-    <string name="install_jailbreak_failed">Spätes Laden konnte nicht ausgelöst werden</string>
-    <string name="advanced_options">Erweiterte Optionen</string>
+    <string name="install_select_partition">Partition auswählen</string>    <string name="advanced_options">Erweiterte Optionen</string>
     <string name="allow_shell">Der Shell immer Root gewähren</string>
     <string name="allow_shell_summary">adb shell immer erlauben, su aufzurufen. Aktiviere dies nur, wenn unbedingt nötig.</string>
     <string name="enable_adb">adb beim Booten erzwingen</string>

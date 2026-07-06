@@ -255,7 +255,6 @@ set(TAMISU_DAEMON_OUR_SOURCES
     src/defs.cpp
     src/log.cpp
     src/utils.cpp
-    src/tamisu_loader.cpp
     src/core/tamisuctl.cpp
     src/core/feature.cpp
     src/core/restorecon.cpp
@@ -267,7 +266,6 @@ set(TAMISU_DAEMON_OUR_SOURCES
     src/boot/apk_sign.cpp
     src/sepolicy/sepolicy.cpp
     src/init_event.cpp
-    src/late_load.cpp
     src/debug.cpp
     src/core/hide_bootloader.cpp
     src/flash/flash_partition.cpp

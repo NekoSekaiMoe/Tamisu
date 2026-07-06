@@ -28,37 +28,7 @@ namespace tamisu_daemon {
 // Forward declaration — defined near get_current_kmi() at the bottom of this file.
 std::string read_kernel_release_from_sysfs();
 
-// Arch suffix for Kasumi LKM asset name (must match lkm.cpp)
-#if defined(__aarch64__)
-#define KASUMI_ARCH_SUFFIX "_arm64"
-#elif defined(__arm__)
-#define KASUMI_ARCH_SUFFIX "_armv7"
-#elif defined(__x86_64__)
-#define KASUMI_ARCH_SUFFIX "_x86_64"
-#else
-#define KASUMI_ARCH_SUFFIX "_arm64"
-#endif  // #if defined(__aarch64__)
-
 namespace {
-
-bool copy_embedded_kasumi_asset(const std::string& kmi, const std::string& dest_path,
-                                std::string* used_asset = nullptr) {
-    std::vector<std::string> candidates;
-    if (!kmi.empty()) {
-        candidates.push_back(kmi + KASUMI_ARCH_SUFFIX "_kasumi_lkm.ko");
-    }
-    candidates.push_back(std::string(KASUMI_ARCH_SUFFIX) + "_kasumi_lkm.ko");
-
-    for (const auto& asset_name : candidates) {
-        if (copy_asset_to_file(asset_name, dest_path)) {
-            if (used_asset != nullptr) {
-                *used_asset = asset_name;
-            }
-            return true;
-        }
-    }
-    return false;
-}
 
 // LZ4 legacy ramdisk magic (reject before cpio to avoid huge cache/hang).
 constexpr std::array<unsigned char, 4> LZ4_LEGACY_MAGIC = {0x02, 0x21, 0x4c, 0x18};
@@ -304,9 +274,6 @@ struct BootPatchArgs {
     std::string out_name;           // --out-name
     bool enable_adbd = false;       // --enable-adbd
     std::string adb_debug_prop;     // --adb-debug-prop
-    bool kasumi_in_cpio =
-        false;  // --kasumi (experimental: embed Kasumi LKM in cpio, load after Tamisu)
-    std::string kasumi_module;  // --kasumi-module (custom Kasumi LKM path; overrides embedded)
 };
 
 namespace {
@@ -353,11 +320,6 @@ BootPatchArgs parse_boot_patch_args(const std::vector<std::string>& args) {
         } else if (arg == "--adb-debug-prop") {
             if (i + 1 < args.size())
                 result.adb_debug_prop = args[++i];
-        } else if (arg == "--kasumi") {
-            result.kasumi_in_cpio = true;
-        } else if (arg == "--kasumi-module") {
-            if (i + 1 < args.size())
-                result.kasumi_module = args[++i];
         }
     }
 
@@ -820,44 +782,6 @@ int boot_patch_impl(const std::vector<std::string>& args) {
         if (adb_debug_prop_exists.exit_code == 0) {
             printf("- Removing /adb_debug.prop\n");
             do_cpio_cmd(magiskboot, workdir, ramdisk, "rm adb_debug.prop");
-        }
-    }
-
-    // Experimental: add or remove Kasumi LKM in cpio
-    if (parsed.kasumi_in_cpio) {
-        const std::string kasumi_file = workdir + "/kasumi.ko";
-        bool have_kasumi = false;
-        if (!parsed.kasumi_module.empty() && fs::exists(parsed.kasumi_module)) {
-            std::error_code cp_ec;
-            fs::copy_file(parsed.kasumi_module, kasumi_file, fs::copy_options::overwrite_existing,
-                          cp_ec);
-            if (!cp_ec) {
-                have_kasumi = true;
-                printf("- Adding Kasumi LKM (custom)\n");
-            } else {
-                LOGW("Failed to copy custom Kasumi LKM: %s", cp_ec.message().c_str());
-            }
-        }
-        if (!have_kasumi) {
-            std::string used_asset;
-            if (copy_embedded_kasumi_asset(kmi, kasumi_file, &used_asset)) {
-                have_kasumi = true;
-                printf("- Adding Kasumi LKM (embedded: %s)\n", used_asset.c_str());
-            } else {
-                LOGW("Kasumi LKM asset for %s not found, skipping", kmi.c_str());
-            }
-        }
-        if (have_kasumi &&
-            !do_cpio_cmd(magiskboot, workdir, ramdisk, "add 0644 kasumi.ko kasumi.ko")) {
-            LOGW("Failed to add kasumi.ko to cpio");
-        }
-    } else {
-        // User disabled Kasumi: remove kasumi.ko from cpio if it was previously
-        // embedded (otherwise it stays forever after re-patch without the option).
-        auto kasumi_exists =
-            exec_command_magiskboot(magiskboot, {"cpio", ramdisk, "exists kasumi.ko"}, workdir);
-        if (kasumi_exists.exit_code == 0) {
-            do_cpio_cmd(magiskboot, workdir, ramdisk, "rm kasumi.ko");
         }
     }
 

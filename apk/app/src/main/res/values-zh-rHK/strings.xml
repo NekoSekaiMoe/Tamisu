@@ -27,9 +27,7 @@
     <string name="show_system_apps">顯示系統應用</string>
     <string name="hide_system_apps">隱藏系統應用</string>
     <string name="send_log">發送日誌</string>
-    <string name="safe_mode">安全模式</string>
-    <string name="jailbreak_timeout">越獄可能失敗了，請檢查日誌</string>
-    <string name="reboot_to_apply">重新啟動後生效</string>
+    <string name="safe_mode">安全模式</string>    <string name="reboot_to_apply">重新啟動後生效</string>
     <string name="about_source_code">喺 %1$s 查看源碼&lt;br/&gt;加入我哋嘅 %2$s 頻道</string>
     <string name="profile_default">默認</string>
     <string name="profile_template">模版</string>
@@ -76,13 +74,7 @@
     <string name="install_inactive_slot">安裝到未使用嘅槽位（OTA 後）</string>
     <string name="install_inactive_slot_warning">將喺重新啟動後強制切換到另一個槽位！\n注意只能喺 OTA 更新完成後嘅重新啟動之前使用。\n確認？</string>
     <string name="install_next">下一步</string>
-    <string name="install_select_partition">選擇分割區</string>
-    <string name="install_jailbreak_title">越獄安裝</string>
-    <string name="install_jailbreak_summary">喺安裝頁直接觸發 late-load。如果目前還沒有 root shell，會改為使用 Magica 引導。</string>
-    <string name="install_jailbreak_requires_permissive">只有喺 SELinux 為寬鬆模式時才能使用此功能。</string>
-    <string name="install_jailbreak_button">觸發 late-load</string>
-    <string name="install_jailbreak_failed">觸發 late-load 失敗</string>
-    <string name="advanced_options">進階選項</string>
+    <string name="install_select_partition">選擇分割區</string>    <string name="advanced_options">進階選項</string>
     <string name="allow_shell">總是給 shell 授予 root 權限</string>
     <string name="allow_shell_summary">總是允許 adb shell 呼叫 su，非必要請勿開啟。</string>
     <string name="enable_adb">啟動時強制啟用 ADB 偵錯</string>

@@ -27,9 +27,7 @@
     <string name="show_system_apps">Показать системные приложения</string>
     <string name="hide_system_apps">Скрыть системные приложения</string>
     <string name="send_log">Отправить логи</string>
-    <string name="safe_mode">Безопасный режим</string>
-    <string name="jailbreak_timeout">Джейлбрейк, возможно, не удался, проверьте журналы</string>
-    <string name="reboot_to_apply">Перезагрузите, чтобы изменения вступили в силу</string>
+    <string name="safe_mode">Безопасный режим</string>    <string name="reboot_to_apply">Перезагрузите, чтобы изменения вступили в силу</string>
     <string name="about_source_code">Просмотреть исходный код на %1$s&lt;br/&gt;Присоединяйтесь к нашему %2$s каналу</string>
     <string name="profile_default">По умолчанию</string>
     <string name="profile_template">Шаблон</string>
@@ -78,13 +76,7 @@
 \n Используйте эту опцию только после завершения OTA.
 \n Продолжить?</string>
     <string name="install_next">Далее</string>
-    <string name="install_select_partition">Выбрать раздел</string>
-    <string name="install_jailbreak_title">Установка через джейлбрейк</string>
-    <string name="install_jailbreak_summary">Запустить позднюю загрузку прямо со страницы установки на разрешающем (Permissive) устройстве. Если root-оболочка ещё недоступна, будет использован запуск через Magica.</string>
-    <string name="install_jailbreak_requires_permissive">Это действие доступно только когда SELinux в режиме Permissive.</string>
-    <string name="install_jailbreak_button">Запустить позднюю загрузку</string>
-    <string name="install_jailbreak_failed">Не удалось запустить позднюю загрузку</string>
-    <string name="advanced_options">Дополнительные параметры</string>
+    <string name="install_select_partition">Выбрать раздел</string>    <string name="advanced_options">Дополнительные параметры</string>
     <string name="allow_shell">Всегда предоставлять root оболочке Shell</string>
     <string name="allow_shell_summary">Всегда разрешать adb shell вызывать su. Не включайте без крайней необходимости.</string>
     <string name="enable_adb">Принудительно включать adb при загрузке</string>

@@ -27,9 +27,7 @@
     <string name="show_system_apps">Afficher les applications système</string>
     <string name="hide_system_apps">Masquer les applications système</string>
     <string name="send_log">Envoyer les journaux</string>
-    <string name="safe_mode">Mode sans échec</string>
-    <string name="jailbreak_timeout">Le jailbreak a peut-être échoué, veuillez vérifier les journaux</string>
-    <string name="reboot_to_apply">Redémarrez pour appliquer les modifications</string>
+    <string name="safe_mode">Mode sans échec</string>    <string name="reboot_to_apply">Redémarrez pour appliquer les modifications</string>
     <string name="about_source_code">Voir le code source à %1$s&lt;br/&gt;Rejoignez notre canal %2$s</string>
     <string name="profile_default">Par défaut</string>
     <string name="profile_template">Modèle</string>
@@ -78,13 +76,7 @@
 \nN\'utilisez cette option qu\'une fois la mise à jour OTA terminée.
 \nContinuer ?</string>
     <string name="install_next">Suivant</string>
-    <string name="install_select_partition">Sélectionner une partition</string>
-    <string name="install_jailbreak_title">Installation par jailbreak</string>
-    <string name="install_jailbreak_summary">Déclencher le chargement tardif directement depuis la page d\'installation sur un appareil permissif. Si aucun shell root n\'est encore disponible, l\'amorçage Magica sera utilisé à la place.</string>
-    <string name="install_jailbreak_requires_permissive">Cette action n\'est disponible que lorsque SELinux est permissif.</string>
-    <string name="install_jailbreak_button">Déclencher le chargement tardif</string>
-    <string name="install_jailbreak_failed">Échec du déclenchement du chargement tardif</string>
-    <string name="advanced_options">Options avancées</string>
+    <string name="install_select_partition">Sélectionner une partition</string>    <string name="advanced_options">Options avancées</string>
     <string name="allow_shell">Toujours accorder root au Shell</string>
     <string name="allow_shell_summary">Toujours autoriser adb shell à appeler su. N\'activez ceci qu\'en cas d\'absolue nécessité.</string>
     <string name="enable_adb">Forcer l\'activation d\'adb au démarrage</string>
