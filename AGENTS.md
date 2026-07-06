@@ -2,6 +2,12 @@
 
 This file provides guidance to LLM when working with code in this repository.
 
+# Warning
+
+DO NOT send optional commentary
+
+Spend time on thinking; you do not need to use the commentary channel to report progress to me.
+
 ## Project overview
 
 Tamisu is a kernel-level Zygisk provider (not a root provider). It coexists with KernelSU/Magisk/APatch — Tamisu owns zygote injection, the root solution owns `su`/modules. Delivered as: loadable kernel module (`tamisu.ko`) + userspace daemon (`tamisu_daemon`) + zygisk payload + Manager APK.
