@@ -71,10 +71,8 @@ u32 tamisu_current_sid(void)
 	return tsec ? tsec->sid : 0;
 }
 
-TAMISU_INDIRECT_CALL int
-tamisu_kallsyms_lookup_size_offset(unsigned long addr,
-				   unsigned long *symbolsize,
-				   unsigned long *offset)
+TAMISU_INDIRECT_CALL int tamisu_kallsyms_lookup_size_offset(
+    unsigned long addr, unsigned long *symbolsize, unsigned long *offset)
 {
 	typedef int (*fn_t)(unsigned long, unsigned long *, unsigned long *);
 	fn_t fn = (fn_t)TAMISU_RESOLVE_FN(kallsyms_lookup_size_offset);
@@ -84,9 +82,9 @@ tamisu_kallsyms_lookup_size_offset(unsigned long addr,
 	return fn(addr, symbolsize, offset);
 }
 
-TAMISU_INDIRECT_CALL int
-tamisu_task_work_add(struct task_struct *task, struct callback_head *work,
-		     enum task_work_notify_mode mode)
+TAMISU_INDIRECT_CALL int tamisu_task_work_add(struct task_struct *task,
+					      struct callback_head *work,
+					      enum task_work_notify_mode mode)
 {
 	typedef int (*fn_t)(struct task_struct *, struct callback_head *,
 			    enum task_work_notify_mode);
@@ -97,9 +95,8 @@ tamisu_task_work_add(struct task_struct *task, struct callback_head *work,
 	return fn(task, work, mode);
 }
 
-TAMISU_INDIRECT_CALL void
-tamisu_change_pid(struct task_struct *task, enum pid_type type,
-		  struct pid *pid)
+TAMISU_INDIRECT_CALL void tamisu_change_pid(struct task_struct *task,
+					    enum pid_type type, struct pid *pid)
 {
 	typedef void (*fn_t)(struct task_struct *, enum pid_type, struct pid *);
 	fn_t fn = (fn_t)TAMISU_RESOLVE_FN(change_pid);
@@ -112,9 +109,10 @@ tamisu_change_pid(struct task_struct *task, enum pid_type type,
 }
 
 #ifdef TAMISU_CHANGE_PID_HAS_PID_LINKS
-TAMISU_INDIRECT_CALL void
-tamisu_change_pid_new(struct pid **pids, struct task_struct *task,
-		      enum pid_type type, struct pid *pid)
+TAMISU_INDIRECT_CALL void tamisu_change_pid_new(struct pid **pids,
+						struct task_struct *task,
+						enum pid_type type,
+						struct pid *pid)
 {
 	typedef void (*fn_t)(struct pid **, struct task_struct *, enum pid_type,
 			     struct pid *);
@@ -318,8 +316,8 @@ TAMISU_INDIRECT_CALL void tamisu_avtab_destroy(struct avtab *h)
 		fn(h);
 }
 
-TAMISU_INDIRECT_CALL int
-tamisu_ebitmap_get_bit(const struct ebitmap *e, tamisu_ebitmap_bit_t bit)
+TAMISU_INDIRECT_CALL int tamisu_ebitmap_get_bit(const struct ebitmap *e,
+						tamisu_ebitmap_bit_t bit)
 {
 	typedef int (*fn_t)(const struct ebitmap *, tamisu_ebitmap_bit_t);
 	fn_t fn = (fn_t)TAMISU_RESOLVE_FN(ebitmap_get_bit);
@@ -362,8 +360,8 @@ TAMISU_INDIRECT_CALL void tamisu_policydb_destroy(struct policydb *p)
 		fn(p);
 }
 
-TAMISU_INDIRECT_CALL int
-tamisu_policydb_write(struct policydb *p, tamisu_policydb_file_t *fp)
+TAMISU_INDIRECT_CALL int tamisu_policydb_write(struct policydb *p,
+					       tamisu_policydb_file_t *fp)
 {
 	typedef int (*fn_t)(struct policydb *, tamisu_policydb_file_t *);
 	fn_t fn = (fn_t)TAMISU_RESOLVE_FN(policydb_write);
@@ -373,8 +371,8 @@ tamisu_policydb_write(struct policydb *p, tamisu_policydb_file_t *fp)
 	return fn(p, fp);
 }
 
-TAMISU_INDIRECT_CALL int
-tamisu_policydb_read(struct policydb *p, tamisu_policydb_file_t *fp)
+TAMISU_INDIRECT_CALL int tamisu_policydb_read(struct policydb *p,
+					      tamisu_policydb_file_t *fp)
 {
 	typedef int (*fn_t)(struct policydb *, tamisu_policydb_file_t *);
 	fn_t fn = (fn_t)TAMISU_RESOLVE_FN(policydb_read);
@@ -384,8 +382,8 @@ tamisu_policydb_read(struct policydb *p, tamisu_policydb_file_t *fp)
 	return fn(p, fp);
 }
 
-TAMISU_INDIRECT_CALL int
-tamisu_policydb_load_isids(struct policydb *p, struct sidtab *s)
+TAMISU_INDIRECT_CALL int tamisu_policydb_load_isids(struct policydb *p,
+						    struct sidtab *s)
 {
 	typedef int (*fn_t)(struct policydb *, struct sidtab *);
 	fn_t fn = (fn_t)TAMISU_RESOLVE_FN(policydb_load_isids);
