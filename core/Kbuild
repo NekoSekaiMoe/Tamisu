@@ -38,15 +38,10 @@ ccflags-y += -DCONFIG_TAMISU_DEBUG=1
 endif
 endif
 
-ifeq ($(CONFIG_CFI_CLANG),y)
-ifeq ($(filter -fsanitize=cfi,$(KBUILD_CFLAGS)),)
-kcfi_supported := $(shell echo 'int x(void){return 0;}' | $(CC) -x c -fsanitize=kcfi -c -o /dev/null - 2>/dev/null && echo y)
-ifeq ($(kcfi_supported),y)
-ccflags-y += -fsanitize=kcfi
-$(info Tamisu: kcfi enabled)
-endif
-endif
-endif
+# Never add -fsanitize=kcfi here. CONFIG_CFI_CLANG is a *kernel* option (not
+# something this Kbuild can turn off); the LKM must stay uninstrumented because
+# kallsyms function-pointer calls have mismatched type hashes and panic on the
+# first __set_fixmap / patch_text (no pstore). YukiZygisk does the same.
 
 ccflags-y += -Wno-strict-prototypes
 ccflags-y += -Wno-declaration-after-statement -Wno-unused-function -Wno-unused-variable -Wno-missing-braces

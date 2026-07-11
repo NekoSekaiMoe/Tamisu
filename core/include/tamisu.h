@@ -5,6 +5,22 @@
 #include <linux/types.h>
 #include <linux/version.h>
 
+/*
+ * Outbound calls through kallsyms-resolved function pointers must not be
+ * instrumented by CFI/KCFI: the type hash of a cast pointer never matches the
+ * kernel callee. Match YukiZygisk's YZ_INDIRECT_CALL pattern.
+ */
+#if defined(__clang__)
+#if __clang_major__ >= 17
+#define TAMISU_NOCFI __attribute__((no_sanitize("cfi", "kcfi")))
+#else
+#define TAMISU_NOCFI __attribute__((no_sanitize("cfi")))
+#endif // #if __clang_major__ >= 17
+#else
+#define TAMISU_NOCFI
+#endif // #if defined(__clang__)
+#define TAMISU_INDIRECT_CALL __attribute__((__noinline__)) TAMISU_NOCFI
+
 // Build timestamp as a string literal (e.g. "20260624185506"), supplied by
 // Kbuild. Falls back to a constant for out-of-tree builds.
 #ifndef TAMISU_VERSION_STR

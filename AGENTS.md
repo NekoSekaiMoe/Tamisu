@@ -1,79 +1,76 @@
-# AGENTS.md
+# Repository Guidelines
 
-This file provides guidance to LLM when working with code in this repository.
+Tamisu is a **kernel-level Zygisk provider** (not a root provider). It coexists with KernelSU/Magisk/APatch: Tamisu owns zygote injection; the root solution owns `su`/modules. Four deliverables: `tamisu.ko`, `tamisu_daemon`, zygisk payloads (`libzygisk*.so`), Manager APK.
 
-# Warning
+Only `CONFIG_TAMISU=m` is supported (`=y` is not). Kernel LKM is **aarch64-only**.
 
-DO NOT send optional commentary
+## Layout
 
-Spend time on thinking; you do not need to use the commentary channel to report progress to me.
+| Path | Role |
+|---|---|
+| `core/` | Flat-layout LKM (`tamisu_*.c` → `tamisu.ko`), `Kbuild`/`Makefile`, `include/uapi/` |
+| `daemon/tamisud_core/` | C++17 multi-call daemon (CMake+Ninja); embeds tools + staged assets |
+| `daemon/zygisk/` | `libzygisk_linker.so` / `libzygisk.so` / `libzygisk_zncore.so` + `zygiskd` |
+| `apk/` | Kotlin/Compose Manager; JNI under `app/src/main/cpp/` |
+| `uapi/` | Userspace UAPI contract (keep in sync with `core/include/uapi/`) |
+| `repack_apk.py` | Injects built `tamisu_daemon` into the Gradle APK and resigns |
+| `YukiZygisk/` | Upstream reference tree (not part of the build) |
 
-## Project overview
+Submodules (required for daemon tools): `git submodule update --init`  
+→ `daemon/tamisud_core/third_party/{MagiskbootAlone,bootctlAlone,resetpropAlone,ndk-busybox}`
 
-Tamisu is a kernel-level Zygisk provider (not a root provider). It coexists with KernelSU/Magisk/APatch — Tamisu owns zygote injection, the root solution owns `su`/modules. Delivered as: loadable kernel module (`tamisu.ko`) + userspace daemon (`tamisu_daemon`) + zygisk payload + Manager APK.
-
-Architecture is aarch64-only for the kernel module. The daemon and APK support arm64-v8a, x86_64, armeabi-v7a.
+There is **no** top-level `scripts/build.sh` (docs that mention it are stale). Build components separately as CI does.
 
 ## Build commands
 
-Full local build (needs Docker for DDK LKM step):
+**Kernel LKM** (inside matching DDK image `ghcr.io/ylarod/ddk-min:<kmi>-20260313`, from `core/`):
 ```sh
-ANDROID_NDK_HOME=... ./scripts/build.sh -k android16-6.12 -a arm64-v8a
-# Flags: --skip-lkm, --skip-kasumi, -i (adb install after)
+CONFIG_TAMISU=m CC=clang make
+# format check (CI): make check-format   # apply: make format
 ```
+KMI matrix (CI): `android12-5.10` … `android16-6.12`. Match device KMI/Module.symvers; non-exported GKI symbols are resolved at runtime via kallsyms.
 
-Manager APK only:
+**Daemon** — stage assets **before** CMake configure (`.ko` + zygisk `.so` into `daemon/tamisud_core/assets/`; empty dir still configures but embeds nothing useful):
 ```sh
-cd apk && ./gradlew assembleRelease -PABI=arm64-v8a
-```
-
-Daemon only (must stage assets first):
-```sh
-cd daemon/tamisud_core && mkdir build && cd build
+cd daemon/tamisud_core && mkdir -p build && cd build
 cmake -G Ninja -DCMAKE_SYSTEM_NAME=Android \
   -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
-  -DCMAKE_ANDROID_NDK=$ANDROID_NDK_HOME \
+  -DCMAKE_ANDROID_NDK="$ANDROID_NDK_HOME" \
   -DCMAKE_BUILD_TYPE=Release ..
 ninja
 ```
+ABI: `arm64-v8a` | `x86_64` | `armeabi-v7a`. Min Android API 28. Host builds run clang-tidy with `WarningsAsErrors: '*'` (root `.clang-tidy`); Android NDK builds skip tidy. Disable: `-DTAMISU_DAEMON_ENABLE_CLANG_TIDY=OFF`. LTO link failures: `-DTAMISU_DAEMON_DISABLE_LTO=ON`.
 
-Kernel LKM (inside DDK docker container, from `core/`):
+**Manager APK**:
 ```sh
-CONFIG_TAMISU=m CC=clang make
+cd apk && ./gradlew assembleRelease -PABI=arm64-v8a
+# then package daemon into APK (CI does this):
+python3 repack_apk.py repack -b release -t release -a arm64-v8a -K <jks> -A <alias> -P <storepass> -S <keypass> --strip
 ```
+Signing: copy `apk/sign.example.properties` or env `TAMISU_KEYSTORE*` / Gradle props. Java 21.
 
-## Lint and format
+**ShellCheck** (CI): all `*.sh` except `gradlew` and `daemon/tamisud_core/assets/installer.sh`.
 
-Kernel module C code (core/):
-```sh
-cd core && make format          # apply clang-format
-cd core && make check-format    # dry-run check (used in CI)
-```
+## Architecture agents miss
 
-Daemon C++ (daemon/tamisud_core/): clang-tidy runs automatically during CMake build with `WarningsAsErrors: '*'`. Disable with `-DTAMISU_DAEMON_ENABLE_CLANG_TIDY=OFF`. Config is at `.clang-tidy` (repo root).
+- **Ioctl magic** `'T'` (not KernelSU `'K'`); driver fd discovered by `readlink(/proc/self/fd/*)` matching `[tamisu]`.
+- **Trust**: `core/tamisu_perm.c` — uid 0, or cmdline prefix `me.dabao1955.tamisu` / `tamisu_daemon` / `zygiskd`. Package override: `TAMISU_MANAGER_PACKAGE` in Kbuild.
+- **TSR**: hooks a `sys_ni_syscall` slot for ioctl dispatch (`tamisu_syscall_hook*.c`).
+- **Zygote**: two-stage injection — kernel AT_ENTRY stub → system linker loads stage-1 SO → `zygisk_linker` loads core/modules from memfd (`tamisu_zygote_*.c`, `daemon/zygisk/`).
+- **SELinux**: in-kernel policydb rewrite (`tamisu_selinux.c` / `sepolicy` / `rules`).
+- **Kbuild compat**: `core/Kbuild` greps srctree and sets `TAMISU_COMPAT_*` / `TAMISU_OPTIONAL_*` / `TAMISU_HAS_*`. New version-dependent code must follow that pattern.
+- **KCFI**: Never add `-fsanitize=kcfi` in `core/Kbuild` (`CONFIG_CFI_CLANG` is kernel-side only). Kallsyms-resolved calls still use `TAMISU_INDIRECT_CALL` (`no_sanitize` + `noinline`) like YukiZygisk's `YZ_INDIRECT_CALL`.
+- **Daemon multi-call**: argv0/symlinks `magiskboot`, `bootctl`, `resetprop`, `busybox`, `zygiskd` dispatch into embedded tools.
+- **UAPI dual copy**: edit both `uapi/` and `core/include/uapi/` (or mirror deliberately). Netlink: `YZ_NETLINK_PROTO 27` in `zygisk.h`.
 
-Shell scripts: ShellCheck in CI. `installer.sh` is excluded from checks.
+## Style / hooks
 
-## Architecture notes
+- C/C++: existing clang-format (`core/.clang-format`, `daemon/tamisud_core/.clang-format`).
+- Symbols: `tamisu_` / `Tamisu` prefixes.
+- `git config core.hooksPath .githooks` — pre-commit runs `fix_endif_comments.py` then clang-format on staged C/C++ and re-stages.
 
-The daemon is a multi-call binary. When invoked as `magiskboot`, `bootctl`, `resetprop`, `busybox`, or `zygiskd` (via argv[0] / symlinks), it dispatches to the respective embedded tool. Third-party tools are compiled from git submodules under `daemon/tamisud_core/third_party/`.
+## Testing & PR
 
-Zygisk injection is two-stage:
-1. Kernel rewrites zygote's `AT_ENTRY` → single-page ARM64 stub calls system linker to load `libzygisk_linker.so`
-2. zygisk_linker (custom ELF loader) loads `libzygisk.so` and modules from memfd without bionic
+No repo-wide unit suite. Verify with the component build you touched + `make check-format` for `core/` C. APK: `./gradlew test` when UI changes; device smoke-test for install/JNI/privilege. Kernel: load on matching KMI after DDK build.
 
-The kernel module hooks: `sys_ni_syscall` slot (TSR dispatcher), `sched_process_fork/free` tracepoints, LSM `bprm_committed_creds`, and a static-key-gated `__NR_execve` hook (disabled after init second stage).
-
-Privileged ioctls are gated by cmdline-based trust check (`core/tamisu_perm.c`): root, the manager app package, `tamisu_daemon`, or `zygiskd`.
-
-## Key conventions
-
-- Ioctl magic: `'T'` (distinct from KernelSU's `'K'`)
-- Driver fd name: `[tamisu]` (discovered via `/proc/self/fd/*` readlink)
-- Manager package: `me.dabao1955.tamisu` (compile-time override via `TAMISU_MANAGER_PACKAGE`)
-- UAPI headers live in `uapi/` (repo root) and `core/include/uapi/`
-- Kbuild compat flags in `core/Kbuild` auto-detect kernel features via grep on srctree
-- Git hooks in `.githooks/` (e.g. `fix_endif_comments.py`)
-- Submodules must be initialized: `git submodule update --init`
-- DDK container images: `ghcr.io/ylarod/ddk-min:<kmi>-<release>`
-- CI builds LKM for KMI matrix: android12-5.10 through android16-6.12
+Commits: short imperative subjects. PRs: name affected component, commands run, ABI + KMI. **Never commit** signing keys, APKs, `*.ko`, or device secrets.

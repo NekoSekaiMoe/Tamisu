@@ -8,6 +8,7 @@
 
 #include "tamisu_symbol_resolver.h"
 #include "klog.h" // IWYU pragma: keep
+#include "tamisu.h"
 #include "tamisu_ksyms.h"
 #include "tamisu_lsm_hook.h"
 #include "tamisu_patch_memory.h"
@@ -79,8 +80,8 @@ static int tamisu_lsm_hook_patch_slot(void **slot, void *value)
 }
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
-static int tamisu_lsm_hook_update_scall(struct lsm_static_call *scall,
-					void *value)
+static TAMISU_INDIRECT_CALL int
+tamisu_lsm_hook_update_scall(struct lsm_static_call *scall, void *value)
 {
 	__static_call_update(scall->key, scall->trampoline, value);
 	smp_wmb();

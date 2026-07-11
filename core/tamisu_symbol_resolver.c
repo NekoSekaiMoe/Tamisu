@@ -6,6 +6,7 @@
 #include <linux/string.h>
 #include <linux/version.h>
 
+#include "tamisu.h"
 #include "tamisu_symbol_resolver.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
@@ -51,7 +52,8 @@ static int find_kernel_symbol_exact_cb(void *data, unsigned long addr)
 	return 0;
 }
 
-static unsigned long tamisu_bootstrap_kallsyms_lookup_name(void)
+static TAMISU_INDIRECT_CALL unsigned long
+tamisu_bootstrap_kallsyms_lookup_name(void)
 {
 #ifdef CONFIG_KPROBES
 	struct kprobe kp = {.symbol_name = "kallsyms_lookup_name"};
@@ -67,7 +69,8 @@ static unsigned long tamisu_bootstrap_kallsyms_lookup_name(void)
 #endif // #ifdef CONFIG_KPROBES
 }
 
-unsigned long __nocfi find_kernel_symbol_exact(const char *symbol_name)
+TAMISU_INDIRECT_CALL unsigned long
+find_kernel_symbol_exact(const char *symbol_name)
 {
 	unsigned long addr = 0;
 
@@ -138,8 +141,8 @@ static int lookup_symbol_variant_cb(void *data, const char *name,
 	return 0;
 }
 
-static __nocfi void *resolve_symbol_variant(const char *symbol_name,
-					    size_t symbol_len)
+static TAMISU_INDIRECT_CALL void *
+resolve_symbol_variant(const char *symbol_name, size_t symbol_len)
 {
 	struct tamisu_lookup_symbol_ctx ctx = {
 	    .symbol_name = symbol_name,

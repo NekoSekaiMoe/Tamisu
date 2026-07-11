@@ -7,6 +7,7 @@
 
 #include "tamisu_patch_memory.h"
 #include "klog.h" // IWYU pragma: keep
+#include "tamisu.h"
 #include "tamisu_ksyms.h"
 #include "tamisu_symbol_resolver.h"
 #include <linux/cpumask.h>
@@ -87,7 +88,8 @@ fail:
 }
 
 #ifdef TAMISU_HAS_NEW_DCACHE_FLUSH
-static void tamisu_flush_dcache(unsigned long start, size_t sz)
+static TAMISU_INDIRECT_CALL void tamisu_flush_dcache(unsigned long start,
+						    size_t sz)
 {
 	typedef void (*fn_t)(unsigned long, unsigned long);
 	static fn_t fn;
@@ -103,8 +105,8 @@ static void tamisu_flush_dcache(unsigned long start, size_t sz)
 #define tamisu_flush_dcache(start, sz) __flush_dcache_area((void *)start, sz)
 #endif // #ifdef TAMISU_HAS_NEW_DCACHE_FLUSH
 
-static void *tamisu_set_fixmap_offset(enum fixed_addresses idx,
-				      phys_addr_t phys)
+static TAMISU_INDIRECT_CALL void *tamisu_set_fixmap_offset(
+	enum fixed_addresses idx, phys_addr_t phys)
 {
 	typedef void (*fn_t)(enum fixed_addresses, phys_addr_t, pgprot_t);
 	static fn_t fn;
@@ -118,7 +120,8 @@ static void *tamisu_set_fixmap_offset(enum fixed_addresses idx,
 	return (void *)(fix_to_virt(idx) + (phys & (PAGE_SIZE - 1)));
 }
 
-static void tamisu_clear_fixmap(enum fixed_addresses idx)
+static TAMISU_INDIRECT_CALL void
+tamisu_clear_fixmap(enum fixed_addresses idx)
 {
 	typedef void (*fn_t)(enum fixed_addresses, phys_addr_t, pgprot_t);
 	static fn_t fn;
@@ -137,7 +140,8 @@ struct patch_text_info {
 	int flags;
 };
 
-static int tamisu_patch_text_nosync(void *dst, void *src, size_t len, int flags)
+static TAMISU_INDIRECT_CALL int
+tamisu_patch_text_nosync(void *dst, void *src, size_t len, int flags)
 {
 	unsigned long p = (unsigned long)dst;
 	unsigned long phy;
