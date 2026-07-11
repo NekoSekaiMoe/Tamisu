@@ -39,8 +39,11 @@ endif
 endif
 
 ifeq ($(CONFIG_CFI_CLANG),y)
+kcfi_supported := $(shell echo 'int x(void){return 0;}' | $(CC) -x c -fsanitize=kcfi -c -o /dev/null - 2>/dev/null && echo y)
+ifeq ($(kcfi_supported),y)
 ccflags-y += -fsanitize=kcfi
 $(info Tamisu: kcfi enabled)
+endif
 endif
 
 ccflags-y += -Wno-strict-prototypes
