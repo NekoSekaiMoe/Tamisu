@@ -38,8 +38,9 @@ ccflags-y += -DCONFIG_TAMISU_DEBUG=1
 endif
 endif
 
-ifeq ($(shell grep -qs "CONFIG_CFI_CLANG=y" $(srctree)/.config; echo $$?),0)
+ifeq ($(CONFIG_CFI_CLANG),y)
 ccflags-y += -fsanitize=kcfi
+$(info Tamisu: kcfi enabled)
 endif
 
 ccflags-y += -Wno-strict-prototypes
