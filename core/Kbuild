@@ -38,6 +38,10 @@ ccflags-y += -DCONFIG_TAMISU_DEBUG=1
 endif
 endif
 
+ifeq ($(shell grep -qs "CONFIG_CFI_CLANG=y" $(srctree)/.config; echo $$?),0)
+ccflags-y += -fsanitize=kcfi
+endif
+
 ccflags-y += -Wno-strict-prototypes
 ccflags-y += -Wno-declaration-after-statement -Wno-unused-function -Wno-unused-variable -Wno-missing-braces
 ccflags-y += -Wno-int-to-pointer-cast -Wno-declaration-after-statement
