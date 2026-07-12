@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <sys/utsname.h>
 #include <unistd.h>
+#include <algorithm>
 #include <array>
 #include <cerrno>
 #include <climits>
@@ -70,22 +71,230 @@ bool is_magisk_patched(const std::string& magiskboot, const std::string& workdir
     return has_magisk_init.exit_code == 0 || has_overlay.exit_code == 0;
 }
 
-// Check if boot image is already patched by Tamisu/Tamisu.
-// Detects both the new modprobe layout (tamisu.ko under /lib/modules/) and
-// the legacy flat tamisu.ko layout.
+// List cpio entries under path (non-recursive by default; recursive if recursive=true).
+// magiskboot cpio ls output lines look like: "<mode>\t<path>"
+std::vector<std::string> cpio_list_entries(const std::string& magiskboot,
+                                           const std::string& workdir,
+                                           const std::string& cpio_path,
+                                           const std::string& path, bool recursive) {
+    std::vector<std::string> args = {"cpio", cpio_path};
+    if (recursive) {
+        args.push_back("ls -r " + path);
+    } else {
+        args.push_back("ls " + path);
+    }
+    auto result = exec_command_magiskboot(magiskboot, args, workdir);
+    std::vector<std::string> entries;
+    if (result.exit_code != 0 || result.stdout_str.empty()) {
+        return entries;
+    }
+    for (const auto& line : split(result.stdout_str, '\n')) {
+        auto tab = line.find('\t');
+        if (tab == std::string::npos) {
+            continue;
+        }
+        auto entry = trim(line.substr(tab + 1));
+        if (!entry.empty()) {
+            entries.push_back(entry);
+        }
+    }
+    return entries;
+}
+
+bool cpio_entry_exists(const std::string& magiskboot, const std::string& workdir,
+                       const std::string& cpio_path, const std::string& entry) {
+    auto result =
+        exec_command_magiskboot(magiskboot, {"cpio", cpio_path, "exists " + entry}, workdir);
+    return result.exit_code == 0;
+}
+
+// Extract a single cpio entry to a workdir-relative outfile. Returns true on success.
+bool cpio_extract_entry(const std::string& magiskboot, const std::string& workdir,
+                        const std::string& cpio_path, const std::string& entry,
+                        const std::string& outfile_rel) {
+    auto result = exec_command_magiskboot(
+        magiskboot, {"cpio", cpio_path, "extract " + entry + " " + outfile_rel}, workdir);
+    return result.exit_code == 0;
+}
+
+// Ensure text ends with a single trailing newline (if non-empty).
+std::string ensure_trailing_newline(std::string s) {
+    if (s.empty()) {
+        return s;
+    }
+    while (!s.empty() && (s.back() == '\n' || s.back() == '\r')) {
+        s.pop_back();
+    }
+    s.push_back('\n');
+    return s;
+}
+
+// Append a line to modules.load if not already present (matches basename or full path).
+std::string merge_modules_load(const std::string& existing, const std::string& module_line) {
+    const std::string needle = trim(module_line);
+    if (needle.empty()) {
+        return existing;
+    }
+    for (const auto& line : split(existing, '\n')) {
+        auto t = trim(line);
+        if (t.empty() || t[0] == '#') {
+            continue;
+        }
+        // Match "tamisu.ko", "tamisu", or any path ending with /tamisu.ko
+        if (t == needle || t == "tamisu" || ends_with(t, "/" + needle) || ends_with(t, "/tamisu")) {
+            return existing;
+        }
+    }
+    std::string out = ensure_trailing_newline(existing);
+    out += needle;
+    out += '\n';
+    return out;
+}
+
+// Append "tamisu.ko:" dep entry if missing.
+std::string merge_modules_dep(const std::string& existing, const std::string& dep_line) {
+    const std::string needle = "tamisu.ko";
+    for (const auto& line : split(existing, '\n')) {
+        auto t = trim(line);
+        if (t.empty() || t[0] == '#') {
+            continue;
+        }
+        auto colon = t.find(':');
+        auto key = (colon == std::string::npos) ? t : t.substr(0, colon);
+        key = trim(key);
+        if (key == needle || ends_with(key, "/" + needle)) {
+            return existing;
+        }
+    }
+    std::string out = ensure_trailing_newline(existing);
+    out += dep_line;
+    if (out.back() != '\n') {
+        out += '\n';
+    }
+    return out;
+}
+
+// Remove tamisu entries from modules.load content.
+std::string strip_tamisu_from_modules_load(const std::string& existing) {
+    std::string out;
+    for (const auto& line : split(existing, '\n')) {
+        auto t = trim(line);
+        if (t.empty()) {
+            continue;
+        }
+        if (t == "tamisu.ko" || t == "tamisu" || ends_with(t, "/tamisu.ko") ||
+            ends_with(t, "/tamisu")) {
+            continue;
+        }
+        out += line;
+        out += '\n';
+    }
+    return out;
+}
+
+// Remove tamisu.ko dependency lines from modules.dep content.
+std::string strip_tamisu_from_modules_dep(const std::string& existing) {
+    std::string out;
+    for (const auto& line : split(existing, '\n')) {
+        auto t = trim(line);
+        if (t.empty()) {
+            continue;
+        }
+        auto colon = t.find(':');
+        auto key = (colon == std::string::npos) ? t : t.substr(0, colon);
+        key = trim(key);
+        if (key == "tamisu.ko" || ends_with(key, "/tamisu.ko")) {
+            continue;
+        }
+        out += line;
+        out += '\n';
+    }
+    return out;
+}
+
+// Pick the ramdisk lib/modules/<dir> we should inject into.
+// Prefer exact uname -r, then major.minor match that already has modules.load,
+// then any existing modules dir with modules.load. Empty if none.
+std::string select_modules_dir(const std::string& magiskboot, const std::string& workdir,
+                               const std::string& cpio_path, const std::string& kernel_release) {
+    if (cpio_entry_exists(magiskboot, workdir, cpio_path,
+                          "lib/modules/" + kernel_release + "/modules.load") ||
+        cpio_entry_exists(magiskboot, workdir, cpio_path, "lib/modules/" + kernel_release)) {
+        return "lib/modules/" + kernel_release;
+    }
+
+    int major = 0;
+    int minor = 0;
+    sscanf(kernel_release.c_str(), "%d.%d", &major, &minor);
+
+    auto entries = cpio_list_entries(magiskboot, workdir, cpio_path, "lib/modules", true);
+    std::vector<std::string> candidates;
+    for (const auto& e : entries) {
+        // Expect lib/modules/<release>/...
+        if (!starts_with(e, "lib/modules/")) {
+            continue;
+        }
+        auto rest = e.substr(std::string("lib/modules/").size());
+        auto slash = rest.find('/');
+        if (slash == std::string::npos) {
+            // directory entry itself: lib/modules/<release>
+            if (!rest.empty() && rest != "." && rest != "..") {
+                candidates.push_back("lib/modules/" + rest);
+            }
+            continue;
+        }
+        candidates.push_back("lib/modules/" + rest.substr(0, slash));
+    }
+    std::sort(candidates.begin(), candidates.end());
+    candidates.erase(std::unique(candidates.begin(), candidates.end()), candidates.end());
+
+    std::string mm_match;
+    std::string any_with_load;
+    for (const auto& dir : candidates) {
+        const bool has_load =
+            cpio_entry_exists(magiskboot, workdir, cpio_path, dir + "/modules.load");
+        if (!has_load) {
+            continue;
+        }
+        if (any_with_load.empty()) {
+            any_with_load = dir;
+        }
+        auto name = dir.substr(std::string("lib/modules/").size());
+        int dmaj = 0;
+        int dmin = 0;
+        if (sscanf(name.c_str(), "%d.%d", &dmaj, &dmin) == 2 && dmaj == major && dmin == minor) {
+            mm_match = dir;
+            break;
+        }
+    }
+    if (!mm_match.empty()) {
+        return mm_match;
+    }
+    if (!any_with_load.empty()) {
+        return any_with_load;
+    }
+    if (!candidates.empty()) {
+        return candidates.front();
+    }
+    return "";
+}
+
+// Check if boot image is already patched by Tamisu.
+// Detects modprobe layout (tamisu.ko under /lib/modules/) and legacy flat layout.
 bool is_tamisu_patched(const std::string& magiskboot, const std::string& workdir,
-                         const std::string& cpio_path) {
-    // New layout: tamisu.ko anywhere in /lib/modules/
-    auto tamisu_result = exec_command_magiskboot(
-        magiskboot, {"cpio", cpio_path, "exists lib/modules"}, workdir);
-    if (tamisu_result.exit_code == 0) {
-        // Deeper check would need a directory listing; the dir itself is a strong signal.
+                       const std::string& cpio_path) {
+    // Legacy: flat tamisu.ko at ramdisk root
+    if (cpio_entry_exists(magiskboot, workdir, cpio_path, "tamisu.ko")) {
         return true;
     }
-    // Legacy: flat tamisu.ko at ramdisk root
-    auto result =
-        exec_command_magiskboot(magiskboot, {"cpio", cpio_path, "exists tamisu.ko"}, workdir);
-    return result.exit_code == 0;
+    // Look for tamisu.ko under lib/modules (stock may already have lib/modules without us)
+    auto entries = cpio_list_entries(magiskboot, workdir, cpio_path, "lib/modules", true);
+    for (const auto& e : entries) {
+        if (e == "tamisu.ko" || ends_with(e, "/tamisu.ko")) {
+            return true;
+        }
+    }
+    return false;
 }
 
 // Repack ramdisk using kernel-version-specific mkbootfs (fixes 5.15+ boot on some devices)
@@ -657,21 +866,26 @@ int boot_patch_impl(const std::vector<std::string>& args) {
     const bool already_patched = is_tamisu_patched(magiskboot, workdir, ramdisk);
     (void)already_patched;
 
-    // AOSP first_stage init's LoadKernelModules() scans /lib/modules/<uname -r>/
-    // and reads modules.load to decide which .ko to insmod. We inject tamisu.ko
-    // there so the kernel module is loaded by init itself (before SELinux setup,
-    // long before zygote), without needing a custom /init replacement.
-    const std::string mod_dir = "lib/modules/" + kernel_release;
-    const std::string mod_dir_local = workdir + "/modroot/lib/modules/" + kernel_release;
-    // magiskboot cpio add syntax is "add MODE ENTRY INFILE". INFILE must be
-    // relative to magiskboot's cwd (workdir), not absolute. Absolute paths are
-    // silently mishandled on some magiskboot builds, producing
-    // 'open source file <path> failed: ENOENT' even when the file exists on disk.
-    // Compute the workdir-relative form of the source directory so INFILE gets a
-    // clean relative path.
-    const std::string mod_dir_rel = "modroot/lib/modules/" + kernel_release;
+    // AOSP first_stage LoadKernelModules() prefers an exact /lib/modules/<uname -r>
+    // directory and loads ONLY from that dir when present. Creating a private
+    // uname-r dir with only tamisu.ko would hijack module loading and drop
+    // vendor modules (storage/display), causing first-stage FATAL reboot.
+    // Prefer merging into an existing modules directory; only fall back to a
+    // fresh uname-r dir when the ramdisk has no lib/modules tree at all.
+    std::string mod_dir =
+        select_modules_dir(magiskboot, workdir, ramdisk, kernel_release);
+    const bool created_private_dir = mod_dir.empty();
+    if (created_private_dir) {
+        mod_dir = "lib/modules/" + kernel_release;
+        printf("- No existing modules dir in ramdisk; creating %s\n", mod_dir.c_str());
+    } else {
+        printf("- Merging into existing modules dir: %s\n", mod_dir.c_str());
+    }
 
-    // Build the modprobe directory tree on disk so we can add each file into the cpio.
+    // Staging tree under workdir; magiskboot cpio add INFILE must be workdir-relative.
+    const std::string mod_dir_local = workdir + "/modroot/" + mod_dir;
+    const std::string mod_dir_rel = "modroot/" + mod_dir;
+
     std::error_code ec;
     fs::create_directories(mod_dir_local, ec);
     if (ec) {
@@ -680,7 +894,7 @@ int boot_patch_impl(const std::vector<std::string>& args) {
         return 1;
     }
 
-    // tamisu.ko  (the LKM was prepared above as kmod_file)
+    // Stage tamisu.ko
     {
         const std::string dst_ko = mod_dir_local + "/tamisu.ko";
         std::ifstream src(kmod_file, std::ios::binary);
@@ -693,36 +907,69 @@ int boot_patch_impl(const std::vector<std::string>& args) {
         dst << src.rdbuf();
     }
 
-    // modules.load  — one module per line; libmodprobe reads this list
+    // Merge modules.load (append; never replace vendor list)
     {
-        std::ofstream f(mod_dir_local + "/modules.load");
-        if (!f) {
-            LOGE("Failed to create modules.load");
+        std::string load_content;
+        const std::string load_entry = mod_dir + "/modules.load";
+        if (cpio_entry_exists(magiskboot, workdir, ramdisk, load_entry)) {
+            const std::string extracted = mod_dir_rel + "/modules.load.orig";
+            if (cpio_extract_entry(magiskboot, workdir, ramdisk, load_entry, extracted)) {
+                auto content = read_file(workdir + "/" + extracted);
+                if (content) {
+                    load_content = *content;
+                }
+            }
+        }
+        load_content = merge_modules_load(load_content, "tamisu.ko");
+        if (!write_file(mod_dir_local + "/modules.load", load_content)) {
+            LOGE("Failed to write merged modules.load");
             cleanup();
             return 1;
         }
-        f << "tamisu.ko\n";
     }
 
-    // modules.dep  — libmodprobe needs a dependency entry for every module it loads.
-    // tamisu.ko has no dependencies, so the entry is just "tamisu.ko:".
+    // Merge modules.dep (append "tamisu.ko:" if missing)
     {
-        std::ofstream f(mod_dir_local + "/modules.dep");
-        if (!f) {
-            LOGE("Failed to create modules.dep");
+        std::string dep_content;
+        const std::string dep_entry = mod_dir + "/modules.dep";
+        if (cpio_entry_exists(magiskboot, workdir, ramdisk, dep_entry)) {
+            const std::string extracted = mod_dir_rel + "/modules.dep.orig";
+            if (cpio_extract_entry(magiskboot, workdir, ramdisk, dep_entry, extracted)) {
+                auto content = read_file(workdir + "/" + extracted);
+                if (content) {
+                    dep_content = *content;
+                }
+            }
+        }
+        // Prefer full path form used by depgen when we created a private dir; basename works too.
+        dep_content = merge_modules_dep(dep_content, "tamisu.ko:");
+        if (!write_file(mod_dir_local + "/modules.dep", dep_content)) {
+            LOGE("Failed to write merged modules.dep");
             cleanup();
             return 1;
         }
-        f << "tamisu.ko:\n";
     }
 
-    // Create the cpio directory structure and add each file.
-    // magiskboot cpio needs intermediate dirs created explicitly.
-    for (const auto& sub : std::vector<std::string>{"lib", "lib/modules", mod_dir}) {
-        if (!do_cpio_cmd(magiskboot, workdir, ramdisk, "mkdir 0755 " + sub)) {
-            LOGE("Failed to mkdir %s in ramdisk", sub.c_str());
-            cleanup();
-            return 1;
+    // Ensure parent dirs exist in cpio, then add files (add replaces if present).
+    {
+        std::vector<std::string> parts;
+        std::string acc;
+        for (const auto& part : split(mod_dir, '/')) {
+            if (part.empty()) {
+                continue;
+            }
+            if (!acc.empty()) {
+                acc += '/';
+            }
+            acc += part;
+            parts.push_back(acc);
+        }
+        for (const auto& sub : parts) {
+            if (!do_cpio_cmd(magiskboot, workdir, ramdisk, "mkdir 0755 " + sub)) {
+                LOGE("Failed to mkdir %s in ramdisk", sub.c_str());
+                cleanup();
+                return 1;
+            }
         }
     }
     for (const auto& name : {"tamisu.ko", "modules.load", "modules.dep"}) {
@@ -735,8 +982,8 @@ int boot_patch_impl(const std::vector<std::string>& args) {
             return 1;
         }
     }
-    printf("- Injected tamisu.ko into /lib/modules/%s/ (modprobe layout)\n",
-           kernel_release.c_str());
+    printf("- Injected tamisu.ko into /%s/ (merge=%s)\n", mod_dir.c_str(),
+           created_private_dir ? "no" : "yes");
 
     if (parsed.enable_adbd || !parsed.adb_debug_prop.empty()) {
         printf("- Adding adb debug props\n");
@@ -1079,20 +1326,73 @@ int boot_restore(const std::vector<std::string>& args) {
         printf("- Backup info is absent!\n");
     }
 
-    // If no backup, manually remove Tamisu/Tamisu
+    // If no backup, manually remove Tamisu (do NOT wipe vendor modules)
     if (!from_backup) {
+        std::error_code restore_ec;
+
         // Remove legacy flat tamisu.ko
         do_cpio_cmd(magiskboot, workdir, ramdisk, "rm tamisu.ko");
 
-        // Remove modprobe layout: rm the /lib/modules tree (tamisu.ko lives inside).
-        // magiskboot cpio 'rm' on a directory removes recursively on some builds,
-        // but to be safe we also rm the known leaf files first.
-        for (const auto& leaf : {"tamisu.ko", "modules.load", "modules.dep"}) {
-            do_cpio_cmd(magiskboot, workdir, ramdisk,
-                        "rm lib/modules/" + kernel_release + "/" + leaf);
+        // Strip tamisu.ko from every lib/modules/* that contains it, and restore
+        // modules.load / modules.dep by removing only our lines. Never delete the
+        // whole modules tree — stock ramdisks may share that directory with vendor.
+        auto mod_entries =
+            cpio_list_entries(magiskboot, workdir, ramdisk, "lib/modules", true);
+        std::vector<std::string> mod_dirs;
+        for (const auto& e : mod_entries) {
+            if (e == "tamisu.ko" || ends_with(e, "/tamisu.ko")) {
+                do_cpio_cmd(magiskboot, workdir, ramdisk, "rm " + e);
+                auto slash = e.rfind('/');
+                if (slash != std::string::npos) {
+                    mod_dirs.push_back(e.substr(0, slash));
+                }
+            }
         }
-        do_cpio_cmd(magiskboot, workdir, ramdisk, "rm lib/modules/" + kernel_release);
-        do_cpio_cmd(magiskboot, workdir, ramdisk, "rm lib/modules");
+        // Also consider uname-r dir even if listing missed it
+        if (!kernel_release.empty()) {
+            mod_dirs.push_back("lib/modules/" + kernel_release);
+        }
+        std::sort(mod_dirs.begin(), mod_dirs.end());
+        mod_dirs.erase(std::unique(mod_dirs.begin(), mod_dirs.end()), mod_dirs.end());
+
+        fs::create_directories(workdir + "/modroot_restore", restore_ec);
+
+        for (const auto& dir : mod_dirs) {
+            const std::string load_entry = dir + "/modules.load";
+            const std::string dep_entry = dir + "/modules.dep";
+
+            if (cpio_entry_exists(magiskboot, workdir, ramdisk, load_entry)) {
+                const std::string out_rel = "modroot_restore/modules.load";
+                if (cpio_extract_entry(magiskboot, workdir, ramdisk, load_entry, out_rel)) {
+                    auto content = read_file(workdir + "/" + out_rel);
+                    if (content) {
+                        auto stripped = strip_tamisu_from_modules_load(*content);
+                        if (stripped.empty()) {
+                            do_cpio_cmd(magiskboot, workdir, ramdisk, "rm " + load_entry);
+                        } else if (write_file(workdir + "/" + out_rel, stripped)) {
+                            do_cpio_cmd(magiskboot, workdir, ramdisk,
+                                        "add 0644 " + load_entry + " " + out_rel);
+                        }
+                    }
+                }
+            }
+
+            if (cpio_entry_exists(magiskboot, workdir, ramdisk, dep_entry)) {
+                const std::string out_rel = "modroot_restore/modules.dep";
+                if (cpio_extract_entry(magiskboot, workdir, ramdisk, dep_entry, out_rel)) {
+                    auto content = read_file(workdir + "/" + out_rel);
+                    if (content) {
+                        auto stripped = strip_tamisu_from_modules_dep(*content);
+                        if (stripped.empty()) {
+                            do_cpio_cmd(magiskboot, workdir, ramdisk, "rm " + dep_entry);
+                        } else if (write_file(workdir + "/" + out_rel, stripped)) {
+                            do_cpio_cmd(magiskboot, workdir, ramdisk,
+                                        "add 0644 " + dep_entry + " " + out_rel);
+                        }
+                    }
+                }
+            }
+        }
 
         // Remove kasumi.ko if present (experimental cpio embed)
         auto kasumi_exists =
